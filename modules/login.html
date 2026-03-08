@@ -626,7 +626,7 @@
 
         <!-- Social Buttons -->
         <div class="social-row">
-          <button class="social-btn">
+          <button class="social-btn" onclick="socialLogin('Google')">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -635,7 +635,7 @@
             </svg>
             Google
           </button>
-          <button class="social-btn">
+          <button class="social-btn" onclick="socialLogin('Microsoft')">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M11.4 24H0V12.6L11.4 24z" fill="#00A4EF"/>
               <path d="M24 24H12.6V12.6L24 24z" fill="#FFB900"/>
@@ -764,6 +764,32 @@
     }));
     goTo('../index.html');
   }
+
+  /* ── Social Login (simulated OAuth flow) ── */
+  function socialLogin(provider) {
+    var btn = event.currentTarget;
+    var origHtml = btn.innerHTML;
+    btn.innerHTML = '<div style="width:18px;height:18px;border:2px solid #ccc;border-top-color:#3066be;border-radius:50%;animation:spin .6s linear infinite;"></div> Connecting...';
+    btn.style.pointerEvents = 'none';
+
+    // Simulate OAuth redirect delay
+    setTimeout(function() {
+      btn.innerHTML = origHtml;
+      btn.style.pointerEvents = '';
+      showToast('Signed in with ' + provider + '!', 'success');
+
+      // Save session and redirect
+      localStorage.setItem('adera_session', JSON.stringify({
+        company: 'Adera Distribution Pvt Ltd',
+        user: 'Elon Musk',
+        provider: provider,
+        timestamp: new Date().toISOString()
+      }));
+
+      setTimeout(function() { goTo('../index.html'); }, 800);
+    }, 1500);
+  }
 </script>
+<style>@keyframes spin { to { transform:rotate(360deg); } }</style>
 </body>
 </html>

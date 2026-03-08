@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Store Check-in — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Map Section ── */
+    .geo-map {
+      position: relative;
+      background: linear-gradient(135deg, #3a4f6f 0%, #4a6a8a 30%, #5a7a9a 60%, #6a8aaa 100%);
+      border-radius: 16px;
+      height: 240px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+    .geo-map-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    /* Roads */
+    .geo-road {
+      position: absolute; background: rgba(255,255,255,.12); border-radius: 2px;
+    }
+    .geo-road-h1 { top: 110px; left: 0; right: 0; height: 4px; }
+    .geo-road-h2 { top: 170px; left: 20px; right: 40px; height: 3px; }
+    .geo-road-v1 { left: 140px; top: 0; bottom: 0; width: 4px; }
+    .geo-road-v2 { left: 260px; top: 30px; bottom: 20px; width: 3px; }
+
+    /* User location dot */
+    @keyframes pulseUser {
+      0% { transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 0 0 rgba(66,133,244,.6); }
+      70% { transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 0 14px rgba(66,133,244,0); }
+      100% { transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 0 0 rgba(66,133,244,0); }
+    }
+    @keyframes rippleUser {
+      0% { transform: translate(-50%,-50%) scale(.5); opacity: .6; }
+      100% { transform: translate(-50%,-50%) scale(3); opacity: 0; }
+    }
+    .geo-user-dot {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 16px; height: 16px;
+      background: #4285f4;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      z-index: 10;
+      animation: pulseUser 2s ease-in-out infinite;
+    }
+    .geo-user-ripple {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: rgba(66,133,244,.25);
+      z-index: 8;
+      animation: rippleUser 2s ease-out infinite;
+    }
+    .geo-user-ripple:nth-child(2) { animation-delay: .6s; }
+    .geo-user-ripple:nth-child(3) { animation-delay: 1.2s; }
+    .geo-user-label {
+      position: absolute; top: calc(50% - 28px); left: 50%;
+      transform: translateX(-50%);
+      background: #4285f4; color: #fff;
+      font-size: 9px; font-weight: 700;
+      padding: 2px 8px; border-radius: 8px;
+      white-space: nowrap; z-index: 11;
+    }
+
+    /* Geofence radius circle */
+    .geo-radius {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 180px; height: 180px;
+      border: 2px dashed rgba(66,133,244,.5);
+      border-radius: 50%;
+      background: rgba(66,133,244,.08);
+      z-index: 5;
+    }
+    .geo-radius-label {
+      position: absolute; bottom: -2px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px; color: rgba(66,133,244,.8);
+      font-weight: 700; white-space: nowrap;
+      background: rgba(58,79,111,.8); padding: 1px 5px; border-radius: 4px;
+    }
+
+    /* Store pins on map */
+    .geo-pin {
+      position: absolute; z-index: 9;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .geo-pin-circle {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 800; color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+    .geo-pin-dist {
+      font-size: 7px; font-weight: 700; color: #fff;
+      background: rgba(0,0,0,.45); padding: 1px 4px; border-radius: 4px;
+      white-space: nowrap;
+    }
+    .geo-pin-in .geo-pin-circle { background: #28a745; }
+    .geo-pin-out .geo-pin-circle { background: #6b7280; }
+
+    /* Coordinates bar */
+    .geo-coords-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--surface); border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .geo-coords-text { font-size: 12px; font-weight: 600; color: var(--text-primary); font-family: 'Courier New', monospace; }
+    .geo-accuracy { font-size: 10px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .geo-accuracy-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+
+    /* Store cards */
+    .geo-store-card {
+      background: var(--surface); border-radius: 14px;
+      padding: 14px; margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid #e2e8f0;
+      transition: transform .15s;
+    }
+    .geo-store-card:active { transform: scale(.98); }
+    .geo-store-card.in-range { border-left-color: var(--success); }
+    .geo-store-card.out-range { border-left-color: #d1d5db; }
+    .geo-store-card.checked-in { border-left-color: var(--primary); background: #f0f4fb; }
+
+    .geo-store-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .geo-store-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .geo-store-dist-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 10px;
+      border-radius: 20px; white-space: nowrap;
+    }
+    .geo-store-dist-badge.near { background: #e6f4ea; color: var(--success); }
+    .geo-store-dist-badge.far { background: #f0f2f5; color: var(--text-muted); }
+
+    .geo-store-meta {
+      font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .geo-store-beat {
+      font-size: 10px; font-weight: 600; color: var(--primary);
+      background: #e8f0fa; padding: 2px 8px; border-radius: 10px;
+    }
+    .geo-store-visit-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 10px; color: var(--text-muted); margin-top: 6px;
+      padding-top: 6px; border-top: 1px solid #f0f4fb;
+    }
+    .geo-store-status {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; margin-top: 6px;
+    }
+    .geo-store-status.available { color: var(--success); }
+    .geo-store-status.locked { color: var(--text-muted); }
+    .geo-store-status svg { width: 14px; height: 14px; }
+
+    .geo-checkin-btn {
+      width: 100%; padding: 10px;
+      border-radius: 10px; border: none;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; margin-top: 8px;
+      font-family: var(--font);
+      letter-spacing: .5px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .geo-checkin-btn:active { transform: scale(.97); }
+    .geo-checkin-btn.enabled {
+      background: linear-gradient(135deg, #1e8c3a, var(--success));
+      color: #fff; box-shadow: 0 4px 12px rgba(40,167,69,.3);
+    }
+    .geo-checkin-btn.disabled {
+      background: #e2e8f0; color: #9aabcc;
+      cursor: not-allowed;
+    }
+    .geo-checkin-btn.done {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+    }
+
+    /* Section headers */
+    .geo-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 18px 0 10px;
+    }
+    .geo-section-title {
+      font-size: 12px; font-weight: 700; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: .8px;
+    }
+    .geo-count-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .geo-count-badge.green { background: #e6f4ea; color: var(--success); }
+    .geo-count-badge.grey { background: #f0f2f5; color: var(--text-muted); }
+
+    /* ── Check-in Bottom Sheet ── */
+    .checkin-overlay {
+      position: absolute; inset: 0;
+      background: rgba(26,39,68,.55);
+      z-index: 400; opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .checkin-overlay.open { opacity: 1; pointer-events: all; }
+    .checkin-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--bg);
+      border-radius: 24px 24px 0 0;
+      z-index: 410;
+      transform: translateY(100%);
+      transition: transform .35s cubic-bezier(.4,0,.2,1);
+      max-height: 88%;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .checkin-sheet::-webkit-scrollbar { display: none; }
+    .checkin-sheet.open { transform: translateY(0); }
+    .checkin-sheet-handle {
+      width: 40px; height: 4px;
+      background: #ccd5e0; border-radius: 4px;
+      margin: 10px auto 0;
+    }
+    .checkin-sheet-header {
+      padding: 16px 20px 12px; border-bottom: 1px solid #e2e8f0;
+    }
+    .checkin-sheet-store { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+    .checkin-sheet-addr { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .checkin-sheet-body { padding: 16px 20px 32px; }
+
+    .checkin-info-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #f0f4fb;
+    }
+    .checkin-info-label { font-size: 12px; color: var(--text-secondary); }
+    .checkin-info-value { font-size: 12px; font-weight: 700; color: var(--text-primary); font-family: 'Courier New', monospace; }
+
+    /* Purpose chips */
+    .purpose-chips {
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
+    }
+    .purpose-chip {
+      padding: 7px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      background: var(--surface); color: var(--text-secondary);
+      border: 1.5px solid #e2e8f0;
+      cursor: pointer; transition: all .2s;
+    }
+    .purpose-chip.active {
+      background: var(--primary); color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Selfie zone */
+    .selfie-zone {
+      border: 2px dashed #ccd5e0;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      margin: 12px 0;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .selfie-zone:hover { border-color: var(--primary); background: #f8fafd; }
+    .selfie-zone svg { width: 32px; height: 32px; color: var(--text-muted); margin-bottom: 6px; }
+    .selfie-zone span { font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; }
+    .selfie-zone.captured { border-color: var(--success); background: #f0faf3; }
+    .selfie-zone.captured svg { color: var(--success); }
+    .selfie-zone.captured span { color: var(--success); }
+
+    .checkin-notes {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid #e2e8f0; border-radius: 10px;
+      font-size: 13px; color: var(--text-primary);
+      font-family: var(--font); background: var(--surface);
+      outline: none; resize: none; margin: 8px 0 14px;
+      transition: border-color .2s;
+    }
+    .checkin-notes:focus { border-color: var(--primary); }
+
+    /* Success animation */
+    @keyframes successPop {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes successCheck {
+      0% { stroke-dashoffset: 30; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .success-anim {
+      display: none; text-align: center; padding: 32px 20px;
+    }
+    .success-anim.show { display: block; }
+    .success-circle {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #28a745, #4ade80);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      animation: successPop .5s ease forwards;
+    }
+    .success-circle svg { width: 36px; height: 36px; color: #fff; }
+    .success-circle svg polyline {
+      stroke-dasharray: 30; stroke-dashoffset: 30;
+      animation: successCheck .4s ease .3s forwards;
+    }
+    .success-text { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+    .success-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ── Settings Section ── */
+    .geo-settings-card {
+      background: var(--surface); border-radius: 14px;
+      padding: 16px; margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+    .geo-setting-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0;
+    }
+    .geo-setting-row + .geo-setting-row { border-top: 1px solid #f0f4fb; }
+    .geo-setting-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .geo-setting-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Toggle switch */
+    .toggle-switch {
+      width: 44px; height: 24px;
+      background: #d1d5db; border-radius: 12px;
+      position: relative; cursor: pointer;
+      transition: background .3s; flex-shrink: 0;
+    }
+    .toggle-switch.active { background: var(--success); }
+    .toggle-switch::after {
+      content: '';
+      position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      background: #fff; border-radius: 50%;
+      transition: left .3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .toggle-switch.active::after { left: 22px; }
+
+    /* Radius selector */
+    .radius-options {
+      display: flex; gap: 6px;
+    }
+    .radius-opt {
+      padding: 6px 12px; border-radius: 8px;
+      font-size: 11px; font-weight: 700;
+      background: #f0f2f5; color: var(--text-muted);
+      cursor: pointer; transition: all .2s;
+      border: 1.5px solid transparent;
+    }
+    .radius-opt.active {
+      background: #e8f0fa; color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* GPS indicator in top bar */
+    .gps-indicator {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: rgba(255,255,255,.8); font-weight: 600;
+    }
+    @keyframes gpsPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .4; }
+    }
+    .gps-dot {
+      width: 8px; height: 8px;
+      background: #4ade80; border-radius: 50%;
+      animation: gpsPulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer -->
+  <div id="drawer" data-inject="geofence"></div>
+
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">09:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 00-6 0zm-4-4l2 2a7 7 0 019.9 0l2-2C14.21 9.21 9.79 9.21 5 13z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.34C7 21.4 7.6 22 8.33 22h7.34c.74 0 1.33-.6 1.33-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <a class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <div class="top-bar-title">
+        Store Check-in
+        <div class="top-bar-subtitle">Geofence Verification</div>
+      </div>
+      <div class="gps-indicator">
+        <div class="gps-dot"></div>
+        GPS
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Map Section -->
+      <div class="geo-map">
+        <div class="geo-map-grid"></div>
+        <!-- Roads -->
+        <div class="geo-road geo-road-h1"></div>
+        <div class="geo-road geo-road-h2"></div>
+        <div class="geo-road geo-road-v1"></div>
+        <div class="geo-road geo-road-v2"></div>
+
+        <!-- Geofence radius -->
+        <div class="geo-radius">
+          <div class="geo-radius-label">50m radius</div>
+        </div>
+
+        <!-- User location -->
+        <div class="geo-user-ripple"></div>
+        <div class="geo-user-ripple"></div>
+        <div class="geo-user-ripple"></div>
+        <div class="geo-user-dot"></div>
+        <div class="geo-user-label">Your Location</div>
+
+        <!-- Store pins — in range -->
+        <div class="geo-pin geo-pin-in" style="top:42%;left:38%">
+          <div class="geo-pin-circle">KG</div>
+          <div class="geo-pin-dist">12m</div>
+        </div>
+        <div class="geo-pin geo-pin-in" style="top:58%;left:62%">
+          <div class="geo-pin-circle">MM</div>
+          <div class="geo-pin-dist">28m</div>
+        </div>
+        <div class="geo-pin geo-pin-in" style="top:32%;left:58%">
+          <div class="geo-pin-circle">SS</div>
+          <div class="geo-pin-dist">45m</div>
+        </div>
+
+        <!-- Store pins — out of range -->
+        <div class="geo-pin geo-pin-out" style="top:18%;left:22%">
+          <div class="geo-pin-circle">CS</div>
+          <div class="geo-pin-dist">120m</div>
+        </div>
+        <div class="geo-pin geo-pin-out" style="top:78%;left:18%">
+          <div class="geo-pin-circle">NT</div>
+          <div class="geo-pin-dist">280m</div>
+        </div>
+        <div class="geo-pin geo-pin-out" style="top:82%;left:78%">
+          <div class="geo-pin-circle">HD</div>
+          <div class="geo-pin-dist">450m</div>
+        </div>
+      </div>
+
+      <!-- Coordinates -->
+      <div class="geo-coords-bar">
+        <div>
+          <div class="geo-coords-text">27.7172°N, 85.3240°E</div>
+        </div>
+        <div class="geo-accuracy">
+          <div class="geo-accuracy-dot"></div>
+          ±5m accuracy
+        </div>
+      </div>
+
+      <!-- Stores Within Range -->
+      <div class="geo-section-header">
+        <span class="geo-section-title">Stores Within Range</span>
+        <span class="geo-count-badge green">3</span>
+      </div>
+
+      <!-- Store 1: Krishna General Store -->
+      <div class="geo-store-card in-range" id="store1">
+        <div class="geo-store-top">
+          <div>
+            <div class="geo-store-name">Krishna General Store</div>
+            <div class="geo-store-meta">
+              <span>Ason Tole, Kathmandu</span>
+              <span class="geo-store-beat">Kathmandu Central</span>
+            </div>
+          </div>
+          <span class="geo-store-dist-badge near">12m</span>
+        </div>
+        <div class="geo-store-status available">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Check-in Available
+        </div>
+        <div class="geo-store-visit-row">
+          <span>Last visit: 5 Mar 2026</span>
+          <span>Visits this month: 4</span>
+        </div>
+        <button class="geo-checkin-btn enabled" id="btn1" onclick="openCheckinSheet('Krishna General Store','Ason Tole, Kathmandu','store1','btn1')">CHECK IN</button>
+      </div>
+
+      <!-- Store 2: Metro Mart -->
+      <div class="geo-store-card in-range" id="store2">
+        <div class="geo-store-top">
+          <div>
+            <div class="geo-store-name">Metro Mart Pvt Ltd</div>
+            <div class="geo-store-meta">
+              <span>New Baneshwor, Kathmandu</span>
+              <span class="geo-store-beat">Kathmandu East</span>
+            </div>
+          </div>
+          <span class="geo-store-dist-badge near">28m</span>
+        </div>
+        <div class="geo-store-status available">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Check-in Available
+        </div>
+        <div class="geo-store-visit-row">
+          <span>Last visit: 6 Mar 2026</span>
+          <span>Visits this month: 3</span>
+        </div>
+        <button class="geo-checkin-btn enabled" id="btn2" onclick="openCheckinSheet('Metro Mart Pvt Ltd','New Baneshwor, Kathmandu','store2','btn2')">CHECK IN</button>
+      </div>
+
+      <!-- Store 3: Sharma & Sons -->
+      <div class="geo-store-card in-range" id="store3">
+        <div class="geo-store-top">
+          <div>
+            <div class="geo-store-name">Sharma & Sons</div>
+            <div class="geo-store-meta">
+              <span>Bag Bazaar, Kathmandu</span>
+              <span class="geo-store-beat">Kathmandu Central</span>
+            </div>
+          </div>
+          <span class="geo-store-dist-badge near">45m</span>
+        </div>
+        <div class="geo-store-status available">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Check-in Available
+        </div>
+        <div class="geo-store-visit-row">
+          <span>Last visit: 4 Mar 2026</span>
+          <span>Visits this month: 2</span>
+        </div>
+        <button class="geo-checkin-btn enabled" id="btn3" onclick="openCheckinSheet('Sharma &amp; Sons','Bag Bazaar, Kathmandu','store3','btn3')">CHECK IN</button>
+      </div>
+
+      <!-- Stores Out of Range -->
+      <div class="geo-section-header">
+        <span class="geo-section-title">Stores Out of Range</span>
+        <span class="geo-count-badge grey">3</span>
+      </div>
+
+      <!-- Store 4: City Supermart -->
+      <div class="geo-store-card out-range">
+        <div class="geo-store-top">
+          <div>
+            <div class="geo-store-name">City Supermart</div>
+            <div class="geo-store-meta">
+              <span>Kalimati, Kathmandu</span>
+              <span class="geo-store-beat">Kathmandu West</span>
+            </div>
+          </div>
+          <span class="geo-store-dist-badge far">120m</span>
+        </div>
+        <div class="geo-store-status locked">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Move closer to check in
+        </div>
+        <div class="geo-store-visit-row">
+          <span>Last visit: 2 Mar 2026</span>
+          <span>Visits this month: 1</span>
+        </div>
+        <button class="geo-checkin-btn disabled" disabled>Out of Range</button>
+      </div>
+
+      <!-- Store 5: Nepal Traders -->
+      <div class="geo-store-card out-range">
+        <div class="geo-store-top">
+          <div>
+            <div class="geo-store-name">Nepal Traders</div>
+            <div class="geo-store-meta">
+              <span>Mangal Bazaar, Patan</span>
+              <span class="geo-store-beat">Patan</span>
+            </div>
+          </div>
+          <span class="geo-store-dist-badge far">280m</span>
+        </div>
+        <div class="geo-store-status locked">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Move closer to check in
+        </div>
+        <div class="geo-store-visit-row">
+          <span>Last visit: 28 Feb 2026</span>
+          <span>Visits this month: 0</span>
+        </div>
+        <button class="geo-checkin-btn disabled" disabled>Out of Range</button>
+      </div>
+
+      <!-- Store 6: Himalaya Distributors -->
+      <div class="geo-store-card out-range">
+        <div class="geo-store-top">
+          <div>
+            <div class="geo-store-name">Himalaya Distributors</div>
+            <div class="geo-store-meta">
+              <span>Pulchowk, Lalitpur</span>
+              <span class="geo-store-beat">Lalitpur</span>
+            </div>
+          </div>
+          <span class="geo-store-dist-badge far">450m</span>
+        </div>
+        <div class="geo-store-status locked">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Move closer to check in
+        </div>
+        <div class="geo-store-visit-row">
+          <span>Last visit: 1 Mar 2026</span>
+          <span>Visits this month: 1</span>
+        </div>
+        <button class="geo-checkin-btn disabled" disabled>Out of Range</button>
+      </div>
+
+      <!-- Geofence Settings -->
+      <div class="geo-section-header" style="margin-top:24px;">
+        <span class="geo-section-title">Geofence Settings</span>
+      </div>
+
+      <div class="geo-settings-card">
+        <div class="geo-setting-row">
+          <div>
+            <div class="geo-setting-label">Check-in Radius</div>
+            <div class="geo-setting-sub">Distance from store to allow check-in</div>
+          </div>
+        </div>
+        <div class="radius-options" style="padding-bottom:6px;">
+          <div class="radius-opt" onclick="selectRadius(this)">25m</div>
+          <div class="radius-opt active" onclick="selectRadius(this)">50m</div>
+          <div class="radius-opt" onclick="selectRadius(this)">100m</div>
+          <div class="radius-opt" onclick="selectRadius(this)">200m</div>
+        </div>
+
+        <div class="geo-setting-row">
+          <div>
+            <div class="geo-setting-label">GPS Auto-refresh</div>
+            <div class="geo-setting-sub">Continuously update location</div>
+          </div>
+          <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        </div>
+
+        <div class="geo-setting-row">
+          <div>
+            <div class="geo-setting-label">Require Photo for Check-in</div>
+            <div class="geo-setting-sub">Selfie mandatory before confirming</div>
+          </div>
+          <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" data-inject="geofence"></div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- Check-in Bottom Sheet -->
+  <div class="checkin-overlay" id="checkinOverlay" onclick="if(event.target===this)closeCheckinSheet()"></div>
+  <div class="checkin-sheet" id="checkinSheet">
+    <div class="checkin-sheet-handle"></div>
+
+    <!-- Form view -->
+    <div id="checkinForm">
+      <div class="checkin-sheet-header">
+        <div class="checkin-sheet-store" id="sheetStoreName">Store Name</div>
+        <div class="checkin-sheet-addr" id="sheetStoreAddr">Address</div>
+      </div>
+      <div class="checkin-sheet-body">
+        <div class="checkin-info-row">
+          <span class="checkin-info-label">GPS Coordinates</span>
+          <span class="checkin-info-value">27.7172°N, 85.3240°E</span>
+        </div>
+        <div class="checkin-info-row">
+          <span class="checkin-info-label">Timestamp</span>
+          <span class="checkin-info-value" id="sheetTimestamp">--</span>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Purpose of Visit</div>
+          <div class="purpose-chips">
+            <div class="purpose-chip active" onclick="selectPurpose(this)">Routine</div>
+            <div class="purpose-chip" onclick="selectPurpose(this)">Order</div>
+            <div class="purpose-chip" onclick="selectPurpose(this)">Collection</div>
+            <div class="purpose-chip" onclick="selectPurpose(this)">Return</div>
+            <div class="purpose-chip" onclick="selectPurpose(this)">Survey</div>
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Selfie Verification</div>
+        <div class="selfie-zone" id="selfieZone" onclick="captureSelfie()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Tap to capture selfie</span>
+        </div>
+
+        <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Notes</div>
+        <textarea class="checkin-notes" rows="3" placeholder="Add visit notes (optional)..."></textarea>
+
+        <button class="btn btn-success btn-block" onclick="confirmCheckin()" style="margin-top:4px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Confirm Check-in
+        </button>
+      </div>
+    </div>
+
+    <!-- Success view -->
+    <div class="success-anim" id="checkinSuccess">
+      <div class="success-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-text">Check-in Complete!</div>
+      <div class="success-sub" id="successStoreName">Checked in at store</div>
+      <button class="btn btn-primary btn-block" onclick="closeCheckinSheet()" style="margin-top:20px;">Done</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // Track which store is being checked in
+  var _checkinStoreId = null;
+  var _checkinBtnId = null;
+
+  function openCheckinSheet(name, addr, storeId, btnId) {
+    _checkinStoreId = storeId;
+    _checkinBtnId = btnId;
+    document.getElementById('sheetStoreName').textContent = name;
+    document.getElementById('sheetStoreAddr').textContent = addr;
+
+    // Set current timestamp
+    var now = new Date();
+    var timeStr = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    var dateStr = now.toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' });
+    document.getElementById('sheetTimestamp').textContent = dateStr + ' ' + timeStr;
+
+    // Reset form state
+    document.getElementById('checkinForm').style.display = 'block';
+    document.getElementById('checkinSuccess').classList.remove('show');
+    var selfie = document.getElementById('selfieZone');
+    selfie.classList.remove('captured');
+    selfie.querySelector('span').textContent = 'Tap to capture selfie';
+
+    // Reset purpose chips
+    var chips = document.querySelectorAll('.purpose-chip');
+    chips.forEach(function(c) { c.classList.remove('active'); });
+    chips[0].classList.add('active');
+
+    // Reset notes
+    document.querySelector('.checkin-notes').value = '';
+
+    // Open sheet
+    document.getElementById('checkinOverlay').classList.add('open');
+    document.getElementById('checkinSheet').classList.add('open');
+  }
+
+  function closeCheckinSheet() {
+    document.getElementById('checkinSheet').classList.remove('open');
+    document.getElementById('checkinOverlay').classList.remove('open');
+  }
+
+  function selectPurpose(el) {
+    document.querySelectorAll('.purpose-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+  }
+
+  function captureSelfie() {
+    var zone = document.getElementById('selfieZone');
+    zone.classList.add('captured');
+    zone.querySelector('span').textContent = 'Selfie captured!';
+    showToast('Selfie captured successfully', 'success');
+  }
+
+  function confirmCheckin() {
+    // Show success animation
+    document.getElementById('checkinForm').style.display = 'none';
+    var successEl = document.getElementById('checkinSuccess');
+    successEl.classList.add('show');
+    var storeName = document.getElementById('sheetStoreName').textContent;
+    document.getElementById('successStoreName').textContent = 'Checked in at ' + storeName;
+
+    // Update the store card
+    if (_checkinStoreId) {
+      var card = document.getElementById(_checkinStoreId);
+      if (card) {
+        card.classList.remove('in-range');
+        card.classList.add('checked-in');
+        var statusEl = card.querySelector('.geo-store-status');
+        if (statusEl) {
+          statusEl.className = 'geo-store-status available';
+          statusEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Checked In \u2713';
+          statusEl.style.color = 'var(--primary)';
+        }
+      }
+    }
+
+    // Update button
+    if (_checkinBtnId) {
+      var btn = document.getElementById(_checkinBtnId);
+      if (btn) {
+        btn.className = 'geo-checkin-btn done';
+        btn.textContent = 'Checked In \u2713';
+        btn.disabled = true;
+        btn.onclick = null;
+      }
+    }
+
+    showToast('Checked in at ' + storeName, 'success');
+  }
+
+  function selectRadius(el) {
+    document.querySelectorAll('.radius-opt').forEach(function(r) { r.classList.remove('active'); });
+    el.classList.add('active');
+    // Update radius label on map
+    var label = document.querySelector('.geo-radius-label');
+    if (label) label.textContent = el.textContent + ' radius';
+    showToast('Radius set to ' + el.textContent, 'info');
+  }
+</script>
+</body>
+</html>

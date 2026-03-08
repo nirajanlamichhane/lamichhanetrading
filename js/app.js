@@ -618,3 +618,425 @@ function initOfflineBanner() {
   window.addEventListener('online', update);
   window.addEventListener('offline', update);
 }
+
+/* ═══ Push Notification System ═══ */
+
+var _pushIcons = {
+  order: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+};
+
+var _pushDismissTimer = null;
+
+function showPushNotification(opts) {
+  opts = opts || {};
+  var type = opts.type || 'info';
+  var title = opts.title || 'Notification';
+  var desc = opts.desc || '';
+  var duration = opts.duration || 5000;
+  var actions = opts.actions || [];
+  var onClick = opts.onClick || null;
+
+  // Find or create banner inside phone-frame
+  var frame = document.querySelector('.phone-frame');
+  if (!frame) return;
+
+  var banner = frame.querySelector('.push-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'push-banner';
+    frame.appendChild(banner);
+  }
+
+  // Clear any existing dismiss timer
+  if (_pushDismissTimer) {
+    clearTimeout(_pushDismissTimer);
+    _pushDismissTimer = null;
+  }
+
+  // Remove show class for re-trigger animation
+  banner.classList.remove('show');
+
+  // Build time string
+  var now = new Date();
+  var timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+  // Build actions HTML
+  var actionsHtml = '';
+  if (actions.length > 0) {
+    actionsHtml = '<div class="push-actions">';
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i];
+      actionsHtml += '<button class="push-action-btn ' + (a.primary ? 'primary' : 'dismiss') + '" data-action-idx="' + i + '">' + a.label + '</button>';
+    }
+    actionsHtml += '</div>';
+  }
+
+  banner.innerHTML =
+    '<div class="push-icon ' + type + '">' + (_pushIcons[type] || _pushIcons.info) + '</div>' +
+    '<div class="push-body">' +
+      '<div class="push-app">Adera Sales</div>' +
+      '<div class="push-title">' + title + '</div>' +
+      '<div class="push-desc">' + desc + '</div>' +
+      '<div class="push-time">' + timeStr + '</div>' +
+      actionsHtml +
+    '</div>' +
+    '<button class="push-close">&times;</button>';
+
+  // Close button handler
+  banner.querySelector('.push-close').addEventListener('click', function(e) {
+    e.stopPropagation();
+    dismissPush(banner);
+  });
+
+  // Body click handler
+  if (onClick) {
+    banner.querySelector('.push-body').style.cursor = 'pointer';
+    banner.querySelector('.push-body').addEventListener('click', function(e) {
+      if (e.target.classList.contains('push-action-btn')) return;
+      onClick();
+      dismissPush(banner);
+    });
+  }
+
+  // Action button handlers
+  if (actions.length > 0) {
+    var btns = banner.querySelectorAll('.push-action-btn');
+    for (var j = 0; j < btns.length; j++) {
+      (function(btn, idx) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (actions[idx] && actions[idx].onClick) actions[idx].onClick();
+          dismissPush(banner);
+        });
+      })(btns[j], parseInt(btns[j].getAttribute('data-action-idx')));
+    }
+  }
+
+  // Animate in
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      banner.classList.add('show');
+    });
+  });
+
+  // Auto-dismiss
+  _pushDismissTimer = setTimeout(function() {
+    dismissPush(banner);
+  }, duration);
+}
+
+function dismissPush(banner) {
+  if (_pushDismissTimer) {
+    clearTimeout(_pushDismissTimer);
+    _pushDismissTimer = null;
+  }
+  banner.classList.remove('show');
+}
+
+/* ── Push Notification Demo Pool ── */
+var _pushNotificationPool = [
+  { type: 'order', title: 'New Order Received', desc: 'Order #ORD-1847 from Krishna Store \u2014 \u20B912,450' },
+  { type: 'alert', title: 'Collection Due', desc: 'Rs 34,500 pending from Metro Mart \u2014 45 days overdue' },
+  { type: 'success', title: 'Order Delivered', desc: 'Order #ORD-1832 delivered to Sharma General Store' },
+  { type: 'success', title: 'Leave Approved', desc: 'Your casual leave for Mar 12 has been approved' },
+  { type: 'info', title: 'Price Alert', desc: 'Competitor Amul reduced butter price by \u20B95/unit' },
+  { type: 'info', title: 'Target Update', desc: "You've reached 75% of monthly target \u2014 keep going!" },
+  { type: 'alert', title: 'Expense Rejected', desc: 'Travel claim #EXP-234 rejected \u2014 receipt missing' },
+  { type: 'order', title: 'New Beat Assigned', desc: 'Beat Plan B-12 Kathmandu East assigned for tomorrow' },
+  { type: 'success', title: 'Payment Received', desc: '\u20B918,200 collected from Gupta Traders \u2014 receipt #REC-492' },
+  { type: 'info', title: 'Scheme Launched', desc: 'Buy 10 get 1 free on Premium Blend \u2014 valid till Mar 15' }
+];
+
+var _pushIntervalId = null;
+var _pushLastIndex = -1;
+
+function simulatePushNotifications() {
+  if (_pushIntervalId) return; // Already running
+
+  function fireRandom() {
+    var idx;
+    do {
+      idx = Math.floor(Math.random() * _pushNotificationPool.length);
+    } while (idx === _pushLastIndex && _pushNotificationPool.length > 1);
+    _pushLastIndex = idx;
+
+    showPushNotification(_pushNotificationPool[idx]);
+
+    // Schedule next one in 30-45 seconds
+    var delay = 30000 + Math.floor(Math.random() * 15000);
+    _pushIntervalId = setTimeout(function() {
+      fireRandom();
+    }, delay);
+  }
+
+  fireRandom();
+}
+
+function stopPushNotifications() {
+  if (_pushIntervalId) {
+    clearTimeout(_pushIntervalId);
+    _pushIntervalId = null;
+  }
+}
+
+// ═══ Offline Sync Queue ═══
+var SyncQueue = {
+  KEY: 'adera_sync_queue',
+
+  getQueue: function() { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); },
+
+  addToQueue: function(action) {
+    var queue = this.getQueue();
+    action.id = 'sync_' + Date.now();
+    action.status = 'pending';
+    action.timestamp = new Date().toISOString();
+    queue.push(action);
+    localStorage.setItem(this.KEY, JSON.stringify(queue));
+    this.updateBadge();
+    return action.id;
+  },
+
+  getPendingCount: function() { return this.getQueue().filter(function(q) { return q.status === 'pending'; }).length; },
+
+  updateBadge: function() {
+    var count = this.getPendingCount();
+    document.querySelectorAll('.sync-count').forEach(function(el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'inline-flex' : 'none';
+    });
+  },
+
+  simulateSync: function(onProgress) {
+    var self = this;
+    var queue = self.getQueue();
+    var pending = queue.filter(function(q) { return q.status === 'pending'; });
+    if (!pending.length) return Promise.resolve({ synced: 0 });
+
+    var i = 0;
+    function next() {
+      if (i >= pending.length) {
+        localStorage.setItem(self.KEY, JSON.stringify(queue));
+        self.updateBadge();
+        return Promise.resolve({ synced: pending.length });
+      }
+      pending[i].status = 'synced';
+      pending[i].syncedAt = new Date().toISOString();
+      if (onProgress) onProgress(Math.round(((i + 1) / pending.length) * 100), pending[i]);
+      i++;
+      return new Promise(function(r) { setTimeout(r, 600 + Math.random() * 400); }).then(next);
+    }
+    return next();
+  },
+
+  clearSynced: function() {
+    var queue = this.getQueue().filter(function(q) { return q.status === 'pending'; });
+    localStorage.setItem(this.KEY, JSON.stringify(queue));
+  }
+};
+
+function showSyncBar() {
+  var bar = document.querySelector('.sync-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.className = 'sync-bar';
+    bar.innerHTML = '<div class="sync-spinner"></div><span class="sync-text">Syncing...</span><div class="sync-progress"><div class="sync-progress-fill" style="width:0"></div></div>';
+    var frame = document.querySelector('.phone-frame .screen-scroll') || document.querySelector('.phone-frame');
+    if (frame) frame.insertBefore(bar, frame.firstChild.nextSibling);
+  }
+
+  bar.classList.add('show');
+  var fill = bar.querySelector('.sync-progress-fill');
+  var text = bar.querySelector('.sync-text');
+
+  SyncQueue.simulateSync(function(pct, item) {
+    fill.style.width = pct + '%';
+    text.textContent = 'Syncing ' + item.type + '...';
+  }).then(function(result) {
+    if (result.synced > 0) {
+      text.textContent = result.synced + ' items synced!';
+      fill.style.width = '100%';
+      if (typeof showToast === 'function') showToast(result.synced + ' items synced successfully', 'success');
+    } else {
+      text.textContent = 'Nothing to sync';
+    }
+    setTimeout(function() { bar.classList.remove('show'); }, 2000);
+    if (typeof renderSyncQueue === 'function') renderSyncQueue();
+  });
+}
+
+function openSyncSheet() {
+  var overlay = document.getElementById('syncSheetOverlay');
+  var sheet = document.getElementById('syncSheet');
+  if (overlay) overlay.classList.add('open');
+  if (sheet) sheet.classList.add('open');
+  if (typeof renderSyncQueue === 'function') renderSyncQueue();
+}
+
+function closeSyncSheet() {
+  var overlay = document.getElementById('syncSheetOverlay');
+  var sheet = document.getElementById('syncSheet');
+  if (sheet) sheet.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function renderSyncQueue() {
+  var container = document.getElementById('syncQueueList');
+  if (!container) return;
+  var queue = SyncQueue.getQueue();
+  if (!queue.length) {
+    container.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--text-muted);font-size:13px;">No items in sync queue</div>';
+    return;
+  }
+
+  var typeIcons = {
+    order: { bg: 'ic-orange', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>' },
+    collection: { bg: 'ic-green', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>' },
+    checkin: { bg: 'ic-blue', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' },
+    expense: { bg: 'ic-red', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>' }
+  };
+
+  var html = '';
+  for (var i = queue.length - 1; i >= 0; i--) {
+    var item = queue[i];
+    var icon = typeIcons[item.type] || typeIcons.order;
+    var badgeClass = item.status === 'synced' ? 'synced' : 'pending';
+    var badgeLabel = item.status === 'synced' ? 'Synced' : 'Pending';
+    var time = new Date(item.timestamp);
+    var timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    html += '<div class="sync-queue-card">' +
+      '<div class="sq-icon ' + icon.bg + '">' + icon.svg + '</div>' +
+      '<div class="sq-info">' +
+        '<div class="sq-title">' + (item.data && item.data.label ? item.data.label : item.type) + '</div>' +
+        '<div class="sq-meta">' + timeStr + ' · ' + item.type + '</div>' +
+      '</div>' +
+      '<span class="sync-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function seedSyncQueue() {
+  if (SyncQueue.getQueue().length > 0) return;
+  var now = Date.now();
+  var items = [
+    { type: 'order', data: { label: 'Order #ORD-1851 \u2014 Krishna Store' } },
+    { type: 'collection', data: { label: 'Collection \u20B98,500 \u2014 Metro Mart' } },
+    { type: 'checkin', data: { label: 'Check-in at Kathmandu Zone' } },
+    { type: 'expense', data: { label: 'Expense Claim #EXP-245' } }
+  ];
+  for (var i = 0; i < items.length; i++) {
+    var action = items[i];
+    action.id = 'sync_' + (now + i);
+    action.status = 'pending';
+    action.timestamp = new Date(now - (items.length - i) * 300000).toISOString();
+    var queue = SyncQueue.getQueue();
+    queue.push(action);
+    localStorage.setItem(SyncQueue.KEY, JSON.stringify(queue));
+  }
+  SyncQueue.updateBadge();
+}
+
+// ═══ Contextual Tooltip System ═══
+var CtxTooltip = {
+  activeTooltip: null,
+  _timer: null,
+  _outsideHandler: null,
+
+  show: function(el, opts) {
+    // opts: {title, body, value, trend: {dir: 'up'|'down', text}, arrow: 'top'|'bottom'}
+    this.hide(); // close any existing
+
+    var tip = document.createElement('div');
+    tip.className = 'ctx-tooltip';
+
+    var html = '<button class="tt-close" onclick="CtxTooltip.hide()">\u00D7</button>';
+    if (opts.title) html += '<div class="tt-title">' + opts.title + '</div>';
+    if (opts.value) html += '<div class="tt-value">' + opts.value + '</div>';
+    if (opts.body) html += '<div class="tt-body">' + opts.body + '</div>';
+    if (opts.trend) html += '<div class="tt-trend ' + opts.trend.dir + '"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="' + (opts.trend.dir === 'up' ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7') + '"/></svg>' + opts.trend.text + '</div>';
+
+    var arrowPos = opts.arrow || 'top';
+    html += '<div class="tt-arrow ' + arrowPos + '"></div>';
+    tip.innerHTML = html;
+
+    // Position relative to phone frame
+    var frame = el.closest('.phone-frame') || document.querySelector('.phone-frame');
+    if (frame) frame.appendChild(tip);
+    else document.body.appendChild(tip);
+
+    // Calculate position
+    var rect = el.getBoundingClientRect();
+    var frameRect = (frame || document.body).getBoundingClientRect();
+    var tipRect = tip.getBoundingClientRect();
+
+    var left = rect.left - frameRect.left + (rect.width / 2) - (tipRect.width / 2);
+    left = Math.max(8, Math.min(left, frameRect.width - tipRect.width - 8));
+
+    if (arrowPos === 'top') {
+      tip.style.top = (rect.bottom - frameRect.top + 10) + 'px';
+    } else {
+      tip.style.top = (rect.top - frameRect.top - tipRect.height - 10) + 'px';
+    }
+    tip.style.left = left + 'px';
+
+    var self = this;
+    requestAnimationFrame(function() { tip.classList.add('show'); });
+    self.activeTooltip = tip;
+
+    // Auto-close after 5s
+    self._timer = setTimeout(function() { self.hide(); }, 5000);
+
+    // Close on outside tap
+    self._outsideHandler = function(e) {
+      if (!tip.contains(e.target) && e.target !== el && !el.contains(e.target)) self.hide();
+    };
+    setTimeout(function() { document.addEventListener('click', self._outsideHandler); }, 100);
+  },
+
+  hide: function() {
+    if (this.activeTooltip) {
+      this.activeTooltip.classList.remove('show');
+      var tip = this.activeTooltip;
+      setTimeout(function() { tip.remove(); }, 250);
+      this.activeTooltip = null;
+    }
+    if (this._timer) clearTimeout(this._timer);
+    if (this._outsideHandler) document.removeEventListener('click', this._outsideHandler);
+  }
+};
+
+// ═══ Long-Press Tooltip Binding ═══
+function bindTooltip(el, opts) {
+  var longPressTimer = null;
+  var moved = false;
+
+  el.setAttribute('data-tooltip', 'true');
+
+  el.addEventListener('touchstart', function(e) {
+    moved = false;
+    longPressTimer = setTimeout(function() {
+      if (!moved) {
+        e.preventDefault && e.preventDefault();
+        CtxTooltip.show(el, opts);
+      }
+    }, 500);
+  }, { passive: false });
+
+  el.addEventListener('touchmove', function() {
+    moved = true;
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  });
+
+  el.addEventListener('touchend', function() {
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  });
+
+  // Click fallback for desktop
+  el.addEventListener('click', function(e) {
+    e.stopPropagation();
+    CtxTooltip.show(el, opts);
+  });
+}

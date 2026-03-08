@@ -632,6 +632,18 @@
       </button>
     </div>
 
+    <!-- Push Permission Banner -->
+    <div style="background:linear-gradient(135deg,#3066be,#4a90e2);border-radius:14px;padding:14px 16px;margin:0 20px 14px;color:#fff;display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:20px;height:20px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;">Push Notifications</div>
+        <div style="font-size:11px;opacity:.8;">Get real-time alerts on your device</div>
+      </div>
+      <button id="pushToggleBtn" onclick="requestPushPermission()" style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.25);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">Enable</button>
+    </div>
+
     <div class="ns-group">
       <div class="ns-item">
         <div class="ns-item-left">
@@ -828,6 +840,56 @@
     document.querySelector('.n-stat.blue .n-stat-val').textContent = '0';
     showToast('All notifications marked as read', 'success');
   }
+
+  // ── Push Notification Permission ──
+  function requestPushPermission() {
+    if (!('Notification' in window)) {
+      showToast('Push notifications not supported in this browser', 'warning');
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      showToast('Notifications already enabled!', 'success');
+      sendTestNotification();
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      showToast('Notifications blocked. Enable in browser settings.', 'error');
+      return;
+    }
+    Notification.requestPermission().then(function(perm) {
+      if (perm === 'granted') {
+        showToast('Notifications enabled!', 'success');
+        AppState.set('push_enabled', true);
+        sendTestNotification();
+        updatePushUI();
+      } else {
+        showToast('Notification permission denied', 'warning');
+      }
+    });
+  }
+
+  function sendTestNotification() {
+    if (Notification.permission === 'granted') {
+      new Notification('Adera Sales', {
+        body: 'Push notifications are now active!',
+        icon: '../css/icon-192.png',
+        tag: 'adera-test'
+      });
+    }
+  }
+
+  function updatePushUI() {
+    var btn = document.getElementById('pushToggleBtn');
+    if (!btn) return;
+    if ('Notification' in window && Notification.permission === 'granted') {
+      btn.textContent = 'Enabled';
+      btn.style.background = '#e8f5ed';
+      btn.style.color = '#28a745';
+    }
+  }
+
+  // Check push state on load
+  updatePushUI();
 </script>
 
 </body>

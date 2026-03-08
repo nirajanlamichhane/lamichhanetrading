@@ -145,6 +145,31 @@
     .swipe-fade-out { transition:opacity .35s ease, max-height .35s ease; opacity:0; max-height:0 !important; overflow:hidden; margin-bottom:0 !important; padding:0 !important; }
     .note-card.pinned { background:#fffde7; }
     .note-card.pinned .nc-title::before { content:'📌 '; }
+
+    /* ── Voice Note ── */
+    .voice-section { padding:16px 0; border-top:1px solid #eef2f7; margin-top:12px; }
+    .voice-label { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px; }
+    .voice-record-btn { width:60px; height:60px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; margin:0 auto; transition:all .2s ease; }
+    .voice-record-btn.idle { background:#e05252; color:#fff; }
+    .voice-record-btn.recording { background:#e05252; color:#fff; animation:pulse-record 1s ease-in-out infinite; box-shadow:0 0 0 0 rgba(224,82,82,.4); }
+    @keyframes pulse-record { 0%,100% { box-shadow:0 0 0 0 rgba(224,82,82,.4); } 50% { box-shadow:0 0 0 12px rgba(224,82,82,0); } }
+    .voice-timer { font-size:18px; font-weight:700; color:#1a2540; text-align:center; margin:8px 0; font-variant-numeric:tabular-nums; }
+    .voice-waveform { display:flex; align-items:center; justify-content:center; gap:2px; height:40px; padding:8px 0; }
+    .voice-waveform .wave-bar { width:3px; border-radius:2px; background:var(--primary); transition:height .15s ease; }
+    .voice-waveform.recording .wave-bar { animation:wave-dance .5s ease-in-out infinite alternate; }
+    .voice-waveform .wave-bar:nth-child(odd) { animation-delay:0.1s; }
+    .voice-waveform .wave-bar:nth-child(3n) { animation-delay:0.2s; }
+    .voice-waveform .wave-bar:nth-child(4n) { animation-delay:0.3s; }
+    @keyframes wave-dance { 0% { height:8px; } 100% { height:32px; } }
+    .voice-status { font-size:12px; text-align:center; color:#64748b; margin-top:4px; }
+    .voice-status.recording { color:#e05252; font-weight:600; }
+    .voice-player { display:flex; align-items:center; gap:10px; background:#f8fafc; padding:10px 14px; border-radius:12px; margin-top:10px; }
+    .voice-play-btn { width:36px; height:36px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .voice-play-btn.play { background:#28a745; color:#fff; }
+    .voice-play-btn.delete { background:rgba(224,82,82,.1); color:#e05252; }
+    .voice-progress { flex:1; height:3px; background:rgba(48,102,190,.15); border-radius:2px; position:relative; overflow:hidden; }
+    .voice-progress-fill { height:100%; background:var(--primary); border-radius:2px; width:0; transition:width .1s linear; }
+    .voice-duration { font-size:12px; font-weight:600; color:#64748b; font-variant-numeric:tabular-nums; }
   </style>
 </head>
 <body>
@@ -499,6 +524,47 @@
       <div class="bs-label">Note</div>
       <textarea class="bs-textarea" id="noteBody" placeholder="Write your field note here..."></textarea>
 
+      <!-- Voice Note Section -->
+      <div class="voice-section" id="voiceSection">
+        <div class="voice-label">Voice Note</div>
+
+        <!-- Idle State -->
+        <div id="voiceIdle">
+          <button class="voice-record-btn idle" onclick="startRecording()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="voice-status">Tap to Record</div>
+        </div>
+
+        <!-- Recording State -->
+        <div id="voiceRecording" style="display:none;">
+          <button class="voice-record-btn recording" onclick="stopRecording()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="voice-timer" id="voiceTimer">0:00</div>
+          <div class="voice-waveform recording" id="voiceWaveform"></div>
+          <div class="voice-status recording">Recording... &middot; Tap to Stop</div>
+        </div>
+
+        <!-- Recorded State -->
+        <div id="voiceRecorded" style="display:none;">
+          <div class="voice-waveform" id="voiceWaveformStatic"></div>
+          <div class="voice-player">
+            <button class="voice-play-btn play" onclick="playRecording()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <div class="voice-progress">
+              <div class="voice-progress-fill" id="voiceProgressFill"></div>
+            </div>
+            <div class="voice-duration" id="voiceDuration">0:00</div>
+            <button class="voice-play-btn delete" onclick="deleteRecording()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="voice-status" style="color:#28a745; font-weight:600; margin-top:8px;">Voice note attached</div>
+        </div>
+      </div>
+
       <div class="bs-label">Priority</div>
       <div class="bs-priority-row">
         <button class="bs-pri-btn sel-high" onclick="selectPriority(this,'high')">
@@ -568,6 +634,101 @@ function selectPriority(btn, level) {
 }
 function openNoteDetail() {
   // Could open a detail view — placeholder for now
+}
+
+// ── Voice Note Logic ──
+var voiceTimerInterval = null;
+var voiceWaveInterval = null;
+var voiceSeconds = 0;
+var voiceRecordedDuration = 0;
+var voicePlayInterval = null;
+
+function initWaveformBars(containerId, count) {
+  var container = document.getElementById(containerId);
+  container.innerHTML = '';
+  for (var i = 0; i < count; i++) {
+    var bar = document.createElement('div');
+    bar.className = 'wave-bar';
+    bar.style.height = '8px';
+    container.appendChild(bar);
+  }
+}
+
+function startRecording() {
+  voiceSeconds = 0;
+  document.getElementById('voiceIdle').style.display = 'none';
+  document.getElementById('voiceRecording').style.display = 'block';
+  document.getElementById('voiceRecorded').style.display = 'none';
+  document.getElementById('voiceTimer').textContent = '0:00';
+
+  initWaveformBars('voiceWaveform', 20);
+  document.getElementById('voiceWaveform').classList.add('recording');
+
+  voiceTimerInterval = setInterval(function() {
+    voiceSeconds++;
+    var m = Math.floor(voiceSeconds / 60);
+    var s = voiceSeconds % 60;
+    document.getElementById('voiceTimer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+
+  voiceWaveInterval = setInterval(function() {
+    var bars = document.querySelectorAll('#voiceWaveform .wave-bar');
+    bars.forEach(function(bar) {
+      bar.style.height = (8 + Math.random() * 24) + 'px';
+    });
+  }, 200);
+}
+
+function stopRecording() {
+  clearInterval(voiceTimerInterval);
+  clearInterval(voiceWaveInterval);
+  voiceRecordedDuration = voiceSeconds;
+
+  document.getElementById('voiceRecording').style.display = 'none';
+  document.getElementById('voiceRecorded').style.display = 'block';
+
+  // Create static waveform
+  initWaveformBars('voiceWaveformStatic', 20);
+  var bars = document.querySelectorAll('#voiceWaveformStatic .wave-bar');
+  bars.forEach(function(bar) {
+    bar.style.height = (8 + Math.random() * 24) + 'px';
+  });
+
+  var m = Math.floor(voiceRecordedDuration / 60);
+  var s = voiceRecordedDuration % 60;
+  document.getElementById('voiceDuration').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function playRecording() {
+  if (voicePlayInterval) return;
+  var fill = document.getElementById('voiceProgressFill');
+  var elapsed = 0;
+  var step = 50; // ms per tick
+  var totalMs = voiceRecordedDuration * 1000;
+  if (totalMs < 500) totalMs = 1000;
+  fill.style.width = '0%';
+
+  voicePlayInterval = setInterval(function() {
+    elapsed += step;
+    var pct = Math.min((elapsed / totalMs) * 100, 100);
+    fill.style.width = pct + '%';
+    if (elapsed >= totalMs) {
+      clearInterval(voicePlayInterval);
+      voicePlayInterval = null;
+    }
+  }, step);
+}
+
+function deleteRecording() {
+  clearInterval(voiceTimerInterval);
+  clearInterval(voiceWaveInterval);
+  if (voicePlayInterval) { clearInterval(voicePlayInterval); voicePlayInterval = null; }
+  voiceSeconds = 0;
+  voiceRecordedDuration = 0;
+  document.getElementById('voiceIdle').style.display = 'block';
+  document.getElementById('voiceRecording').style.display = 'none';
+  document.getElementById('voiceRecorded').style.display = 'none';
+  document.getElementById('voiceProgressFill').style.width = '0%';
 }
 
 // ── Search & Filter Chip Logic ──

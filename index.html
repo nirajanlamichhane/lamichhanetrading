@@ -379,10 +379,13 @@
         Adera Sales
         <div class="top-bar-subtitle">Good morning, Elon 👋</div>
       </div>
-      <button class="icon-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-      </button>
-      <div class="badge-btn">
+      <div class="sync-icon-btn" onclick="showSyncBar()" title="Sync offline data">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+        <span class="sync-count" style="display:none;">0</span>
+      </div>
+      <div class="badge-btn" onclick="openSyncSheet()" title="View sync queue">
         <button class="icon-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
         </button>
@@ -428,15 +431,15 @@
       </div>
 
       <div class="stats-row" style="margin-bottom:10px;">
-        <div class="stat-card">
+        <div class="stat-card" id="stat-target">
           <div class="stat-value" style="font-size:18px;">7,852</div>
           <div class="stat-label">Target (KG)</div>
         </div>
-        <div class="stat-card warning">
+        <div class="stat-card warning" id="stat-achievement">
           <div class="stat-value" style="font-size:18px;">50%</div>
           <div class="stat-label">Achievement</div>
         </div>
-        <div class="stat-card success">
+        <div class="stat-card success" id="stat-active-cover">
           <div class="stat-value" style="font-size:18px;">67%</div>
           <div class="stat-label">Active Cover</div>
         </div>
@@ -474,15 +477,15 @@
         <span class="section-action">View All →</span>
       </div>
       <div class="stats-row">
-        <div class="stat-card">
+        <div class="stat-card" id="stat-visits">
           <div class="stat-value">7</div>
           <div class="stat-label">Visits</div>
         </div>
-        <div class="stat-card success">
+        <div class="stat-card success" id="stat-orders">
           <div class="stat-value">₹24k</div>
           <div class="stat-label">Orders</div>
         </div>
-        <div class="stat-card warning">
+        <div class="stat-card warning" id="stat-pending">
           <div class="stat-value">3</div>
           <div class="stat-label">Pending</div>
         </div>
@@ -631,6 +634,46 @@
     </div>
 
   </div><!-- /screen-scroll -->
+
+  <!-- Push Notification Banner (injected by JS, placeholder for positioning) -->
+  <div class="push-banner" id="pushBanner"></div>
+
+  <!-- Push Permission Bottom Sheet -->
+  <div class="push-perm-overlay" id="pushPermOverlay" onclick="dismissPushPermission()"></div>
+  <div class="push-perm-sheet" id="pushPermSheet">
+    <div class="perm-handle"></div>
+    <div class="perm-icon">&#128276;</div>
+    <div class="perm-title">Enable Notifications?</div>
+    <div class="perm-desc">Get real-time updates on orders, collections, and approvals</div>
+    <button class="perm-allow-btn" onclick="allowPushPermission()">Allow</button>
+    <button class="perm-dismiss" onclick="dismissPushPermission()">Not Now</button>
+  </div>
+
+  <!-- Sync Queue Overlay -->
+  <div class="sync-sheet-overlay" id="syncSheetOverlay" onclick="closeSyncSheet()"></div>
+
+  <!-- Sync Queue Bottom Sheet -->
+  <div class="sync-sheet" id="syncSheet">
+    <div class="sync-sheet-handle"></div>
+    <div class="sync-sheet-header">
+      <div class="sync-sheet-title">Sync Queue</div>
+      <button class="sync-sheet-close" onclick="closeSyncSheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sync-sheet-body">
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="closeSyncSheet(); setTimeout(showSyncBar, 300);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Sync Now
+        </button>
+        <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="SyncQueue.clearSynced(); renderSyncQueue(); showToast('Cleared synced items', 'info');">
+          Clear Synced
+        </button>
+      </div>
+      <div id="syncQueueList"></div>
+    </div>
+  </div>
 
   <!-- Onboarding Help Button -->
   <button class="onboard-help-btn" id="onboardHelpBtn" onclick="startOnboarding()" title="Show walkthrough">?</button>
@@ -899,6 +942,128 @@
       } catch(e) {}
     }
   })();
+</script>
+
+<script>
+// ── Push Notification Permission & Simulation ──
+(function() {
+  var permStatus = localStorage.getItem('adera_push_permission');
+
+  function allowPushPermission() {
+    localStorage.setItem('adera_push_permission', 'granted');
+    closePushPermSheet();
+    showToast('Notifications enabled', 'success');
+    setTimeout(function() { simulatePushNotifications(); }, 2000);
+  }
+
+  function dismissPushPermission() {
+    localStorage.setItem('adera_push_permission', 'denied');
+    closePushPermSheet();
+  }
+
+  function closePushPermSheet() {
+    var overlay = document.getElementById('pushPermOverlay');
+    var sheet = document.getElementById('pushPermSheet');
+    if (sheet) sheet.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+  }
+
+  function showPushPermSheet() {
+    var overlay = document.getElementById('pushPermOverlay');
+    var sheet = document.getElementById('pushPermSheet');
+    if (overlay) overlay.classList.add('open');
+    if (sheet) sheet.classList.add('open');
+  }
+
+  // Expose to onclick handlers
+  window.allowPushPermission = allowPushPermission;
+  window.dismissPushPermission = dismissPushPermission;
+
+  if (!permStatus) {
+    // First visit: show permission prompt after 3s
+    setTimeout(function() {
+      showPushPermSheet();
+    }, 3000);
+  } else if (permStatus === 'granted') {
+    // Already granted: start push sim with 5s delay
+    setTimeout(function() {
+      simulatePushNotifications();
+    }, 5000);
+  }
+  // If 'denied', do nothing
+})();
+</script>
+
+<script>
+// ── Offline Sync Queue Init ──
+(function() {
+  seedSyncQueue();
+  SyncQueue.updateBadge();
+  renderSyncQueue();
+})();
+</script>
+
+<!-- Contextual Tooltips for Stats -->
+<script>
+(function() {
+  function init() {
+    // Distributor KPI stat cards
+    var target = document.getElementById('stat-target');
+    if (target) bindTooltip(target, {
+      title: 'Monthly Target',
+      value: '7,852 KG',
+      body: 'Volume target for March 2026',
+      trend: { dir: 'up', text: '+12% vs last month' }
+    });
+
+    var achievement = document.getElementById('stat-achievement');
+    if (achievement) bindTooltip(achievement, {
+      title: 'MTD Achievement',
+      value: '50%',
+      body: '3,926 KG achieved out of 7,852 KG target',
+      trend: { dir: 'down', text: '-5% vs last month' }
+    });
+
+    var activeCover = document.getElementById('stat-active-cover');
+    if (activeCover) bindTooltip(activeCover, {
+      title: 'Active Coverage',
+      value: '67%',
+      body: '1,003 of 1,497 outlets visited this month',
+      trend: { dir: 'up', text: '+3% vs last month' }
+    });
+
+    // Today's Summary stat cards
+    var visits = document.getElementById('stat-visits');
+    if (visits) bindTooltip(visits, {
+      title: "Today's Visits",
+      value: '7',
+      body: '7 of 12 planned visits completed today',
+      trend: { dir: 'up', text: '+2 vs yesterday' }
+    });
+
+    var orders = document.getElementById('stat-orders');
+    if (orders) bindTooltip(orders, {
+      title: "Today's Orders",
+      value: '\u20B924,000',
+      body: '5 orders placed across 7 visits. Avg order \u20B94,800',
+      trend: { dir: 'up', text: '+18% vs daily avg' }
+    });
+
+    var pending = document.getElementById('stat-pending');
+    if (pending) bindTooltip(pending, {
+      title: 'Pending Actions',
+      value: '3',
+      body: '2 delivery confirmations and 1 payment follow-up pending',
+      trend: { dir: 'down', text: '+1 vs yesterday' }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>
 </body>
 </html>

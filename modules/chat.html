@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Messages — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Chat Search ── */
+    .chat-search-area { background:var(--primary); padding:0 14px 16px; }
+    .chat-search-wrap {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.15); border-radius:12px; padding:0 12px; height:42px;
+    }
+    .chat-search-wrap svg { width:18px; height:18px; color:rgba(255,255,255,.7); flex-shrink:0; }
+    .chat-search-wrap input { border:none; outline:none; width:100%; font-size:13px; background:transparent; color:#fff; font-family:var(--font); }
+    .chat-search-wrap input::placeholder { color:rgba(255,255,255,.6); }
+
+    /* ── Conversation List ── */
+    .conv-list { padding:8px 0 0; }
+    .conv-item {
+      display:flex; align-items:center; gap:12px; padding:12px 16px;
+      cursor:pointer; transition:background .15s; position:relative;
+    }
+    .conv-item:active { background:rgba(48,102,190,.06); }
+    .conv-item + .conv-item { border-top:1px solid #f0f4fb; }
+    .conv-avatar {
+      width:48px; height:48px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; font-weight:700; color:#fff; position:relative;
+    }
+    .conv-avatar.av-blue { background:linear-gradient(135deg,#3066be,#558ce6); }
+    .conv-avatar.av-green { background:linear-gradient(135deg,#28a745,#4ade80); }
+    .conv-avatar.av-purple { background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+    .conv-avatar.av-orange { background:linear-gradient(135deg,#e07b39,#f59e0b); }
+    .conv-avatar.av-teal { background:linear-gradient(135deg,#0d9488,#2dd4bf); }
+    .conv-avatar.av-red { background:linear-gradient(135deg,#e05252,#f87171); }
+    .conv-avatar.av-indigo { background:linear-gradient(135deg,#4f46e5,#818cf8); }
+    .conv-online-dot {
+      position:absolute; bottom:1px; right:1px;
+      width:12px; height:12px; border-radius:50%;
+      background:#28a745; border:2px solid #fff;
+    }
+    .conv-body { flex:1; min-width:0; }
+    .conv-name { font-size:14px; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .conv-name.unread { font-weight:800; }
+    .conv-role { font-size:10px; color:var(--text-muted); font-weight:500; }
+    .conv-preview {
+      font-size:12px; color:var(--text-secondary); margin-top:2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .conv-preview.unread { color:var(--text-primary); font-weight:600; }
+    .conv-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+    .conv-time { font-size:11px; color:var(--text-muted); white-space:nowrap; }
+    .conv-time.unread { color:var(--primary); font-weight:700; }
+    .conv-badge {
+      min-width:20px; height:20px; border-radius:10px; padding:0 6px;
+      background:var(--primary); color:#fff; font-size:10px; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .conv-group-icon { font-size:20px; }
+
+    /* ── Section label ── */
+    .conv-section {
+      padding:10px 16px 4px; font-size:11px; font-weight:700;
+      color:var(--text-muted); text-transform:uppercase; letter-spacing:.6px;
+    }
+
+    /* ── Chat Detail View ── */
+    .chat-detail { display:none; flex-direction:column; height:100%; }
+    .chat-detail.active { display:flex; }
+    .chat-list-view.hidden { display:none; }
+
+    .chat-header {
+      background:linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      padding:10px 16px 12px; display:flex; align-items:center; gap:10px;
+    }
+    .chat-header-back {
+      width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.15);
+      border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff;
+    }
+    .chat-header-info { flex:1; min-width:0; }
+    .chat-header-name { color:#fff; font-size:15px; font-weight:700; }
+    .chat-header-status { color:rgba(255,255,255,.7); font-size:11px; }
+    .chat-header-status .online-text { color:#4ade80; }
+    .chat-header-actions { display:flex; gap:6px; }
+    .chat-header-btn {
+      width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.15);
+      border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff;
+    }
+
+    /* ── Messages Area ── */
+    .messages-area {
+      flex:1; overflow-y:auto; padding:12px 14px 8px;
+      background:linear-gradient(180deg, #f0f4fb 0%, #e8eef8 100%);
+      scrollbar-width:none;
+    }
+    .messages-area::-webkit-scrollbar { display:none; }
+
+    .msg-time-divider {
+      text-align:center; margin:12px 0;
+      font-size:10px; font-weight:600; color:var(--text-muted);
+    }
+    .msg-time-divider span {
+      background:rgba(255,255,255,.8); padding:3px 12px; border-radius:10px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .msg-bubble-row { display:flex; margin-bottom:4px; }
+    .msg-bubble-row.sent { justify-content:flex-end; }
+    .msg-bubble-row.received { justify-content:flex-start; }
+
+    .msg-bubble {
+      max-width:75%; padding:9px 14px; font-size:13px; line-height:1.5;
+      position:relative; word-wrap:break-word;
+    }
+    .msg-bubble.sent {
+      background:linear-gradient(135deg, var(--primary), var(--primary-light));
+      color:#fff; border-radius:16px 16px 4px 16px;
+    }
+    .msg-bubble.received {
+      background:#fff; color:var(--text-primary);
+      border-radius:16px 16px 16px 4px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .msg-meta {
+      display:flex; align-items:center; justify-content:flex-end; gap:4px;
+      margin-top:3px;
+    }
+    .msg-timestamp { font-size:10px; opacity:.65; }
+    .msg-ticks { display:flex; align-items:center; }
+    .msg-ticks svg { width:14px; height:14px; }
+    .msg-ticks.read svg { color:#fff; }
+    .msg-ticks.delivered svg { opacity:.5; }
+
+    .msg-bubble.received .msg-meta { justify-content:flex-end; }
+    .msg-bubble.received .msg-timestamp { color:var(--text-muted); opacity:1; }
+
+    /* Image message */
+    .msg-image-placeholder {
+      width:180px; height:120px; border-radius:10px;
+      background:#e2e8f0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:6px;
+      margin-bottom:4px;
+    }
+    .msg-image-placeholder svg { width:28px; height:28px; color:#94a3b8; }
+    .msg-image-placeholder span { font-size:10px; color:#94a3b8; font-weight:600; }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display:none; align-items:center; gap:6px; padding:6px 0 8px;
+    }
+    .typing-indicator.show { display:flex; }
+    .typing-text { font-size:12px; color:var(--text-muted); font-style:italic; }
+    .typing-dots { display:flex; gap:3px; }
+    .typing-dots span {
+      width:6px; height:6px; border-radius:50%; background:var(--text-muted);
+      animation:typingBounce 1.4s infinite ease-in-out;
+    }
+    .typing-dots span:nth-child(2) { animation-delay:.2s; }
+    .typing-dots span:nth-child(3) { animation-delay:.4s; }
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform:translateY(0); opacity:.4; }
+      40% { transform:translateY(-5px); opacity:1; }
+    }
+
+    /* ── Quick Reply Chips ── */
+    .quick-replies {
+      display:flex; gap:6px; padding:8px 14px 4px;
+      overflow-x:auto; background:#fff; border-top:1px solid #f0f4fb;
+    }
+    .quick-replies::-webkit-scrollbar { display:none; }
+    .qr-chip {
+      padding:6px 14px; border-radius:18px; font-size:12px; font-weight:600;
+      white-space:nowrap; cursor:pointer; border:1.5px solid var(--primary);
+      background:rgba(48,102,190,.06); color:var(--primary); transition:all .2s;
+    }
+    .qr-chip:active { background:var(--primary); color:#fff; }
+
+    /* ── Message Input Bar ── */
+    .msg-input-bar {
+      display:flex; align-items:flex-end; gap:8px; padding:8px 12px 20px;
+      background:#fff; border-top:1px solid #f0f4fb;
+    }
+    .msg-attach-btn {
+      width:36px; height:36px; border-radius:50%; background:var(--bg);
+      border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      color:var(--text-secondary); flex-shrink:0;
+    }
+    .msg-input-wrap {
+      flex:1; display:flex; align-items:center;
+      background:var(--bg); border-radius:20px; padding:0 14px; min-height:38px;
+    }
+    .msg-input-wrap input {
+      border:none; outline:none; width:100%; font-size:13px;
+      background:transparent; color:var(--text-primary); font-family:var(--font);
+    }
+    .msg-input-wrap input::placeholder { color:var(--text-muted); }
+    .msg-send-btn {
+      width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg, var(--primary-dark), var(--primary));
+      border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      color:#fff; flex-shrink:0; transition:all .2s;
+    }
+    .msg-send-btn.mic { background:var(--bg); color:var(--text-secondary); }
+    .msg-send-btn:active { transform:scale(.9); }
+
+    /* Recording state */
+    .recording-state {
+      display:none; align-items:center; gap:8px;
+      flex:1; padding:0 12px;
+    }
+    .recording-state.show { display:flex; }
+    .recording-state .rec-dot {
+      width:10px; height:10px; border-radius:50%; background:#e05252;
+      animation:recPulse 1s infinite;
+    }
+    @keyframes recPulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+    .recording-state .rec-text { font-size:13px; color:#e05252; font-weight:600; }
+    .recording-state .rec-timer { font-size:13px; color:var(--text-muted); margin-left:auto; }
+  </style>
+</head>
+<body>
+<p class="page-title">Adera Sales · Messages</p>
+<div class="phone-frame">
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer" data-inject="chat"></div>
+
+  <div class="screen-scroll" id="screenScroll">
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
+      </div>
+    </div>
+
+    <!-- ═══════════ CHAT LIST VIEW ═══════════ -->
+    <div id="chatListView" class="chat-list-view">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <button class="icon-btn" onclick="goBack()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="top-bar-title">Messages</span>
+        <button class="icon-btn" onclick="showToast('New message composer', 'info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="chat-search-area">
+        <div class="chat-search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="chatSearchInput" placeholder="Search conversations..." oninput="filterConversations()" />
+        </div>
+      </div>
+
+      <!-- CONVERSATION LIST -->
+      <div id="convList">
+        <!-- Unread Section -->
+        <div class="conv-section" data-section="unread">Unread Messages</div>
+
+        <!-- 1. Rajesh Kumar -->
+        <div class="conv-item" data-index="0" onclick="openChat(0)">
+          <div class="conv-avatar av-blue">
+            RK
+            <div class="conv-online-dot"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-name unread">Rajesh Kumar <span class="conv-role">(Manager)</span></div>
+            <div class="conv-preview unread">Please submit today's EOD report before 6 PM</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time unread">10 min ago</span>
+            <span class="conv-badge">2</span>
+          </div>
+        </div>
+
+        <!-- 2. Sales Team Group -->
+        <div class="conv-item" data-index="1" onclick="openChat(1)">
+          <div class="conv-avatar av-green">
+            <span class="conv-group-icon">👥</span>
+          </div>
+          <div class="conv-body">
+            <div class="conv-name unread">Sales Team Group <span class="conv-role">(5 members)</span></div>
+            <div class="conv-preview unread">Target update: Zone achieved 82% MTD</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time unread">25 min ago</span>
+            <span class="conv-badge">5</span>
+          </div>
+        </div>
+
+        <!-- 3. Support Team -->
+        <div class="conv-item" data-index="2" onclick="openChat(2)">
+          <div class="conv-avatar av-red">
+            <span class="conv-group-icon">🛠</span>
+          </div>
+          <div class="conv-body">
+            <div class="conv-name unread">Support Team</div>
+            <div class="conv-preview unread">Your ticket #TK-234 has been resolved</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time unread">1 hr ago</span>
+            <span class="conv-badge">1</span>
+          </div>
+        </div>
+
+        <!-- Read Section -->
+        <div class="conv-section" data-section="read">Earlier</div>
+
+        <!-- 4. Priya Sharma -->
+        <div class="conv-item" data-index="3" onclick="openChat(3)">
+          <div class="conv-avatar av-purple">
+            PS
+            <div class="conv-online-dot"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-name">Priya Sharma <span class="conv-role">(ASM)</span></div>
+            <div class="conv-preview">Great work on the Krishna Store order!</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time">2 hrs ago</span>
+          </div>
+        </div>
+
+        <!-- 5. Amit Patel -->
+        <div class="conv-item" data-index="4" onclick="openChat(4)">
+          <div class="conv-avatar av-orange">
+            AP
+          </div>
+          <div class="conv-body">
+            <div class="conv-name">Amit Patel <span class="conv-role">(Delivery)</span></div>
+            <div class="conv-preview">Delivery completed for ORD-1832</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time">Yesterday</span>
+          </div>
+        </div>
+
+        <!-- 6. HR Department -->
+        <div class="conv-item" data-index="5" onclick="openChat(5)">
+          <div class="conv-avatar av-teal">
+            HR
+          </div>
+          <div class="conv-body">
+            <div class="conv-name">HR Department</div>
+            <div class="conv-preview">Holiday notice: Holi on Mar 14</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time">Yesterday</span>
+          </div>
+        </div>
+
+        <!-- 7. System Alerts -->
+        <div class="conv-item" data-index="6" onclick="openChat(6)">
+          <div class="conv-avatar av-indigo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </div>
+          <div class="conv-body">
+            <div class="conv-name">System Alerts</div>
+            <div class="conv-preview">Weekly report generated successfully</div>
+          </div>
+          <div class="conv-right">
+            <span class="conv-time">2 days ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM NAV -->
+      <div class="bottom-nav" data-inject="chat"></div>
+    </div>
+
+    <!-- ═══════════ CHAT DETAIL VIEW ═══════════ -->
+    <div id="chatDetailView" class="chat-detail">
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <button class="chat-header-back" onclick="closeChat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="chat-header-info">
+          <div class="chat-header-name" id="chatHeaderName">Rajesh Kumar</div>
+          <div class="chat-header-status" id="chatHeaderStatus"><span class="online-text">Online</span></div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="chat-header-btn" onclick="showToast('Calling...', 'info')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          </button>
+          <button class="chat-header-btn" onclick="showToast('Video call...', 'info')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages-area" id="messagesArea">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+        <span class="typing-text" id="typingText">Rajesh is typing...</span>
+      </div>
+
+      <!-- Quick Reply Chips -->
+      <div class="quick-replies" id="quickReplies">
+        <div class="qr-chip" onclick="tapQuickReply('On my way')">On my way</div>
+        <div class="qr-chip" onclick="tapQuickReply('Will do')">Will do</div>
+        <div class="qr-chip" onclick="tapQuickReply('Noted')">Noted</div>
+        <div class="qr-chip" onclick="tapQuickReply('Thanks')">Thanks</div>
+        <div class="qr-chip" onclick="tapQuickReply('Call me')">Call me</div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="msg-input-bar">
+        <button class="msg-attach-btn" onclick="showToast('Attach file', 'info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="msg-input-wrap" id="msgInputWrap">
+          <input type="text" id="msgInput" placeholder="Type a message..." oninput="onMsgInput()" onkeydown="if(event.key==='Enter')sendMessage()" />
+        </div>
+        <div class="recording-state" id="recordingState">
+          <div class="rec-dot"></div>
+          <span class="rec-text">Recording...</span>
+          <span class="rec-timer" id="recTimer">0:00</span>
+        </div>
+        <button class="msg-send-btn mic" id="sendBtn"
+          onmousedown="startRecording()" onmouseup="stopRecording()"
+          ontouchstart="startRecording()" ontouchend="stopRecording()">
+          <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <svg id="sendIcon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+/* ═══ Conversation Data ═══ */
+var conversations = [
+  {
+    name: 'Rajesh Kumar', role: 'Manager', avatar: 'RK', avatarClass: 'av-blue',
+    online: true, unread: 2,
+    lastMsg: "Please submit today's EOD report before 6 PM", lastTime: '10 min ago',
+    messages: [
+      { from:'them', text:"Hi Elon, how's the route going today?", time:'9:15 AM', status:'read' },
+      { from:'me', text:'Going well sir, completed 5 out of 8 shops', time:'9:18 AM', status:'read' },
+      { from:'them', text:"Good. What's the collection status?", time:'9:20 AM', status:'read' },
+      { from:'me', text:'Collected \u20B932,450 so far. 3 pending.', time:'9:22 AM', status:'read' },
+      { from:'me', text:'[image]', time:'9:23 AM', status:'read', imageLabel:'Order Summary Screenshot' },
+      { from:'them', text:'Excellent! Try to close Metro Mart today', time:'10:05 AM', status:'read' },
+      { from:'me', text:'Will do. They have \u20B915K outstanding', time:'10:08 AM', status:'delivered' },
+      { from:'them', text:'Offer them 2% early payment discount if needed', time:'10:10 AM', status:'read' },
+      { from:'them', text:"Please submit today's EOD report before 6 PM", time:'2:30 PM', status:'read' },
+      { from:'them', text:'Also update the competitor pricing sheet', time:'2:31 PM', status:'read' }
+    ]
+  },
+  {
+    name: 'Sales Team Group', role: '5 members', avatar: '\uD83D\uDC65', avatarClass: 'av-green', isGroup: true,
+    online: false, unread: 5,
+    lastMsg: 'Target update: Zone achieved 82% MTD', lastTime: '25 min ago',
+    messages: [
+      { from:'them', senderName:'Priya', text:'Good morning team! Quick update on targets.', time:'8:00 AM', status:'read' },
+      { from:'them', senderName:'Rajesh', text:'Zone A is at 82% MTD. Great progress.', time:'8:05 AM', status:'read' },
+      { from:'me', text:'My beat is at 78%. Will push harder this week.', time:'8:10 AM', status:'delivered' },
+      { from:'them', senderName:'Amit', text:'Zone B needs more focus. Only 65%.', time:'8:15 AM', status:'read' },
+      { from:'them', senderName:'Priya', text:'Target update: Zone achieved 82% MTD', time:'8:30 AM', status:'read' }
+    ]
+  },
+  {
+    name: 'Support Team', role: '', avatar: '\uD83D\uDEE0', avatarClass: 'av-red', isGroup: true,
+    online: false, unread: 1,
+    lastMsg: 'Your ticket #TK-234 has been resolved', lastTime: '1 hr ago',
+    messages: [
+      { from:'me', text:'Hi, my app is crashing when I try to submit orders', time:'10:00 AM', status:'read' },
+      { from:'them', senderName:'Support', text:'Thanks for reporting. We have created ticket #TK-234.', time:'10:15 AM', status:'read' },
+      { from:'them', senderName:'Support', text:'Our team is looking into this issue.', time:'10:20 AM', status:'read' },
+      { from:'them', senderName:'Support', text:'Your ticket #TK-234 has been resolved', time:'11:30 AM', status:'read' }
+    ]
+  },
+  {
+    name: 'Priya Sharma', role: 'ASM', avatar: 'PS', avatarClass: 'av-purple',
+    online: true, unread: 0,
+    lastMsg: 'Great work on the Krishna Store order!', lastTime: '2 hrs ago',
+    messages: [
+      { from:'them', text:'Hey, saw the Krishna Store order. Impressive!', time:'11:00 AM', status:'read' },
+      { from:'me', text:'Thanks! They increased their order by 30%.', time:'11:05 AM', status:'read' },
+      { from:'them', text:'Great work on the Krishna Store order!', time:'11:10 AM', status:'read' }
+    ]
+  },
+  {
+    name: 'Amit Patel', role: 'Delivery', avatar: 'AP', avatarClass: 'av-orange',
+    online: false, unread: 0,
+    lastMsg: 'Delivery completed for ORD-1832', lastTime: 'Yesterday',
+    messages: [
+      { from:'them', text:'Out for delivery: ORD-1832', time:'2:00 PM', status:'read' },
+      { from:'me', text:'Great, the customer is expecting it today', time:'2:10 PM', status:'read' },
+      { from:'them', text:'Delivery completed for ORD-1832', time:'3:30 PM', status:'read' }
+    ]
+  },
+  {
+    name: 'HR Department', role: '', avatar: 'HR', avatarClass: 'av-teal',
+    online: false, unread: 0,
+    lastMsg: 'Holiday notice: Holi on Mar 14', lastTime: 'Yesterday',
+    messages: [
+      { from:'them', senderName:'HR', text:'Dear team, please note the upcoming holidays.', time:'9:00 AM', status:'read' },
+      { from:'them', senderName:'HR', text:'Holiday notice: Holi on Mar 14', time:'9:01 AM', status:'read' }
+    ]
+  },
+  {
+    name: 'System Alerts', role: '', avatar: 'bell', avatarClass: 'av-indigo', isSystem: true,
+    online: false, unread: 0,
+    lastMsg: 'Weekly report generated successfully', lastTime: '2 days ago',
+    messages: [
+      { from:'them', senderName:'System', text:'Your daily sync completed at 11:00 PM', time:'11:00 PM', status:'read' },
+      { from:'them', senderName:'System', text:'Weekly report generated successfully', time:'6:00 AM', status:'read' }
+    ]
+  }
+];
+
+var currentChatIndex = -1;
+var isRecording = false;
+var recInterval = null;
+var recSeconds = 0;
+
+/* ═══ Open Chat ═══ */
+function openChat(index) {
+  currentChatIndex = index;
+  var conv = conversations[index];
+
+  // Clear unread
+  var convItem = document.querySelector('.conv-item[data-index="' + index + '"]');
+  if (conv.unread > 0) {
+    conv.unread = 0;
+    if (convItem) {
+      var badge = convItem.querySelector('.conv-badge');
+      if (badge) badge.remove();
+      var nameEl = convItem.querySelector('.conv-name');
+      if (nameEl) nameEl.classList.remove('unread');
+      var prevEl = convItem.querySelector('.conv-preview');
+      if (prevEl) prevEl.classList.remove('unread');
+      var timeEl = convItem.querySelector('.conv-time');
+      if (timeEl) timeEl.classList.remove('unread');
+    }
+  }
+
+  // Update header
+  document.getElementById('chatHeaderName').textContent = conv.name;
+  var statusEl = document.getElementById('chatHeaderStatus');
+  if (conv.online) {
+    statusEl.innerHTML = '<span class="online-text">Online</span>';
+  } else if (conv.isGroup) {
+    statusEl.textContent = conv.role || 'Group';
+  } else {
+    statusEl.textContent = 'Last seen recently';
+  }
+
+  // Render messages
+  renderMessages(conv);
+
+  // Switch views
+  document.getElementById('chatListView').classList.add('hidden');
+  document.getElementById('chatDetailView').classList.add('active');
+
+  // Scroll to bottom
+  var area = document.getElementById('messagesArea');
+  setTimeout(function() { area.scrollTop = area.scrollHeight; }, 50);
+
+  // Typing indicator for Rajesh Kumar chat
+  if (index === 0) {
+    document.getElementById('typingText').textContent = conv.name.split(' ')[0] + ' is typing...';
+    setTimeout(function() {
+      document.getElementById('typingIndicator').classList.add('show');
+    }, 2000);
+    setTimeout(function() {
+      document.getElementById('typingIndicator').classList.remove('show');
+    }, 5000);
+  }
+}
+
+/* ═══ Close Chat ═══ */
+function closeChat() {
+  currentChatIndex = -1;
+  document.getElementById('chatDetailView').classList.remove('active');
+  document.getElementById('chatListView').classList.remove('hidden');
+  document.getElementById('typingIndicator').classList.remove('show');
+}
+
+/* ═══ Render Messages ═══ */
+function renderMessages(conv) {
+  var area = document.getElementById('messagesArea');
+  var html = '';
+  var lastTimeGroup = '';
+
+  for (var i = 0; i < conv.messages.length; i++) {
+    var msg = conv.messages[i];
+    var timeHour = msg.time.split(':')[0];
+    var amPm = msg.time.includes('PM') ? 'PM' : 'AM';
+    var timeGroup = (parseInt(timeHour) < 12 && amPm === 'AM') ? 'Morning' :
+                    (parseInt(timeHour) < 5 || (parseInt(timeHour) === 12 && amPm === 'PM')) ? 'Afternoon' : 'Evening';
+
+    // Add time divider if first message or significant time gap
+    if (i === 0 || (i > 0 && getTimeCategory(msg.time) !== getTimeCategory(conv.messages[i-1].time))) {
+      html += '<div class="msg-time-divider"><span>' + msg.time + '</span></div>';
+    }
+
+    var isSent = msg.from === 'me';
+    html += '<div class="msg-bubble-row ' + (isSent ? 'sent' : 'received') + '">';
+    html += '<div class="msg-bubble ' + (isSent ? 'sent' : 'received') + '">';
+
+    // Group sender name
+    if (!isSent && msg.senderName) {
+      html += '<div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:3px;">' + msg.senderName + '</div>';
+    }
+
+    // Image message
+    if (msg.imageLabel) {
+      html += '<div class="msg-image-placeholder">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+        '<span>' + msg.imageLabel + '</span></div>';
+    } else {
+      html += msg.text;
+    }
+
+    // Meta: timestamp + ticks
+    html += '<div class="msg-meta">';
+    html += '<span class="msg-timestamp">' + msg.time + '</span>';
+    if (isSent) {
+      var tickClass = msg.status === 'read' ? 'read' : 'delivered';
+      html += '<span class="msg-ticks ' + tickClass + '">';
+      if (msg.status === 'read') {
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 13 5 17 11 9"/><polyline points="7 13 11 17 20 6"/></svg>';
+      } else {
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 13 5 17 11 9"/><polyline points="7 13 11 17 20 6"/></svg>';
+      }
+      html += '</span>';
+    }
+    html += '</div>';
+
+    html += '</div></div>';
+  }
+
+  area.innerHTML = html;
+}
+
+function getTimeCategory(timeStr) {
+  var parts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!parts) return '';
+  var h = parseInt(parts[1]);
+  var ampm = parts[3].toUpperCase();
+  if (ampm === 'PM' && h !== 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  return 'evening';
+}
+
+/* ═══ Send Message ═══ */
+function sendMessage() {
+  var input = document.getElementById('msgInput');
+  var text = input.value.trim();
+  if (!text || currentChatIndex < 0) return;
+
+  var conv = conversations[currentChatIndex];
+  var now = new Date();
+  var h = now.getHours();
+  var m = now.getMinutes().toString().padStart(2, '0');
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  var timeStr = h + ':' + m + ' ' + ampm;
+
+  var msg = { from: 'me', text: text, time: timeStr, status: 'delivered' };
+  conv.messages.push(msg);
+
+  // Add bubble to DOM
+  var area = document.getElementById('messagesArea');
+  var bubble = document.createElement('div');
+  bubble.className = 'msg-bubble-row sent';
+  bubble.innerHTML = '<div class="msg-bubble sent">' + text +
+    '<div class="msg-meta"><span class="msg-timestamp">' + timeStr + '</span>' +
+    '<span class="msg-ticks delivered"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 13 5 17 11 9"/><polyline points="7 13 11 17 20 6"/></svg></span></div></div>';
+  area.appendChild(bubble);
+
+  // Clear input & scroll
+  input.value = '';
+  onMsgInput();
+  area.scrollTop = area.scrollHeight;
+
+  // Update conversation preview
+  conv.lastMsg = text;
+  var convItem = document.querySelector('.conv-item[data-index="' + currentChatIndex + '"]');
+  if (convItem) {
+    var prev = convItem.querySelector('.conv-preview');
+    if (prev) prev.textContent = text;
+    var timeEl = convItem.querySelector('.conv-time');
+    if (timeEl) timeEl.textContent = 'Just now';
+  }
+
+  showToast('Message sent', 'success');
+}
+
+/* ═══ Quick Reply ═══ */
+function tapQuickReply(text) {
+  document.getElementById('msgInput').value = text;
+  onMsgInput();
+  document.getElementById('msgInput').focus();
+}
+
+/* ═══ Input State (mic vs send) ═══ */
+function onMsgInput() {
+  var input = document.getElementById('msgInput');
+  var sendBtn = document.getElementById('sendBtn');
+  var micIcon = document.getElementById('micIcon');
+  var sendIcon = document.getElementById('sendIcon');
+
+  if (input.value.trim()) {
+    sendBtn.classList.remove('mic');
+    micIcon.style.display = 'none';
+    sendIcon.style.display = '';
+    sendBtn.onmousedown = null;
+    sendBtn.onmouseup = null;
+    sendBtn.ontouchstart = null;
+    sendBtn.ontouchend = null;
+    sendBtn.onclick = sendMessage;
+  } else {
+    sendBtn.classList.add('mic');
+    micIcon.style.display = '';
+    sendIcon.style.display = 'none';
+    sendBtn.onclick = null;
+    sendBtn.onmousedown = startRecording;
+    sendBtn.onmouseup = stopRecording;
+    sendBtn.ontouchstart = startRecording;
+    sendBtn.ontouchend = stopRecording;
+  }
+}
+
+/* ═══ Recording ═══ */
+function startRecording() {
+  if (document.getElementById('msgInput').value.trim()) return;
+  isRecording = true;
+  recSeconds = 0;
+  document.getElementById('msgInputWrap').style.display = 'none';
+  document.getElementById('recordingState').classList.add('show');
+  document.getElementById('recTimer').textContent = '0:00';
+  recInterval = setInterval(function() {
+    recSeconds++;
+    var mins = Math.floor(recSeconds / 60);
+    var secs = (recSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('recTimer').textContent = mins + ':' + secs;
+  }, 1000);
+}
+
+function stopRecording() {
+  if (!isRecording) return;
+  isRecording = false;
+  clearInterval(recInterval);
+  document.getElementById('msgInputWrap').style.display = '';
+  document.getElementById('recordingState').classList.remove('show');
+  if (recSeconds >= 1) {
+    showToast('Voice note recorded (' + recSeconds + 's)', 'success');
+  }
+}
+
+/* ═══ Search / Filter ═══ */
+function filterConversations() {
+  var query = document.getElementById('chatSearchInput').value.toLowerCase().trim();
+  var items = document.querySelectorAll('.conv-item');
+  var unreadVisible = 0;
+  var readVisible = 0;
+
+  items.forEach(function(item) {
+    var idx = parseInt(item.getAttribute('data-index'));
+    var conv = conversations[idx];
+    var text = (conv.name + ' ' + conv.lastMsg + ' ' + (conv.role || '')).toLowerCase();
+    var match = !query || text.indexOf(query) !== -1;
+    item.style.display = match ? '' : 'none';
+    if (match) {
+      if (conv.unread > 0) unreadVisible++;
+      else readVisible++;
+    }
+  });
+
+  // Toggle section headers
+  var sections = document.querySelectorAll('.conv-section');
+  sections.forEach(function(s) {
+    if (s.getAttribute('data-section') === 'unread') {
+      s.style.display = unreadVisible > 0 ? '' : 'none';
+    } else {
+      s.style.display = readVisible > 0 ? '' : 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>
