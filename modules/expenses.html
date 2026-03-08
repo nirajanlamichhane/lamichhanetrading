@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Expenses — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Expense Stats Grid ── */
+    .exp-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+    .exp-stat {
+      background:#fff; border-radius:14px; padding:14px; box-shadow:0 2px 8px rgba(48,102,190,.08);
+      position:relative; overflow:hidden;
+    }
+    .exp-stat::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    }
+    .exp-stat.st-total::before { background:linear-gradient(90deg,#3066be,#558ce6); }
+    .exp-stat.st-approved::before { background:linear-gradient(90deg,#28a745,#4ade80); }
+    .exp-stat.st-pending::before { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .exp-stat.st-rejected::before { background:linear-gradient(90deg,#e05252,#f87171); }
+    .exp-stat-label { font-size:10px; font-weight:600; color:#5a6a8a; text-transform:uppercase; letter-spacing:.5px; }
+    .exp-stat-value { font-size:20px; font-weight:800; margin-top:4px; line-height:1; }
+    .exp-stat.st-total .exp-stat-value { color:#3066be; }
+    .exp-stat.st-approved .exp-stat-value { color:#28a745; }
+    .exp-stat.st-pending .exp-stat-value { color:#d97706; }
+    .exp-stat.st-rejected .exp-stat-value { color:#e05252; }
+    .exp-stat-count { font-size:11px; color:#9aabcc; margin-top:4px; }
+
+    /* ── Expense Card ── */
+    .exp-card {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); display:flex; align-items:flex-start; gap:12px;
+      cursor:pointer; transition:transform .15s;
+    }
+    .exp-card:active { transform:scale(.98); }
+    .exp-icon {
+      width:44px; height:44px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .exp-icon svg { width:20px; height:20px; }
+    .exp-body { flex:1; min-width:0; }
+    .exp-top { display:flex; justify-content:space-between; align-items:flex-start; }
+    .exp-title { font-size:14px; font-weight:700; color:#1a2744; }
+    .exp-amount { font-size:15px; font-weight:800; color:#1a2744; }
+    .exp-desc { font-size:12px; color:#5a6a8a; margin-top:2px; }
+    .exp-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+    .exp-date { font-size:11px; color:#9aabcc; font-weight:500; }
+    .exp-receipt {
+      display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600;
+      color:#3066be; background:#e8f0fa; padding:3px 8px; border-radius:6px;
+    }
+    .exp-receipt svg { width:12px; height:12px; }
+
+    /* ── Bottom Sheet ── */
+    .sheet-overlay {
+      position:absolute; inset:0; background:rgba(26,39,68,.5); z-index:400;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .sheet-overlay.open { opacity:1; pointer-events:all; }
+    .sheet {
+      position:absolute; bottom:-100%; left:0; right:0; z-index:450;
+      background:#fff; border-radius:24px 24px 0 0; padding:20px 16px 32px;
+      box-shadow:0 -8px 32px rgba(0,0,0,.15); transition:bottom .35s cubic-bezier(.4,0,.2,1);
+      max-height:80%;overflow-y:auto;
+    }
+    .sheet.open { bottom:0; }
+    .sheet-handle {
+      width:40px; height:4px; background:#d1d5db; border-radius:4px;
+      margin:0 auto 16px;
+    }
+    .sheet-title { font-size:16px; font-weight:800; color:#1a2744; margin-bottom:16px; }
+    .type-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+    .type-option {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      padding:12px 4px; border-radius:14px; cursor:pointer; border:2px solid #e2e8f0;
+      transition:all .2s; background:#fff;
+    }
+    .type-option.selected { border-color:#3066be; background:#e8f0fa; }
+    .type-option-icon {
+      width:40px; height:40px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .type-option-icon svg { width:20px; height:20px; }
+    .type-option-label { font-size:10px; font-weight:700; color:#1a2744; text-align:center; }
+    .photo-upload {
+      border:2px dashed #d1d5db; border-radius:14px; padding:20px; text-align:center;
+      cursor:pointer; margin-bottom:16px; transition:all .2s; position:relative; overflow:hidden;
+    }
+    .photo-upload:hover { border-color:#3066be; background:#f8fafe; }
+    .photo-upload svg { width:32px; height:32px; color:#9aabcc; margin-bottom:6px; }
+    .photo-upload p { font-size:12px; color:#5a6a8a; font-weight:600; }
+    .photo-upload span { font-size:11px; color:#9aabcc; }
+    .photo-upload .upload-icons { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:8px; }
+    .photo-upload .upload-icons .up-icon {
+      width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    }
+    .photo-upload .upload-icons .up-icon svg { width:24px; height:24px; margin-bottom:0; }
+    .photo-upload .upload-icons .up-icon.cam { background:#e8f0fa; }
+    .photo-upload .upload-icons .up-icon.cam svg { color:#3066be; }
+    .photo-upload .upload-icons .up-icon.gal { background:#e8f5ed; }
+    .photo-upload .upload-icons .up-icon.gal svg { color:#28a745; }
+
+    /* Receipt Progress Bar */
+    .receipt-progress {
+      display:none; flex-direction:column; align-items:center; padding:20px;
+    }
+    .receipt-progress.show { display:flex; }
+    .receipt-progress-label { font-size:12px; color:#5a6a8a; font-weight:600; margin-bottom:10px; }
+    .receipt-progress-bar {
+      width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; margin-bottom:6px;
+    }
+    .receipt-progress-fill {
+      width:0%; height:100%; background:linear-gradient(90deg,#3066be,#28a745); border-radius:3px;
+      transition:width 1.5s ease-in-out;
+    }
+    .receipt-progress-pct { font-size:11px; color:#94a3b8; font-weight:600; }
+
+    /* Receipt Uploaded State */
+    .receipt-uploaded {
+      display:none; border:2px solid #28a745; border-radius:14px; padding:12px;
+      margin-bottom:16px; background:#f8fdf9;
+    }
+    .receipt-uploaded.show { display:flex; align-items:center; gap:12px; }
+    .receipt-thumb {
+      width:52px; height:52px; border-radius:10px; background:linear-gradient(135deg,#e8f0fa,#d4e4f7);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .receipt-thumb svg { width:28px; height:28px; color:#3066be; }
+    .receipt-file-info { flex:1; }
+    .receipt-file-name { font-size:13px; font-weight:700; color:#1a2744; }
+    .receipt-file-size { font-size:11px; color:#9aabcc; margin-top:1px; }
+    .receipt-file-status { display:flex; align-items:center; gap:4px; font-size:11px; color:#28a745; font-weight:600; margin-top:4px; }
+    .receipt-file-status svg { width:14px; height:14px; }
+    .receipt-remove {
+      width:32px; height:32px; border-radius:50%; background:#fdecea; border:none;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+    }
+    .receipt-remove svg { width:16px; height:16px; color:#e05252; }
+  </style>
+</head>
+<body>
+<p class="page-title">Adera Sales · Expenses</p>
+<div class="phone-frame">
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- DRAWER (Simplified) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div class="drawer-brand">Adera Sales</div>
+      <button class="drawer-close" onclick="closeDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">RS</div>
+      <div>
+        <div class="drawer-user-name">Rajesh Shrestha</div>
+        <div class="drawer-user-role">Sales Representative</div>
+      </div>
+    </div>
+    <nav class="drawer-nav">
+      <a class="drawer-item" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dashboard
+      </a>
+      <a class="drawer-item" href="parties.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Parties
+      </a>
+      <a class="drawer-item" href="orders.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Orders
+      </a>
+      <a class="drawer-item" href="collections.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Collections
+      </a>
+      <a class="drawer-item" href="attendance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Attendance
+      </a>
+      <a class="drawer-item" href="performance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Performance
+      </a>
+      <div style="height:1px;background:#e2e8f0;margin:8px 20px;"></div>
+      <a class="drawer-item" onclick="showToast('Logged out','info')" style="cursor:pointer;color:#e05252;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e05252" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </nav>
+  </div>
+
+  <!-- Bottom Sheet Overlay -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+
+  <!-- Add Expense Bottom Sheet -->
+  <div class="sheet" id="addSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Expense</div>
+
+    <!-- Type Selector -->
+    <label class="form-label">Expense Type</label>
+    <div class="type-grid">
+      <div class="type-option selected" onclick="selectType(this)">
+        <div class="type-option-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <span class="type-option-label">Travel</span>
+      </div>
+      <div class="type-option" onclick="selectType(this)">
+        <div class="type-option-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <span class="type-option-label">Food</span>
+      </div>
+      <div class="type-option" onclick="selectType(this)">
+        <div class="type-option-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="type-option-label">Lodging</span>
+      </div>
+      <div class="type-option" onclick="selectType(this)">
+        <div class="type-option-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <span class="type-option-label">Other</span>
+      </div>
+    </div>
+
+    <!-- Amount -->
+    <div class="form-group">
+      <label class="form-label">Amount <span style="color:#e05252;">*</span></label>
+      <input type="number" class="form-control" id="expAmount" placeholder="Enter amount in INR" value="">
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label class="form-label">Description <span style="color:#e05252;">*</span></label>
+      <textarea class="form-control" id="expDesc" rows="2" placeholder="Briefly describe the expense..."></textarea>
+    </div>
+
+    <!-- Date -->
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input type="date" class="form-control" id="expDate" value="2026-03-08">
+    </div>
+
+    <!-- Receipt Upload -->
+    <label class="form-label">Receipt Photo</label>
+    <div class="photo-upload" id="receiptUploadZone" onclick="simulateReceiptUpload()">
+      <div class="upload-icons">
+        <div class="up-icon cam">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div class="up-icon gal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+      </div>
+      <p>Upload Receipt</p>
+      <span>Camera or Gallery · JPG, PNG up to 5 MB</span>
+      <div class="receipt-progress" id="receiptProgress">
+        <div class="receipt-progress-label">Uploading receipt...</div>
+        <div class="receipt-progress-bar"><div class="receipt-progress-fill" id="receiptFill"></div></div>
+        <div class="receipt-progress-pct" id="receiptPct">0%</div>
+      </div>
+    </div>
+
+    <!-- Uploaded Receipt Display -->
+    <div class="receipt-uploaded" id="receiptUploaded">
+      <div class="receipt-thumb">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="receipt-file-info">
+        <div class="receipt-file-name">receipt_001.jpg</div>
+        <div class="receipt-file-size">234 KB</div>
+        <div class="receipt-file-status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Uploaded
+        </div>
+      </div>
+      <button class="receipt-remove" onclick="removeReceipt(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Submit -->
+    <button class="btn btn-primary btn-block" onclick="submitExpense()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+      Submit Expense
+    </button>
+  </div>
+
+  <div class="screen-scroll">
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
+      </div>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="top-bar-title">Expense Claims</span>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" style="padding:16px;">
+
+      <!-- Stats Grid -->
+      <div class="exp-stats">
+        <div class="exp-stat st-total">
+          <div class="exp-stat-label">Total Claims</div>
+          <div class="exp-stat-value">&#8377;18,450</div>
+          <div class="exp-stat-count">8 claims this month</div>
+        </div>
+        <div class="exp-stat st-approved">
+          <div class="exp-stat-label">Approved</div>
+          <div class="exp-stat-value">&#8377;8,200</div>
+          <div class="exp-stat-count">3 claims</div>
+        </div>
+        <div class="exp-stat st-pending">
+          <div class="exp-stat-label">Pending</div>
+          <div class="exp-stat-value">&#8377;7,350</div>
+          <div class="exp-stat-count">3 claims</div>
+        </div>
+        <div class="exp-stat st-rejected">
+          <div class="exp-stat-label">Rejected</div>
+          <div class="exp-stat-value">&#8377;2,900</div>
+          <div class="exp-stat-count">2 claims</div>
+        </div>
+      </div>
+
+      <!-- Tab Filters -->
+      <div class="tab-bar" style="margin-bottom:16px;">
+        <div class="tab active">All</div>
+        <div class="tab">Pending</div>
+        <div class="tab">Approved</div>
+        <div class="tab">Rejected</div>
+      </div>
+
+      <!-- Section Header -->
+      <div class="section-header" style="margin-bottom:12px;">
+        <span class="section-title">March 2026</span>
+        <span class="section-action">Export</span>
+      </div>
+
+      <!-- Expense 1: Travel - Pending -->
+      <div class="exp-card">
+        <div class="exp-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Travel</div>
+            <div class="exp-amount">&#8377;2,450</div>
+          </div>
+          <div class="exp-desc">Cab fare - Bhaktapur to Lalitpur client visit</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Mar 8, 2026</span>
+              <span class="exp-receipt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Receipt
+              </span>
+            </div>
+            <span class="badge-warning" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 2: Food - Pending -->
+      <div class="exp-card">
+        <div class="exp-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Food</div>
+            <div class="exp-amount">&#8377;1,800</div>
+          </div>
+          <div class="exp-desc">Team lunch with distributor - Shree Restaurant</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Mar 7, 2026</span>
+              <span class="exp-receipt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Receipt
+              </span>
+            </div>
+            <span class="badge-warning" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 3: Lodging - Approved -->
+      <div class="exp-card">
+        <div class="exp-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Lodging</div>
+            <div class="exp-amount">&#8377;3,200</div>
+          </div>
+          <div class="exp-desc">Hotel stay - 2 nights Pokhara trade fair</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Mar 5, 2026</span>
+              <span class="exp-receipt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Receipt
+              </span>
+            </div>
+            <span class="badge-success" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Approved</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 4: Travel - Approved -->
+      <div class="exp-card">
+        <div class="exp-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Travel</div>
+            <div class="exp-amount">&#8377;900</div>
+          </div>
+          <div class="exp-desc">Bus fare - Kathmandu to Bhaktapur route</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Mar 4, 2026</span>
+            </div>
+            <span class="badge-success" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Approved</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 5: Food - Rejected -->
+      <div class="exp-card">
+        <div class="exp-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Food</div>
+            <div class="exp-amount">&#8377;1,500</div>
+          </div>
+          <div class="exp-desc">Dinner - personal expense flagged</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Mar 3, 2026</span>
+            </div>
+            <span class="badge-danger" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Rejected</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 6: Other - Pending -->
+      <div class="exp-card">
+        <div class="exp-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Other</div>
+            <div class="exp-amount">&#8377;3,100</div>
+          </div>
+          <div class="exp-desc">Printing - 500 order forms &amp; catalogs</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Mar 2, 2026</span>
+              <span class="exp-receipt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Receipt
+              </span>
+            </div>
+            <span class="badge-warning" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 7: Lodging - Approved -->
+      <div class="exp-card">
+        <div class="exp-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Lodging</div>
+            <div class="exp-amount">&#8377;4,100</div>
+          </div>
+          <div class="exp-desc">Guest house - Chitwan dealer meet (3 nights)</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Feb 28, 2026</span>
+              <span class="exp-receipt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Receipt
+              </span>
+            </div>
+            <span class="badge-success" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Approved</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense 8: Other - Rejected -->
+      <div class="exp-card">
+        <div class="exp-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div class="exp-title">Other</div>
+            <div class="exp-amount">&#8377;1,400</div>
+          </div>
+          <div class="exp-desc">Mobile data recharge - missing approval</div>
+          <div class="exp-bottom">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="exp-date">Feb 27, 2026</span>
+            </div>
+            <span class="badge-danger" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Rejected</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <a class="bottom-nav-item" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </a>
+      <a class="bottom-nav-item" href="parties.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </a>
+      <a class="bottom-nav-item bottom-nav-center" href="orders.html">
+        <div class="bottom-nav-fab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </a>
+      <a class="bottom-nav-item" href="performance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </a>
+      <a class="bottom-nav-item" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openSheet()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  // Bottom sheet controls
+  function openSheet() {
+    document.getElementById('sheetOverlay').classList.add('open');
+    document.getElementById('addSheet').classList.add('open');
+  }
+  function closeSheet() {
+    document.getElementById('sheetOverlay').classList.remove('open');
+    document.getElementById('addSheet').classList.remove('open');
+  }
+  // Type selector
+  var selectedExpType = '';
+  function selectType(el) {
+    document.querySelectorAll('.type-option').forEach(function(o){ o.classList.remove('selected'); });
+    el.classList.add('selected');
+    selectedExpType = el.querySelector('.type-option-label').textContent.trim();
+  }
+
+  // Submit with validation
+  function submitExpense() {
+    var hasType = !!document.querySelector('.type-option.selected');
+    var amount = document.getElementById('expAmount');
+    var desc = document.getElementById('expDesc');
+
+    var valid = true;
+
+    if (!hasType) {
+      showToast('Select an expense type', 'error');
+      valid = false;
+    }
+
+    if (typeof validateForm === 'function') {
+      var formValid = validateForm([
+        { el: '#expAmount', required: true, min: 1, message: 'Enter a valid amount' },
+        { el: '#expDesc', required: true, minLength: 3, message: 'Add a brief description' }
+      ]);
+      if (!formValid) valid = false;
+    } else {
+      if (!amount.value || Number(amount.value) < 1) {
+        showToast('Enter a valid amount', 'error');
+        amount.focus();
+        valid = false;
+      } else if (!desc.value.trim() || desc.value.trim().length < 3) {
+        showToast('Add a brief description', 'error');
+        desc.focus();
+        valid = false;
+      }
+    }
+
+    if (!valid) return;
+
+    closeSheet();
+    showToast('Expense ₹' + amount.value + ' submitted for approval', 'success');
+
+    // Reset form
+    amount.value = '';
+    desc.value = '';
+    document.querySelectorAll('.type-option').forEach(function(o){ o.classList.remove('selected'); });
+    selectedExpType = '';
+  }
+
+  // Receipt upload simulation
+  var receiptUploading = false;
+  var receiptDone = false;
+
+  function simulateReceiptUpload() {
+    if (receiptUploading || receiptDone) return;
+    receiptUploading = true;
+
+    var zone = document.getElementById('receiptUploadZone');
+    var progress = document.getElementById('receiptProgress');
+    var fill = document.getElementById('receiptFill');
+    var pct = document.getElementById('receiptPct');
+
+    // Hide the icons/text, show progress
+    zone.querySelectorAll('.upload-icons, p, span:not(.receipt-progress *)').forEach(function(el) {
+      if (!el.closest('.receipt-progress')) el.style.display = 'none';
+    });
+    progress.classList.add('show');
+    zone.style.pointerEvents = 'none';
+    zone.style.borderColor = '#3066be';
+
+    // Animate progress
+    fill.style.width = '0%';
+    pct.textContent = '0%';
+    setTimeout(function() { fill.style.width = '100%'; }, 50);
+
+    var counter = 0;
+    var interval = setInterval(function() {
+      counter += 2;
+      if (counter > 100) counter = 100;
+      pct.textContent = counter + '%';
+      if (counter >= 100) {
+        clearInterval(interval);
+        setTimeout(function() {
+          zone.style.display = 'none';
+          document.getElementById('receiptUploaded').classList.add('show');
+          receiptUploading = false;
+          receiptDone = true;
+          showToast('Receipt uploaded successfully', 'success');
+        }, 200);
+      }
+    }, 30);
+  }
+
+  function removeReceipt(e) {
+    e.stopPropagation();
+    document.getElementById('receiptUploaded').classList.remove('show');
+    var zone = document.getElementById('receiptUploadZone');
+    zone.style.display = '';
+    zone.style.pointerEvents = '';
+    zone.style.borderColor = '';
+    zone.querySelectorAll('.upload-icons, p, span').forEach(function(el) {
+      if (!el.closest('.receipt-progress')) el.style.display = '';
+    });
+    document.getElementById('receiptProgress').classList.remove('show');
+    document.getElementById('receiptFill').style.width = '0%';
+    receiptUploading = false;
+    receiptDone = false;
+  }
+
+  // Tab switching
+  document.querySelectorAll('.tab-bar .tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.tab-bar .tab').forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

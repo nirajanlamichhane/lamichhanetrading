@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Orders — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Search & Filter ── */
+    .search-row { display:flex; gap:8px; margin-bottom:14px; }
+    .search-input-wrap {
+      flex:1; display:flex; align-items:center; gap:8px;
+      background:#fff; border:1.5px solid #e2e8f0; border-radius:12px; padding:0 12px; height:42px;
+    }
+    .search-input-wrap svg { width:18px; height:18px; color:#94a3b8; flex-shrink:0; }
+    .search-input-wrap input { border:none; outline:none; width:100%; font-size:13px; background:transparent; }
+    .filter-btn {
+      width:42px; height:42px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; flex-shrink:0;
+    }
+    .filter-btn svg { width:18px; height:18px; color:#64748b; }
+    .filter-dot {
+      position:absolute; top:6px; right:6px; width:8px; height:8px;
+      background:#e05252; border-radius:50%; border:1.5px solid #fff;
+    }
+
+    /* ── Date Chips ── */
+    .date-chips { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; }
+    .date-chip {
+      padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      white-space:nowrap; cursor:pointer; border:1.5px solid #e2e8f0; background:#fff; color:#64748b;
+      transition: all .2s;
+    }
+    .date-chip.active { background:#3066be; color:#fff; border-color:#3066be; }
+
+    /* ── Stats Strip ── */
+    .order-stats {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;
+    }
+    .o-stat {
+      background:#fff; border-radius:12px; padding:10px 8px; text-align:center;
+      box-shadow:0 1px 4px rgba(48,102,190,.08);
+    }
+    .o-stat-val { font-size:17px; font-weight:800; color:#1a2540; }
+    .o-stat-lbl { font-size:10px; color:#64748b; margin-top:2px; text-transform:uppercase; letter-spacing:.3px; }
+    .o-stat.blue .o-stat-val { color:#3066be; }
+    .o-stat.green .o-stat-val { color:#28a745; }
+    .o-stat.amber .o-stat-val { color:#f59e0b; }
+    .o-stat.red .o-stat-val { color:#e05252; }
+
+    /* ── Tab Bar ── */
+    .order-tabs { display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px; }
+    .order-tab {
+      flex:1; text-align:center; padding:8px 4px; font-size:12px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition: all .2s;
+    }
+    .order-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .order-tab .tab-count {
+      display:inline-block; min-width:18px; padding:1px 6px; border-radius:10px;
+      font-size:10px; font-weight:700; margin-left:3px;
+    }
+    .order-tab.active .tab-count { background:#3066be; color:#fff; }
+    .order-tab:not(.active) .tab-count { background:#e2e8f0; color:#64748b; }
+
+    /* ── Order Card ── */
+    .order-card {
+      background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); cursor:pointer;
+      border-left:4px solid transparent; transition: transform .15s;
+    }
+    .order-card:active { transform:scale(.98); }
+    .order-card.pending { border-left-color:#f59e0b; }
+    .order-card.confirmed { border-left-color:#3066be; }
+    .order-card.dispatched { border-left-color:#28a745; }
+    .order-card.delivered { border-left-color:#20c997; }
+    .order-card.cancelled { border-left-color:#e05252; }
+
+    .oc-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+    .oc-id { font-size:13px; font-weight:800; color:#1a2540; }
+    .oc-date { font-size:11px; color:#94a3b8; margin-top:2px; }
+    .oc-badge {
+      padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;
+    }
+    .oc-badge.pending { background:#fef3cd; color:#d97706; }
+    .oc-badge.confirmed { background:#e8f0fe; color:#3066be; }
+    .oc-badge.dispatched { background:#e8f5ed; color:#28a745; }
+    .oc-badge.delivered { background:#d1fae5; color:#047857; }
+    .oc-badge.cancelled { background:#fde8e8; color:#e05252; }
+
+    .oc-shop { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .oc-avatar {
+      width:36px; height:36px; border-radius:10px; display:flex; align-items:center;
+      justify-content:center; font-size:16px; font-weight:700; flex-shrink:0;
+    }
+    .oc-avatar.a1 { background:#e8f0fe; color:#3066be; }
+    .oc-avatar.a2 { background:#e8f5ed; color:#28a745; }
+    .oc-avatar.a3 { background:#fef3cd; color:#d97706; }
+    .oc-avatar.a4 { background:#fde8e8; color:#e05252; }
+    .oc-avatar.a5 { background:#f3e8ff; color:#7c3aed; }
+    .oc-shop-name { font-size:14px; font-weight:700; color:#1a2540; }
+    .oc-shop-addr { font-size:11px; color:#94a3b8; }
+
+    .oc-items {
+      display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;
+    }
+    .oc-item-chip {
+      background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;
+      padding:3px 8px; font-size:11px; color:#475569;
+    }
+    .oc-item-more { color:#3066be; font-weight:600; }
+
+    .oc-footer {
+      display:flex; justify-content:space-between; align-items:center;
+      padding-top:10px; border-top:1px solid #f1f5f9;
+    }
+    .oc-total-label { font-size:11px; color:#94a3b8; }
+    .oc-total { font-size:16px; font-weight:800; color:#1a2540; }
+    .oc-meta { display:flex; gap:10px; }
+    .oc-meta-item { font-size:11px; color:#64748b; display:flex; align-items:center; gap:3px; }
+    .oc-meta-item svg { width:13px; height:13px; }
+
+    /* ── Order Detail Sheet ── */
+    .od-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .od-overlay.show { opacity:1; pointer-events:auto; }
+    .od-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:88vh; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:201; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom:24px;
+    }
+    .od-sheet.show { transform:translateX(-50%) translateY(0); }
+    .od-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+    .od-header {
+      padding:0 20px 16px; border-bottom:1px solid #e2e8f0;
+    }
+    .od-header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .od-title { font-size:18px; font-weight:800; color:#1a2540; }
+    .od-close {
+      width:32px; height:32px; border-radius:50%; background:#f1f5f9;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .od-close svg { width:18px; height:18px; color:#64748b; }
+
+    .od-shop-bar {
+      display:flex; align-items:center; gap:12px; background:#fff;
+      border-radius:12px; padding:12px; margin-bottom:12px;
+    }
+    .od-shop-avatar {
+      width:44px; height:44px; border-radius:12px; background:#e8f0fe;
+      display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:#3066be;
+    }
+    .od-shop-name { font-size:15px; font-weight:700; color:#1a2540; }
+    .od-shop-addr { font-size:12px; color:#94a3b8; }
+    .od-shop-phone { font-size:12px; color:#3066be; font-weight:600; }
+
+    .od-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:16px 20px 0; }
+    .od-stat-card {
+      background:#fff; border-radius:10px; padding:10px; text-align:center;
+      box-shadow:0 1px 3px rgba(0,0,0,.05);
+    }
+    .od-stat-val { font-size:16px; font-weight:800; color:#1a2540; }
+    .od-stat-lbl { font-size:10px; color:#94a3b8; text-transform:uppercase; margin-top:2px; }
+
+    /* ── Timeline ── */
+    .od-timeline { padding:16px 20px; }
+    .od-tl-title { font-size:13px; font-weight:700; color:#1a2540; margin-bottom:12px; }
+    .od-tl-step { display:flex; gap:12px; position:relative; padding-bottom:16px; }
+    .od-tl-step:last-child { padding-bottom:0; }
+    .od-tl-step::before {
+      content:''; position:absolute; left:11px; top:24px; bottom:0;
+      width:2px; background:#e2e8f0;
+    }
+    .od-tl-step:last-child::before { display:none; }
+    .od-tl-dot {
+      width:24px; height:24px; border-radius:50%; display:flex; align-items:center;
+      justify-content:center; flex-shrink:0; z-index:1;
+    }
+    .od-tl-dot.done { background:#e8f5ed; }
+    .od-tl-dot.done svg { color:#28a745; }
+    .od-tl-dot.current { background:#e8f0fe; }
+    .od-tl-dot.current svg { color:#3066be; }
+    .od-tl-dot.pending { background:#f1f5f9; }
+    .od-tl-dot.pending svg { color:#94a3b8; }
+    .od-tl-dot svg { width:12px; height:12px; }
+    .od-tl-info { flex:1; }
+    .od-tl-label { font-size:13px; font-weight:600; color:#1a2540; }
+    .od-tl-time { font-size:11px; color:#94a3b8; }
+
+    /* ── Line Items ── */
+    .od-items { padding:0 20px 16px; }
+    .od-items-title { font-size:13px; font-weight:700; color:#1a2540; margin-bottom:10px; }
+    .od-line {
+      display:flex; align-items:center; gap:10px; padding:8px 0;
+      border-bottom:1px solid #f1f5f9;
+    }
+    .od-line:last-child { border-bottom:none; }
+    .od-line-emoji { font-size:20px; width:32px; text-align:center; }
+    .od-line-name { flex:1; font-size:13px; color:#1a2540; font-weight:500; }
+    .od-line-qty { font-size:12px; color:#64748b; min-width:40px; text-align:center; }
+    .od-line-price { font-size:13px; font-weight:700; color:#1a2540; min-width:60px; text-align:right; }
+
+    .od-total-row {
+      display:flex; justify-content:space-between; margin:0 20px 16px;
+      background:#f0f4fb; border-radius:12px; padding:14px 16px;
+    }
+    .od-total-label { font-size:13px; color:#64748b; font-weight:600; }
+    .od-total-val { font-size:18px; font-weight:800; color:#3066be; }
+
+    .od-actions {
+      display:flex; gap:8px; padding:0 20px;
+    }
+    .od-btn {
+      flex:1; padding:12px; border-radius:12px; font-size:13px; font-weight:700;
+      text-align:center; cursor:pointer; border:none;
+    }
+    .od-btn-primary { background:#3066be; color:#fff; }
+    .od-btn-outline { background:#fff; color:#3066be; border:1.5px solid #3066be; }
+    .od-btn-danger { background:#fde8e8; color:#e05252; }
+
+    /* ── Filter Sheet ── */
+    .filter-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .filter-sheet.show { transform:translateX(-50%) translateY(0); }
+    .filter-title { font-size:16px; font-weight:800; color:#1a2540; margin-bottom:16px; }
+    .filter-group { margin-bottom:16px; }
+    .filter-label { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+    .filter-options { display:flex; flex-wrap:wrap; gap:6px; }
+    .filter-option {
+      padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      border:1.5px solid #e2e8f0; background:#fff; color:#64748b; cursor:pointer;
+    }
+    .filter-option.selected { background:#3066be; color:#fff; border-color:#3066be; }
+    .filter-actions { display:flex; gap:8px; margin-top:8px; }
+    .filter-apply {
+      flex:1; padding:12px; border-radius:12px; background:#3066be;
+      color:#fff; font-weight:700; font-size:14px; border:none; cursor:pointer;
+    }
+    .filter-reset {
+      padding:12px 20px; border-radius:12px; background:#f1f5f9;
+      color:#64748b; font-weight:600; font-size:14px; border:none; cursor:pointer;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      text-align:center; padding:40px 20px;
+    }
+    .empty-icon { font-size:48px; margin-bottom:12px; }
+    .empty-title { font-size:16px; font-weight:700; color:#1a2540; margin-bottom:4px; }
+    .empty-sub { font-size:13px; color:#94a3b8; }
+
+    /* ── Swipe-to-Action ── */
+    .swipe-container { position:relative; overflow:hidden; border-radius:14px; margin-bottom:12px; }
+    .swipe-actions { position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center; width:80px; font-size:12px; font-weight:700; flex-direction:column; gap:4px; cursor:pointer; }
+    .swipe-actions.left { left:0; background:#e67e22; color:#fff; border-radius:14px 0 0 14px; }
+    .swipe-actions.right { right:0; background:#3066be; color:#fff; border-radius:0 14px 14px 0; }
+    .swipe-actions svg { width:20px; height:20px; }
+    .swipe-content { position:relative; z-index:1; background:#fff; transition:transform .3s ease; }
+    .swipe-content .order-card { margin-bottom:0; border-radius:0; }
+    .swipe-container .order-card { margin-bottom:0; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Orders</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collection</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/leaves.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span class="drawer-item-label">Leave</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/notes.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Notes</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/expenses.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div>
+      <span class="drawer-item-label">Expenses</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/activities.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <span class="drawer-item-label">Activities</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/beatplans.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+      <span class="drawer-item-label">Beatplans</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/stock.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Stock Taking</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/returns.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></div>
+      <span class="drawer-item-label">Returns</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/visits.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <span class="drawer-item-label">Visits</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/outstanding.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10M10 20V4M14 20V10M18 20V4"/></svg></div>
+      <span class="drawer-item-label">Outstanding</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/eod.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <span class="drawer-item-label">EOD Report</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/approvals.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <span class="drawer-item-label">Approvals</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/odometer.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <span class="drawer-item-label">Odometer</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/collaterals.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <span class="drawer-item-label">Collaterals</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/tour.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+      <span class="drawer-item-label">Tour Plans</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/remarks.html')">
+      <div class="drawer-item-icon ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Day Remarks</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span class="drawer-item-label">Send Crash Report</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
+      <span class="drawer-item-label">Back Up Data</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Orders</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Pull to Refresh -->
+    <div class="ptr-indicator" id="ptr" style="height:0;opacity:0;overflow:hidden;transition:all .3s ease;display:flex;align-items:center;justify-content:center">
+      <div class="ptr-spinner"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Search & Filter -->
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search by order ID, shop name...">
+        </div>
+        <button class="filter-btn" onclick="openFilter()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <div class="filter-dot"></div>
+        </button>
+      </div>
+
+      <!-- Date Chips -->
+      <div class="date-chips">
+        <div class="date-chip active">Today</div>
+        <div class="date-chip">Yesterday</div>
+        <div class="date-chip">This Week</div>
+        <div class="date-chip">This Month</div>
+        <div class="date-chip">Custom</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="order-stats">
+        <div class="o-stat blue">
+          <div class="o-stat-val">12</div>
+          <div class="o-stat-lbl">Total</div>
+        </div>
+        <div class="o-stat amber">
+          <div class="o-stat-val">4</div>
+          <div class="o-stat-lbl">Pending</div>
+        </div>
+        <div class="o-stat green">
+          <div class="o-stat-val">6</div>
+          <div class="o-stat-lbl">Delivered</div>
+        </div>
+        <div class="o-stat red">
+          <div class="o-stat-val">₹1.2L</div>
+          <div class="o-stat-lbl">Value</div>
+        </div>
+      </div>
+
+      <!-- ═══ Order Fulfilment Section (DMS) ═══ -->
+      <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06);">
+        <div style="font-size:13px;font-weight:700;color:#1a2540;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Order Fulfilment</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;" id="fulfilTabs">
+          <div class="date-chip active" onclick="switchFulfilTab(this,'ful-received')" style="font-size:11px;padding:5px 10px;">Received <b>7</b></div>
+          <div class="date-chip" onclick="switchFulfilTab(this,'ful-invoiced')" style="font-size:11px;padding:5px 10px;">Invoiced <b>40</b></div>
+          <div class="date-chip" onclick="switchFulfilTab(this,'ful-dispatched')" style="font-size:11px;padding:5px 10px;">Dispatched <b>0</b></div>
+          <div class="date-chip" onclick="switchFulfilTab(this,'ful-delivered')" style="font-size:11px;padding:5px 10px;">Delivered <b>1</b></div>
+        </div>
+
+        <!-- Received Panel -->
+        <div id="ful-received" class="ful-panel">
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f4fb;font-size:11px;font-weight:600;color:#94a3b8;">
+            <span>GID</span><span>Items</span><span>Time</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2409036</span><span style="color:#3066be;font-weight:700;">5</span><span style="color:#64748b;">10:53</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2409516</span><span style="color:#3066be;font-weight:700;">2</span><span style="color:#64748b;">12:19</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2410274</span><span style="color:#3066be;font-weight:700;">6</span><span style="color:#64748b;">14:11</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2410288</span><span style="color:#3066be;font-weight:700;">3</span><span style="color:#64748b;">14:13</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2410343</span><span style="color:#3066be;font-weight:700;">5</span><span style="color:#64748b;">14:18</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2410434</span><span style="color:#3066be;font-weight:700;">7</span><span style="color:#64748b;">14:35</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px;color:#1a2540;">
+            <span style="font-weight:600;">2410564</span><span style="color:#3066be;font-weight:700;">5</span><span style="color:#64748b;">15:00</span>
+          </div>
+          <div style="text-align:center;margin-top:8px;font-size:11px;color:#94a3b8;">Total: 33 items across 7 orders</div>
+        </div>
+
+        <!-- Invoiced Panel -->
+        <div id="ful-invoiced" class="ful-panel" style="display:none;">
+          <div style="text-align:center;padding:16px 0;">
+            <div style="font-size:28px;font-weight:800;color:#3066be;">40</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Orders invoiced today</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #f0f4fb;font-size:12px;">
+            <span style="font-weight:600;color:#1a2540;">BFIPL46-SI-R-BU...</span>
+            <span style="color:#28a745;font-weight:600;">9 items</span>
+          </div>
+          <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:4px;">+ 39 more invoices</div>
+        </div>
+
+        <!-- Dispatched Panel -->
+        <div id="ful-dispatched" class="ful-panel" style="display:none;">
+          <div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:12px;">No dispatches yet today</div>
+        </div>
+
+        <!-- Delivered Panel -->
+        <div id="ful-delivered" class="ful-panel" style="display:none;">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;">
+            <div style="width:36px;height:36px;border-radius:10px;background:#f3e8ff;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="width:18px;height:18px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:#1a2540;">D-R/1445137-1</div>
+              <div style="font-size:11px;color:#64748b;">9 items · BFIPL46-SI-R-BU</div>
+            </div>
+            <span style="background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;">Delivered</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="order-tabs">
+        <div class="order-tab active" onclick="switchTab(this)">All <span class="tab-count">12</span></div>
+        <div class="order-tab" onclick="switchTab(this)">Pending <span class="tab-count">4</span></div>
+        <div class="order-tab" onclick="switchTab(this)">Active <span class="tab-count">3</span></div>
+        <div class="order-tab" onclick="switchTab(this)">Done <span class="tab-count">5</span></div>
+      </div>
+
+      <!-- ═══ Order Cards ═══ -->
+
+      <!-- Order 1 — Pending -->
+      <div class="order-card pending" onclick="showOrderDetail('ord1')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0147</div>
+            <div class="oc-date">Today, 09:24 AM</div>
+          </div>
+          <div class="oc-badge pending">Pending</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a1">R</div>
+          <div>
+            <div class="oc-shop-name">Ram Stores</div>
+            <div class="oc-shop-addr">New Road, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Surf Excel 1kg ×3</span>
+          <span class="oc-item-chip">Maggi 12pk ×2</span>
+          <span class="oc-item-chip oc-item-more">+4 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹8,420</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              8 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 2 — Confirmed -->
+      <div class="order-card confirmed" onclick="showOrderDetail('ord2')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0146</div>
+            <div class="oc-date">Today, 08:55 AM</div>
+          </div>
+          <div class="oc-badge confirmed">Confirmed</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a2">S</div>
+          <div>
+            <div class="oc-shop-name">Shree Traders</div>
+            <div class="oc-shop-addr">Asan Tole, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Colgate 200g ×5</span>
+          <span class="oc-item-chip">Vim Bar ×10</span>
+          <span class="oc-item-chip oc-item-more">+6 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹14,750</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              12 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 3 — Dispatched -->
+      <div class="order-card dispatched" onclick="showOrderDetail('ord3')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0145</div>
+            <div class="oc-date">Today, 08:12 AM</div>
+          </div>
+          <div class="oc-badge dispatched">Dispatched</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a3">N</div>
+          <div>
+            <div class="oc-shop-name">Nepal Mart</div>
+            <div class="oc-shop-addr">Thamel, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Clinic Plus ×4</span>
+          <span class="oc-item-chip">Horlicks 500g ×2</span>
+          <span class="oc-item-chip oc-item-more">+1 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹5,680</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              5 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 4 — Delivered -->
+      <div class="order-card delivered" onclick="showOrderDetail('ord4')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0144</div>
+            <div class="oc-date">Yesterday, 04:30 PM</div>
+          </div>
+          <div class="oc-badge delivered">Delivered</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a5">H</div>
+          <div>
+            <div class="oc-shop-name">Himalaya Shop</div>
+            <div class="oc-shop-addr">Baneshwor, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Dettol Soap ×8</span>
+          <span class="oc-item-chip">Harpic 500ml ×3</span>
+          <span class="oc-item-chip oc-item-more">+5 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹11,250</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              10 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 5 — Pending -->
+      <div class="order-card pending" onclick="showOrderDetail('ord5')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0143</div>
+            <div class="oc-date">Today, 07:45 AM</div>
+          </div>
+          <div class="oc-badge pending">Pending</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a4">S</div>
+          <div>
+            <div class="oc-shop-name">Sunrise Retail</div>
+            <div class="oc-shop-addr">Patan, Lalitpur</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Bournvita 1kg ×2</span>
+          <span class="oc-item-chip">Tide 2kg ×4</span>
+          <span class="oc-item-chip oc-item-more">+3 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹8,200</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              9 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 6 — Cancelled -->
+      <div class="order-card cancelled" onclick="showOrderDetail('ord6')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0142</div>
+            <div class="oc-date">Yesterday, 02:10 PM</div>
+          </div>
+          <div class="oc-badge cancelled">Cancelled</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a1">K</div>
+          <div>
+            <div class="oc-shop-name">Krishna Provision</div>
+            <div class="oc-shop-addr">Chabahil, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Parle-G ×20</span>
+          <span class="oc-item-chip">Good Day ×15</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹3,450</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              2 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 7 — Dispatched -->
+      <div class="order-card dispatched" onclick="showOrderDetail('ord7')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0141</div>
+            <div class="oc-date">Today, 10:05 AM</div>
+          </div>
+          <div class="oc-badge dispatched">Dispatched</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a2">B</div>
+          <div>
+            <div class="oc-shop-name">Bhaktapur Traders</div>
+            <div class="oc-shop-addr">Durbar Sq, Bhaktapur</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Lifebuoy 100g ×12</span>
+          <span class="oc-item-chip">Rin Bar ×8</span>
+          <span class="oc-item-chip oc-item-more">+2 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹6,890</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              6 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 8 — Pending -->
+      <div class="order-card pending" onclick="showOrderDetail('ord8')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0140</div>
+            <div class="oc-date">Today, 11:30 AM</div>
+          </div>
+          <div class="oc-badge pending">Pending</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a3">M</div>
+          <div>
+            <div class="oc-shop-name">Mahalaxmi Store</div>
+            <div class="oc-shop-addr">Kalimati, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Amul Butter 500g ×2</span>
+          <span class="oc-item-chip">Nescafe 200g ×3</span>
+          <span class="oc-item-chip oc-item-more">+7 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹12,340</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              11 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 9 — Delivered -->
+      <div class="order-card delivered" onclick="showOrderDetail('ord9')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0139</div>
+            <div class="oc-date">Yesterday, 11:20 AM</div>
+          </div>
+          <div class="oc-badge delivered">Delivered</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a5">P</div>
+          <div>
+            <div class="oc-shop-name">Pashupati Kirana</div>
+            <div class="oc-shop-addr">Bouddha, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Sugar 5kg ×4</span>
+          <span class="oc-item-chip">Oil 1L ×6</span>
+          <span class="oc-item-chip oc-item-more">+3 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹9,870</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              8 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 10 — Confirmed -->
+      <div class="order-card confirmed" onclick="showOrderDetail('ord10')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0138</div>
+            <div class="oc-date">Today, 09:50 AM</div>
+          </div>
+          <div class="oc-badge confirmed">Confirmed</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a2">L</div>
+          <div>
+            <div class="oc-shop-name">Lakshmi Traders</div>
+            <div class="oc-shop-addr">Balaju, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Wheel Powder 1kg ×6</span>
+          <span class="oc-item-chip">Pepsodent ×8</span>
+          <span class="oc-item-chip oc-item-more">+4 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹7,560</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              7 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 11 — Pending -->
+      <div class="order-card pending" onclick="showOrderDetail('ord11')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0137</div>
+            <div class="oc-date">Today, 12:15 PM</div>
+          </div>
+          <div class="oc-badge pending">Pending</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a4">G</div>
+          <div>
+            <div class="oc-shop-name">Ganesh Provision</div>
+            <div class="oc-shop-addr">Kirtipur, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Wai Wai ×20</span>
+          <span class="oc-item-chip">Dabur Honey ×2</span>
+          <span class="oc-item-chip oc-item-more">+1 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹4,280</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              4 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 12 — Delivered -->
+      <div class="order-card delivered" onclick="showOrderDetail('ord12')">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">#ORD-2026-0136</div>
+            <div class="oc-date">Yesterday, 03:45 PM</div>
+          </div>
+          <div class="oc-badge delivered">Delivered</div>
+        </div>
+        <div class="oc-shop">
+          <div class="oc-avatar a1">D</div>
+          <div>
+            <div class="oc-shop-name">Durga Stores</div>
+            <div class="oc-shop-addr">Jorpati, Kathmandu</div>
+          </div>
+        </div>
+        <div class="oc-items">
+          <span class="oc-item-chip">Ghee 1kg ×3</span>
+          <span class="oc-item-chip">Milk Powder ×4</span>
+          <span class="oc-item-chip oc-item-more">+6 more</span>
+        </div>
+        <div class="oc-footer">
+          <div>
+            <div class="oc-total-label">Order Total</div>
+            <div class="oc-total">₹15,680</div>
+          </div>
+          <div class="oc-meta">
+            <span class="oc-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              9 items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center" onclick="showToast('Create new order','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- FAB -->
+  <button class="fab" onclick="showToast('Opening new order form...','info')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- ═══ Order Detail Bottom Sheet ═══ -->
+  <div class="od-overlay" id="odOverlay" onclick="closeOrderDetail()"></div>
+  <div class="od-sheet" id="odSheet">
+    <div class="od-handle"></div>
+    <div class="od-header">
+      <div class="od-header-top">
+        <div class="od-title" id="odTitle">#ORD-2026-0147</div>
+        <button class="od-close" onclick="closeOrderDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="odBadgeArea"></div>
+      <div class="od-shop-bar" id="odShopBar"></div>
+    </div>
+
+    <div class="od-stats" id="odStats"></div>
+
+    <!-- Timeline -->
+    <div class="od-timeline" id="odTimeline"></div>
+
+    <!-- Line Items -->
+    <div class="od-items" id="odItems"></div>
+
+    <!-- Total -->
+    <div class="od-total-row" id="odTotal"></div>
+
+    <!-- Actions -->
+    <div class="od-actions" id="odActions"></div>
+  </div>
+
+  <!-- ═══ Filter Bottom Sheet ═══ -->
+  <div class="od-overlay" id="filterOverlay" onclick="closeFilter()"></div>
+  <div class="filter-sheet" id="filterSheet">
+    <div class="od-handle"></div>
+    <div class="filter-title">Filter Orders</div>
+
+    <div class="filter-group">
+      <div class="filter-label">Status</div>
+      <div class="filter-options">
+        <div class="filter-option selected" onclick="toggleFilter(this)">All</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Pending</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Confirmed</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Dispatched</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Delivered</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Cancelled</div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Order Value</div>
+      <div class="filter-options">
+        <div class="filter-option selected" onclick="toggleFilter(this)">Any</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Under ₹5k</div>
+        <div class="filter-option" onclick="toggleFilter(this)">₹5k–10k</div>
+        <div class="filter-option" onclick="toggleFilter(this)">₹10k–25k</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Above ₹25k</div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Sort By</div>
+      <div class="filter-options">
+        <div class="filter-option selected" onclick="toggleFilter(this)">Newest First</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Oldest First</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Highest Value</div>
+        <div class="filter-option" onclick="toggleFilter(this)">Lowest Value</div>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="filter-reset" onclick="closeFilter()">Reset</button>
+      <button class="filter-apply" onclick="closeFilter(); showToast('Filters applied','success')">Apply Filters</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── Tab switching ──
+  function switchTab(el) {
+    document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Date chip switching ──
+  document.querySelectorAll('.date-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // ── Filter sheet ──
+  function openFilter() {
+    document.getElementById('filterOverlay').classList.add('show');
+    document.getElementById('filterSheet').classList.add('show');
+  }
+  function closeFilter() {
+    document.getElementById('filterOverlay').classList.remove('show');
+    document.getElementById('filterSheet').classList.remove('show');
+  }
+  function toggleFilter(el) {
+    const siblings = el.parentElement.querySelectorAll('.filter-option');
+    siblings.forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ── Fulfilment Tab Switching ──
+  function switchFulfilTab(el, panelId) {
+    document.querySelectorAll('#fulfilTabs .date-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.ful-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(panelId).style.display = 'block';
+  }
+
+  // ── Order Detail Data ──
+  const orderData = {
+    ord1: {
+      id: '#ORD-2026-0147', status: 'pending', statusLabel: 'Pending',
+      shop: 'Ram Stores', addr: 'New Road, Kathmandu', phone: '+977 9841234567', avatar: 'R',
+      items: 8, total: '₹8,420', date: 'Today, 09:24 AM',
+      stats: [
+        { val: '8', lbl: 'Items' },
+        { val: '₹8,420', lbl: 'Total' },
+        { val: '3.2kg', lbl: 'Weight' },
+      ],
+      timeline: [
+        { label: 'Order Placed', time: '09:24 AM', status: 'done' },
+        { label: 'Awaiting Confirmation', time: 'Pending', status: 'current' },
+        { label: 'Processing', time: '—', status: 'pending' },
+        { label: 'Dispatched', time: '—', status: 'pending' },
+        { label: 'Delivered', time: '—', status: 'pending' },
+      ],
+      lines: [
+        { emoji: '📦', name: 'Surf Excel 1kg', qty: '×3', price: '₹870' },
+        { emoji: '🍜', name: 'Maggi 12pk', qty: '×2', price: '₹480' },
+        { emoji: '🧴', name: 'Dove Shampoo 350ml', qty: '×4', price: '₹1,960' },
+        { emoji: '🧹', name: 'Scotch-Brite Pad', qty: '×6', price: '₹420' },
+        { emoji: '🪥', name: 'Colgate MaxFresh', qty: '×5', price: '₹750' },
+        { emoji: '🫧', name: 'Vim Liquid 500ml', qty: '×3', price: '₹540' },
+        { emoji: '🧻', name: 'Tissue Roll 6pk', qty: '×2', price: '₹380' },
+        { emoji: '🍪', name: 'Parle-G Family', qty: '×10', price: '₹2,020' },
+      ],
+      actions: ['edit', 'share']
+    },
+    ord2: {
+      id: '#ORD-2026-0146', status: 'confirmed', statusLabel: 'Confirmed',
+      shop: 'Shree Traders', addr: 'Asan Tole, Kathmandu', phone: '+977 9851234567', avatar: 'S',
+      items: 12, total: '₹14,750', date: 'Today, 08:55 AM',
+      stats: [
+        { val: '12', lbl: 'Items' },
+        { val: '₹14,750', lbl: 'Total' },
+        { val: '5.8kg', lbl: 'Weight' },
+      ],
+      timeline: [
+        { label: 'Order Placed', time: '08:55 AM', status: 'done' },
+        { label: 'Confirmed', time: '09:10 AM', status: 'done' },
+        { label: 'Processing', time: 'In Progress', status: 'current' },
+        { label: 'Dispatched', time: '—', status: 'pending' },
+        { label: 'Delivered', time: '—', status: 'pending' },
+      ],
+      lines: [
+        { emoji: '🪥', name: 'Colgate 200g', qty: '×5', price: '₹1,250' },
+        { emoji: '🧹', name: 'Vim Bar', qty: '×10', price: '₹900' },
+        { emoji: '🧴', name: 'Head & Shoulders', qty: '×4', price: '₹1,560' },
+        { emoji: '🫧', name: 'Surf Excel Quick', qty: '×6', price: '₹2,340' },
+        { emoji: '🍜', name: 'Wai Wai Noodles', qty: '×20', price: '₹2,000' },
+        { emoji: '☕', name: 'Nescafe Classic', qty: '×3', price: '₹2,700' },
+      ],
+      actions: ['track', 'share']
+    },
+    ord3: {
+      id: '#ORD-2026-0145', status: 'dispatched', statusLabel: 'Dispatched',
+      shop: 'Nepal Mart', addr: 'Thamel, Kathmandu', phone: '+977 9861234567', avatar: 'N',
+      items: 5, total: '₹5,680', date: 'Today, 08:12 AM',
+      stats: [
+        { val: '5', lbl: 'Items' },
+        { val: '₹5,680', lbl: 'Total' },
+        { val: '2.1kg', lbl: 'Weight' },
+      ],
+      timeline: [
+        { label: 'Order Placed', time: '08:12 AM', status: 'done' },
+        { label: 'Confirmed', time: '08:20 AM', status: 'done' },
+        { label: 'Processing', time: '08:45 AM', status: 'done' },
+        { label: 'Dispatched', time: '09:30 AM', status: 'current' },
+        { label: 'Delivered', time: 'ETA 11:00 AM', status: 'pending' },
+      ],
+      lines: [
+        { emoji: '🧴', name: 'Clinic Plus 175ml', qty: '×4', price: '₹1,080' },
+        { emoji: '🥛', name: 'Horlicks 500g', qty: '×2', price: '₹1,300' },
+        { emoji: '🫧', name: 'Lifebuoy Handwash', qty: '×3', price: '₹690' },
+        { emoji: '🍵', name: 'Tata Tea Gold 250g', qty: '×2', price: '₹780' },
+        { emoji: '🧻', name: 'Harpic 500ml', qty: '×2', price: '₹1,830' },
+      ],
+      actions: ['track', 'call']
+    }
+  };
+
+  // ── Render Order Detail ──
+  function showOrderDetail(key) {
+    var d = orderData[key];
+    if (!d) {
+      showToast('Order detail preview', 'info');
+      return;
+    }
+    document.getElementById('odTitle').textContent = d.id;
+    document.getElementById('odBadgeArea').innerHTML = '<span class="oc-badge ' + d.status + '" style="display:inline-block;margin-bottom:12px;">' + d.statusLabel + '</span><span style="font-size:12px;color:#94a3b8;margin-left:8px;">' + d.date + '</span>';
+
+    document.getElementById('odShopBar').innerHTML =
+      '<div class="od-shop-avatar">' + d.avatar + '</div>' +
+      '<div><div class="od-shop-name">' + d.shop + '</div>' +
+      '<div class="od-shop-addr">' + d.addr + '</div>' +
+      '<div class="od-shop-phone">' + d.phone + '</div></div>';
+
+    var statsHtml = '';
+    d.stats.forEach(function(s) {
+      statsHtml += '<div class="od-stat-card"><div class="od-stat-val">' + s.val + '</div><div class="od-stat-lbl">' + s.lbl + '</div></div>';
+    });
+    document.getElementById('odStats').innerHTML = statsHtml;
+
+    var tlHtml = '<div class="od-tl-title">Order Timeline</div>';
+    var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    var dotSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>';
+    d.timeline.forEach(function(step) {
+      tlHtml += '<div class="od-tl-step"><div class="od-tl-dot ' + step.status + '">' + (step.status === 'done' ? checkSvg : dotSvg) + '</div><div class="od-tl-info"><div class="od-tl-label">' + step.label + '</div><div class="od-tl-time">' + step.time + '</div></div></div>';
+    });
+    document.getElementById('odTimeline').innerHTML = tlHtml;
+
+    var itemsHtml = '<div class="od-items-title">Order Items (' + d.items + ')</div>';
+    d.lines.forEach(function(line) {
+      itemsHtml += '<div class="od-line"><div class="od-line-emoji">' + line.emoji + '</div><div class="od-line-name">' + line.name + '</div><div class="od-line-qty">' + line.qty + '</div><div class="od-line-price">' + line.price + '</div></div>';
+    });
+    document.getElementById('odItems').innerHTML = itemsHtml;
+
+    document.getElementById('odTotal').innerHTML = '<div><div class="od-total-label">Grand Total</div></div><div class="od-total-val">' + d.total + '</div>';
+
+    var actHtml = '';
+    if (d.actions.indexOf('edit') >= 0) actHtml += '<button class="od-btn od-btn-primary" onclick="showToast(\'Opening editor...\',\'info\')">Edit Order</button>';
+    if (d.actions.indexOf('track') >= 0) actHtml += '<button class="od-btn od-btn-primary" onclick="showToast(\'Opening tracker...\',\'info\')">Track Order</button>';
+    if (d.actions.indexOf('share') >= 0) actHtml += '<button class="od-btn od-btn-outline" onclick="showToast(\'Share link copied\',\'success\')">Share</button>';
+    if (d.actions.indexOf('call') >= 0) actHtml += '<button class="od-btn od-btn-outline" onclick="showToast(\'Calling delivery...\',\'info\')">Call Delivery</button>';
+    document.getElementById('odActions').innerHTML = actHtml;
+
+    document.getElementById('odOverlay').classList.add('show');
+    document.getElementById('odSheet').classList.add('show');
+  }
+
+  function closeOrderDetail() {
+    document.getElementById('odOverlay').classList.remove('show');
+    document.getElementById('odSheet').classList.remove('show');
+  }
+
+  // ── Search & Tab Filter Logic ──
+  (function() {
+    var searchInput = document.querySelector('.search-input-wrap input');
+    var currentTab = 'all';
+
+    // Map tab labels to order card status classes
+    var tabStatusMap = {
+      'all': null,
+      'pending': ['pending'],
+      'active': ['confirmed', 'dispatched'],
+      'done': ['delivered', 'cancelled']
+    };
+
+    function getCardStatus(card) {
+      if (card.classList.contains('pending')) return 'pending';
+      if (card.classList.contains('confirmed')) return 'confirmed';
+      if (card.classList.contains('dispatched')) return 'dispatched';
+      if (card.classList.contains('delivered')) return 'delivered';
+      if (card.classList.contains('cancelled')) return 'cancelled';
+      return '';
+    }
+
+    function applyFilters() {
+      var query = searchInput.value.toLowerCase().trim();
+      var cards = document.querySelectorAll('.order-card');
+      var allowedStatuses = tabStatusMap[currentTab];
+
+      cards.forEach(function(card) {
+        var matchesSearch = true;
+        var matchesTab = true;
+
+        // Check search
+        if (query) {
+          var text = card.textContent.toLowerCase();
+          matchesSearch = text.indexOf(query) !== -1;
+        }
+
+        // Check tab
+        if (allowedStatuses) {
+          var status = getCardStatus(card);
+          matchesTab = allowedStatuses.indexOf(status) !== -1;
+        }
+
+        var target = card.closest('.swipe-container') || card;
+        target.style.display = (matchesSearch && matchesTab) ? '' : 'none';
+      });
+    }
+
+    // Listen to search input
+    searchInput.addEventListener('input', applyFilters);
+
+    // Override switchTab to also filter
+    window.switchTab = function(el) {
+      document.querySelectorAll('.order-tab').forEach(function(t) { t.classList.remove('active'); });
+      el.classList.add('active');
+      var label = el.textContent.trim().toLowerCase().split(' ')[0];
+      currentTab = label;
+      applyFilters();
+    };
+  })();
+
+(function(){
+  const scroll = document.querySelector('.screen-scroll');
+  let startY = 0, pulling = false;
+  const ptr = document.getElementById('ptr');
+
+  scroll.addEventListener('touchstart', function(e){
+    if(scroll.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; }
+  });
+
+  scroll.addEventListener('touchmove', function(e){
+    if(!pulling) return;
+    const dy = e.touches[0].clientY - startY;
+    if(dy > 0 && dy < 120) {
+      ptr.style.height = Math.min(dy * 0.5, 50) + 'px';
+      ptr.style.opacity = Math.min(dy / 80, 1);
+    }
+  });
+
+  scroll.addEventListener('touchend', function(){
+    if(!pulling) return;
+    pulling = false;
+    const h = parseInt(ptr.style.height) || 0;
+    if(h > 30) {
+      ptr.style.height = '50px';
+      ptr.style.opacity = '1';
+      simulateRefresh(function(){
+        ptr.style.height = '0';
+        ptr.style.opacity = '0';
+      });
+    } else {
+      ptr.style.height = '0';
+      ptr.style.opacity = '0';
+    }
+  });
+})();
+
+// ── Swipe-to-Action: Wrap order cards and add touch handling ──
+(function() {
+  var archiveIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>';
+  var reorderIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>';
+
+  // Wrap each order-card in swipe container
+  var cards = document.querySelectorAll('.content > .order-card');
+  cards.forEach(function(card) {
+    var container = document.createElement('div');
+    container.className = 'swipe-container';
+
+    var leftAction = document.createElement('div');
+    leftAction.className = 'swipe-actions left';
+    leftAction.innerHTML = archiveIcon + 'Archive';
+
+    var rightAction = document.createElement('div');
+    rightAction.className = 'swipe-actions right';
+    rightAction.innerHTML = reorderIcon + 'Reorder';
+
+    var content = document.createElement('div');
+    content.className = 'swipe-content';
+
+    card.parentNode.insertBefore(container, card);
+    content.appendChild(card);
+    container.appendChild(leftAction);
+    container.appendChild(rightAction);
+    container.appendChild(content);
+
+    card.style.marginBottom = '0';
+  });
+
+  // Touch event handling
+  var THRESHOLD = 80;
+  var activeSwipe = null;
+
+  document.querySelectorAll('.swipe-content').forEach(function(el) {
+    var startX = 0, currentX = 0, isDragging = false;
+
+    el.addEventListener('touchstart', function(e) {
+      if (activeSwipe && activeSwipe !== el) {
+        activeSwipe.style.transition = 'transform .3s ease';
+        activeSwipe.style.transform = 'translateX(0)';
+        activeSwipe = null;
+      }
+      startX = e.touches[0].clientX;
+      currentX = 0;
+      isDragging = true;
+      el.style.transition = 'none';
+    }, { passive: true });
+
+    el.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX - startX;
+      var clamped = Math.max(-100, Math.min(100, currentX));
+      el.style.transform = 'translateX(' + clamped + 'px)';
+    }, { passive: true });
+
+    el.addEventListener('touchend', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      el.style.transition = 'transform .3s ease';
+
+      if (currentX < -THRESHOLD) {
+        el.style.transform = 'translateX(-80px)';
+        activeSwipe = el;
+      } else if (currentX > THRESHOLD) {
+        el.style.transform = 'translateX(80px)';
+        activeSwipe = el;
+      } else {
+        el.style.transform = 'translateX(0)';
+        if (activeSwipe === el) activeSwipe = null;
+      }
+    });
+  });
+
+  // Action button handlers via delegation
+  document.addEventListener('click', function(e) {
+    var actionBtn = e.target.closest('.swipe-actions');
+    if (!actionBtn) return;
+    var container = actionBtn.closest('.swipe-container');
+    if (!container) return;
+
+    e.stopPropagation();
+
+    if (actionBtn.classList.contains('left')) {
+      // Archive action
+      container.style.transition = 'opacity .35s ease, max-height .35s ease';
+      container.style.opacity = '0';
+      container.style.maxHeight = container.offsetHeight + 'px';
+      setTimeout(function() {
+        container.style.maxHeight = '0';
+        container.style.marginBottom = '0';
+        container.style.overflow = 'hidden';
+      }, 10);
+      setTimeout(function() {
+        container.remove();
+      }, 400);
+      showToast('Order archived', 'success');
+    } else if (actionBtn.classList.contains('right')) {
+      // Reorder action
+      var swipeContent = container.querySelector('.swipe-content');
+      if (swipeContent) {
+        swipeContent.style.transition = 'transform .3s ease';
+        swipeContent.style.transform = 'translateX(0)';
+      }
+      activeSwipe = null;
+      showToast('Reorder created', 'success');
+    }
+  });
+
+  // Tap anywhere else to close open swipe
+  document.addEventListener('touchstart', function(e) {
+    if (activeSwipe && !e.target.closest('.swipe-container')) {
+      activeSwipe.style.transition = 'transform .3s ease';
+      activeSwipe.style.transform = 'translateX(0)';
+      activeSwipe = null;
+    }
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

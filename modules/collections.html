@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Collections — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Hero Card ── */
+    .col-hero {
+      background:linear-gradient(135deg,#28a745 0%,#20c997 100%);
+      border-radius:16px; padding:20px; color:#fff; margin-bottom:14px;
+    }
+    .col-hero-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; opacity:.8; margin-bottom:4px; }
+    .col-hero-amount { font-size:32px; font-weight:800; letter-spacing:-1px; }
+    .col-hero-sub { font-size:12px; opacity:.8; margin-top:4px; }
+    .col-hero-row { display:flex; gap:12px; margin-top:16px; }
+    .col-hero-stat {
+      flex:1; background:rgba(255,255,255,.15); border-radius:10px; padding:10px; text-align:center;
+    }
+    .col-hero-stat-val { font-size:16px; font-weight:800; }
+    .col-hero-stat-lbl { font-size:10px; opacity:.8; margin-top:2px; }
+
+    /* ── Outstanding Card ── */
+    .os-card {
+      background:#fff; border-radius:16px; padding:16px; margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); border-left:4px solid #e05252;
+    }
+    .os-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .os-title { font-size:14px; font-weight:700; color:#1a2540; }
+    .os-amount { font-size:20px; font-weight:800; color:#e05252; }
+    .os-progress-wrap { background:#fde8e8; border-radius:6px; height:6px; overflow:hidden; margin-bottom:8px; }
+    .os-progress-fill { background:#e05252; height:100%; border-radius:6px; }
+    .os-meta { display:flex; justify-content:space-between; }
+    .os-meta-item { font-size:11px; color:#94a3b8; }
+
+    /* ── Tabs ── */
+    .col-tabs { display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px; }
+    .col-tab {
+      flex:1; text-align:center; padding:8px 4px; font-size:12px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition:all .2s;
+    }
+    .col-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Collection Card ── */
+    .cc {
+      background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); cursor:pointer; transition:transform .15s;
+    }
+    .cc:active { transform:scale(.98); }
+    .cc-top { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .cc-avatar {
+      width:42px; height:42px; border-radius:12px; display:flex; align-items:center;
+      justify-content:center; font-size:17px; font-weight:700; flex-shrink:0;
+    }
+    .cc-avatar.cash { background:#e8f5ed; color:#28a745; }
+    .cc-avatar.cheque { background:#e8f0fe; color:#3066be; }
+    .cc-avatar.upi { background:#f3e8ff; color:#7c3aed; }
+    .cc-avatar.bank { background:#fef3cd; color:#d97706; }
+    .cc-info { flex:1; }
+    .cc-shop { font-size:14px; font-weight:700; color:#1a2540; }
+    .cc-id { font-size:11px; color:#94a3b8; }
+    .cc-right { text-align:right; }
+    .cc-amount { font-size:16px; font-weight:800; color:#28a745; }
+    .cc-time { font-size:11px; color:#94a3b8; margin-top:2px; }
+
+    .cc-details { display:flex; gap:8px; flex-wrap:wrap; }
+    .cc-chip {
+      padding:4px 10px; border-radius:8px; font-size:11px; font-weight:600;
+    }
+    .cc-chip.mode-cash { background:#e8f5ed; color:#28a745; }
+    .cc-chip.mode-cheque { background:#e8f0fe; color:#3066be; }
+    .cc-chip.mode-upi { background:#f3e8ff; color:#7c3aed; }
+    .cc-chip.mode-bank { background:#fef3cd; color:#d97706; }
+    .cc-chip.receipt { background:#f1f5f9; color:#64748b; }
+    .cc-chip.verified { background:#e8f5ed; color:#28a745; }
+    .cc-chip.pending-v { background:#fef3cd; color:#d97706; }
+
+    /* ── Section Header ── */
+    .sec-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; margin-top:4px; }
+    .sec-title { font-size:14px; font-weight:700; color:#1a2540; }
+    .sec-link { font-size:12px; color:#3066be; font-weight:600; cursor:pointer; }
+
+    /* ── Outstanding List ── */
+    .os-item {
+      background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:8px;
+      box-shadow:0 1px 4px rgba(0,0,0,.04); display:flex; align-items:center; gap:12px;
+    }
+    .os-item-avatar {
+      width:38px; height:38px; border-radius:10px; display:flex; align-items:center;
+      justify-content:center; font-weight:700; font-size:15px; flex-shrink:0;
+    }
+    .os-item-avatar.red { background:#fde8e8; color:#e05252; }
+    .os-item-avatar.amber { background:#fef3cd; color:#d97706; }
+    .os-item-info { flex:1; }
+    .os-item-name { font-size:13px; font-weight:700; color:#1a2540; }
+    .os-item-due { font-size:11px; color:#94a3b8; }
+    .os-item-right { text-align:right; }
+    .os-item-amt { font-size:14px; font-weight:800; color:#e05252; }
+    .os-item-btn {
+      margin-top:4px; padding:4px 12px; border-radius:8px; background:#3066be;
+      color:#fff; font-size:11px; font-weight:700; border:none; cursor:pointer;
+    }
+
+    /* ── Collect Payment Sheet ── */
+    .cp-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .cp-overlay.show { opacity:1; pointer-events:auto; }
+    .cp-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .cp-sheet.show { transform:translateX(-50%) translateY(0); }
+    .cp-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:0 auto 16px; }
+    .cp-title { font-size:18px; font-weight:800; color:#1a2540; margin-bottom:4px; }
+    .cp-sub { font-size:13px; color:#94a3b8; margin-bottom:16px; }
+
+    .cp-amount-input {
+      width:100%; padding:14px 16px; border:2px solid #e2e8f0; border-radius:14px;
+      font-size:24px; font-weight:800; color:#1a2540; text-align:center;
+      margin-bottom:16px; outline:none; box-sizing:border-box;
+    }
+    .cp-amount-input:focus { border-color:#3066be; }
+
+    .cp-mode-label { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+    .cp-modes { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
+    .cp-mode {
+      padding:10px 6px; border-radius:12px; text-align:center; cursor:pointer;
+      border:2px solid #e2e8f0; background:#fff; transition:all .2s;
+    }
+    .cp-mode.selected { border-color:#3066be; background:#e8f0fe; }
+    .cp-mode-icon { font-size:20px; margin-bottom:4px; }
+    .cp-mode-name { font-size:11px; font-weight:600; color:#1a2540; }
+
+    .cp-ref-input {
+      width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:12px;
+      font-size:13px; color:#1a2540; margin-bottom:16px; outline:none; box-sizing:border-box;
+    }
+    .cp-ref-input:focus { border-color:#3066be; }
+
+    .cp-submit {
+      width:100%; padding:14px; border-radius:14px; background:#28a745;
+      color:#fff; font-size:15px; font-weight:700; border:none; cursor:pointer;
+    }
+
+    /* ── Receipt Sheet ── */
+    .rc-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:80vh; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px; overflow-y:auto;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .rc-sheet.show { transform:translateX(-50%) translateY(0); }
+    .rc-header { text-align:center; padding-bottom:16px; border-bottom:2px dashed #e2e8f0; margin-bottom:16px; }
+    .rc-logo { font-size:24px; font-weight:800; color:#3066be; }
+    .rc-receipt-id { font-size:12px; color:#94a3b8; margin-top:4px; }
+    .rc-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+    .rc-row:last-child { border-bottom:none; }
+    .rc-label { font-size:13px; color:#64748b; }
+    .rc-value { font-size:13px; font-weight:600; color:#1a2540; }
+    .rc-total { display:flex; justify-content:space-between; padding:12px 0; border-top:2px solid #1a2540; margin-top:8px; }
+    .rc-total-label { font-size:15px; font-weight:800; color:#1a2540; }
+    .rc-total-val { font-size:18px; font-weight:800; color:#28a745; }
+    .rc-actions { display:flex; gap:8px; margin-top:16px; }
+    .rc-btn {
+      flex:1; padding:12px; border-radius:12px; font-size:13px; font-weight:700;
+      text-align:center; cursor:pointer; border:none;
+    }
+    .rc-btn-primary { background:#3066be; color:#fff; }
+    .rc-btn-outline { background:#fff; color:#3066be; border:1.5px solid #3066be; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Collections</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer (simplified for brevity — same as other pages) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="drawer-item-label">Parties</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
+    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
+    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Collections</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Pull to Refresh -->
+    <div class="ptr-indicator" id="ptr" style="height:0;opacity:0;overflow:hidden;transition:all .3s ease;display:flex;align-items:center;justify-content:center">
+      <div class="ptr-spinner"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Hero Card -->
+      <div class="col-hero">
+        <div class="col-hero-label">Today's Collection</div>
+        <div class="col-hero-amount">₹32,450</div>
+        <div class="col-hero-sub">6 payments collected from 5 parties</div>
+        <div class="col-hero-row">
+          <div class="col-hero-stat">
+            <div class="col-hero-stat-val">₹1,24,500</div>
+            <div class="col-hero-stat-lbl">Total O/S</div>
+          </div>
+          <div class="col-hero-stat">
+            <div class="col-hero-stat-val">₹1,04,000</div>
+            <div class="col-hero-stat-lbl">MTD Collected</div>
+          </div>
+          <div class="col-hero-stat">
+            <div class="col-hero-stat-val">84%</div>
+            <div class="col-hero-stat-lbl">Target</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outstanding Summary -->
+      <div class="os-card">
+        <div class="os-top">
+          <div class="os-title">Outstanding Overview</div>
+          <div class="os-amount">₹1,24,500</div>
+        </div>
+        <div class="os-progress-wrap">
+          <div class="os-progress-fill" style="width:68%;"></div>
+        </div>
+        <div class="os-meta">
+          <span class="os-meta-item">₹84,500 overdue (68%)</span>
+          <span class="os-meta-item">32 parties</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="col-tabs">
+        <div class="col-tab active" onclick="switchCTab(this)">Recent</div>
+        <div class="col-tab" onclick="switchCTab(this)">Outstanding</div>
+        <div class="col-tab" onclick="switchCTab(this)">History</div>
+      </div>
+
+      <!-- ═══ Today's Collections ═══ -->
+      <div class="sec-head">
+        <span class="sec-title">Today's Payments</span>
+        <span class="sec-link">View All</span>
+      </div>
+
+      <!-- Collection 1 — Cash -->
+      <div class="cc" onclick="showReceipt('c1')">
+        <div class="cc-top">
+          <div class="cc-avatar cash">₹</div>
+          <div class="cc-info">
+            <div class="cc-shop">Ram Stores</div>
+            <div class="cc-id">RCP-2026-0089 · New Road</div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-amount">₹8,400</div>
+            <div class="cc-time">09:35 AM</div>
+          </div>
+        </div>
+        <div class="cc-details">
+          <span class="cc-chip mode-cash">Cash</span>
+          <span class="cc-chip receipt">Receipt #0089</span>
+          <span class="cc-chip verified">Verified</span>
+        </div>
+      </div>
+
+      <!-- Collection 2 — UPI -->
+      <div class="cc" onclick="showReceipt('c2')">
+        <div class="cc-top">
+          <div class="cc-avatar upi">U</div>
+          <div class="cc-info">
+            <div class="cc-shop">Nepal Mart</div>
+            <div class="cc-id">RCP-2026-0090 · Thamel</div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-amount">₹5,600</div>
+            <div class="cc-time">10:12 AM</div>
+          </div>
+        </div>
+        <div class="cc-details">
+          <span class="cc-chip mode-upi">UPI</span>
+          <span class="cc-chip receipt">Ref: UPI8734291</span>
+          <span class="cc-chip verified">Verified</span>
+        </div>
+      </div>
+
+      <!-- Collection 3 — Cheque -->
+      <div class="cc" onclick="showReceipt('c3')">
+        <div class="cc-top">
+          <div class="cc-avatar cheque">C</div>
+          <div class="cc-info">
+            <div class="cc-shop">Shree Traders</div>
+            <div class="cc-id">RCP-2026-0091 · Asan Tole</div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-amount">₹12,000</div>
+            <div class="cc-time">11:20 AM</div>
+          </div>
+        </div>
+        <div class="cc-details">
+          <span class="cc-chip mode-cheque">Cheque</span>
+          <span class="cc-chip receipt">Chq #784512</span>
+          <span class="cc-chip pending-v">Pending Clear</span>
+        </div>
+      </div>
+
+      <!-- Collection 4 — Bank Transfer -->
+      <div class="cc" onclick="showReceipt('c4')">
+        <div class="cc-top">
+          <div class="cc-avatar bank">B</div>
+          <div class="cc-info">
+            <div class="cc-shop">Bhaktapur Traders</div>
+            <div class="cc-id">RCP-2026-0092 · Durbar Sq</div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-amount">₹3,250</div>
+            <div class="cc-time">12:45 PM</div>
+          </div>
+        </div>
+        <div class="cc-details">
+          <span class="cc-chip mode-bank">Bank Transfer</span>
+          <span class="cc-chip receipt">Ref: NEFT9012</span>
+          <span class="cc-chip verified">Verified</span>
+        </div>
+      </div>
+
+      <!-- Collection 5 — Cash -->
+      <div class="cc" onclick="showReceipt('c5')">
+        <div class="cc-top">
+          <div class="cc-avatar cash">₹</div>
+          <div class="cc-info">
+            <div class="cc-shop">Ganesh Provision</div>
+            <div class="cc-id">RCP-2026-0093 · Kirtipur</div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-amount">₹2,000</div>
+            <div class="cc-time">01:30 PM</div>
+          </div>
+        </div>
+        <div class="cc-details">
+          <span class="cc-chip mode-cash">Cash</span>
+          <span class="cc-chip receipt">Receipt #0093</span>
+          <span class="cc-chip verified">Verified</span>
+        </div>
+      </div>
+
+      <!-- Collection 6 — UPI -->
+      <div class="cc" onclick="showReceipt('c6')">
+        <div class="cc-top">
+          <div class="cc-avatar upi">U</div>
+          <div class="cc-info">
+            <div class="cc-shop">Mahalaxmi Store</div>
+            <div class="cc-id">RCP-2026-0094 · Kalimati</div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-amount">₹1,200</div>
+            <div class="cc-time">02:15 PM</div>
+          </div>
+        </div>
+        <div class="cc-details">
+          <span class="cc-chip mode-upi">UPI</span>
+          <span class="cc-chip receipt">Ref: UPI2938471</span>
+          <span class="cc-chip pending-v">Verifying</span>
+        </div>
+      </div>
+
+      <!-- ═══ Pending Collections ═══ -->
+      <div class="sec-head" style="margin-top:8px;">
+        <span class="sec-title">Pending Outstanding</span>
+        <span class="sec-link">See All</span>
+      </div>
+
+      <div class="os-item">
+        <div class="os-item-avatar red">S</div>
+        <div class="os-item-info">
+          <div class="os-item-name">Sunrise Retail</div>
+          <div class="os-item-due">Overdue 30 days · Patan</div>
+        </div>
+        <div class="os-item-right">
+          <div class="os-item-amt">₹22,350</div>
+          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Sunrise Retail','22350')">Collect</button>
+        </div>
+      </div>
+
+      <div class="os-item">
+        <div class="os-item-avatar red">C</div>
+        <div class="os-item-info">
+          <div class="os-item-name">City Bazaar</div>
+          <div class="os-item-due">Overdue 18 days · Chabahil</div>
+        </div>
+        <div class="os-item-right">
+          <div class="os-item-amt">₹19,750</div>
+          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('City Bazaar','19750')">Collect</button>
+        </div>
+      </div>
+
+      <div class="os-item">
+        <div class="os-item-avatar amber">H</div>
+        <div class="os-item-info">
+          <div class="os-item-name">Himalaya Shop</div>
+          <div class="os-item-due">Due 15 days · Patan</div>
+        </div>
+        <div class="os-item-right">
+          <div class="os-item-amt">₹14,200</div>
+          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Himalaya Shop','14200')">Collect</button>
+        </div>
+      </div>
+
+      <div class="os-item">
+        <div class="os-item-avatar red">K</div>
+        <div class="os-item-info">
+          <div class="os-item-name">Krishna Provision</div>
+          <div class="os-item-due">Overdue 22 days · Chabahil</div>
+        </div>
+        <div class="os-item-right">
+          <div class="os-item-amt">₹12,400</div>
+          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Krishna Provision','12400')">Collect</button>
+        </div>
+      </div>
+
+      <div class="os-item">
+        <div class="os-item-avatar amber">R</div>
+        <div class="os-item-info">
+          <div class="os-item-name">Ram Stores</div>
+          <div class="os-item-due">Due 10 days · New Road</div>
+        </div>
+        <div class="os-item-right">
+          <div class="os-item-amt">₹9,800</div>
+          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Ram Stores','9800')">Collect</button>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center" onclick="openCollect('','')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- FAB -->
+  <button class="fab" onclick="openCollect('','')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- ═══ Collect Payment Sheet ═══ -->
+  <div class="cp-overlay" id="cpOverlay" onclick="closeCollect()"></div>
+  <div class="cp-sheet" id="cpSheet">
+    <div class="cp-handle"></div>
+    <div class="cp-title" id="cpTitle">Collect Payment</div>
+    <div class="cp-sub" id="cpSub">Enter payment details below</div>
+    <input class="cp-amount-input" id="cpAmount" type="text" placeholder="₹ 0" inputmode="numeric">
+    <div class="cp-mode-label">Payment Mode</div>
+    <div class="cp-modes">
+      <div class="cp-mode selected" onclick="selectMode(this)">
+        <div class="cp-mode-icon">💵</div>
+        <div class="cp-mode-name">Cash</div>
+      </div>
+      <div class="cp-mode" onclick="selectMode(this)">
+        <div class="cp-mode-icon">📱</div>
+        <div class="cp-mode-name">UPI</div>
+      </div>
+      <div class="cp-mode" onclick="selectMode(this)">
+        <div class="cp-mode-icon">📝</div>
+        <div class="cp-mode-name">Cheque</div>
+      </div>
+      <div class="cp-mode" onclick="selectMode(this)">
+        <div class="cp-mode-icon">🏦</div>
+        <div class="cp-mode-name">Bank</div>
+      </div>
+    </div>
+    <input class="cp-ref-input" type="text" placeholder="Reference number (optional)">
+    <button class="cp-submit" onclick="closeCollect(); showToast('Payment recorded successfully!','success')">Record Payment</button>
+  </div>
+
+  <!-- ═══ Receipt Sheet ═══ -->
+  <div class="cp-overlay" id="rcOverlay" onclick="closeReceipt()"></div>
+  <div class="rc-sheet" id="rcSheet">
+    <div class="cp-handle"></div>
+    <div class="rc-header">
+      <div class="rc-logo">Adera Sales</div>
+      <div style="font-size:12px;color:#64748b;margin-top:2px;">Payment Receipt</div>
+      <div class="rc-receipt-id" id="rcId">RCP-2026-0089</div>
+    </div>
+    <div id="rcBody">
+      <div class="rc-row"><span class="rc-label">Party</span><span class="rc-value" id="rcParty">Ram Stores</span></div>
+      <div class="rc-row"><span class="rc-label">Date</span><span class="rc-value">08 Mar 2026, 09:35 AM</span></div>
+      <div class="rc-row"><span class="rc-label">Payment Mode</span><span class="rc-value" id="rcMode">Cash</span></div>
+      <div class="rc-row"><span class="rc-label">Reference</span><span class="rc-value" id="rcRef">—</span></div>
+      <div class="rc-row"><span class="rc-label">Collected By</span><span class="rc-value">Elon Musk</span></div>
+      <div class="rc-row"><span class="rc-label">Outstanding Before</span><span class="rc-value">₹10,800</span></div>
+      <div class="rc-total">
+        <span class="rc-total-label">Amount Paid</span>
+        <span class="rc-total-val" id="rcAmount">₹8,400</span>
+      </div>
+      <div class="rc-row"><span class="rc-label">Outstanding After</span><span class="rc-value" style="color:#28a745;font-weight:700;">₹2,400</span></div>
+    </div>
+    <div class="rc-actions">
+      <button class="rc-btn rc-btn-outline" onclick="closeReceipt()">Close</button>
+      <button class="rc-btn rc-btn-primary" onclick="showToast('Receipt shared','success')">Share Receipt</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  function switchCTab(el) {
+    document.querySelectorAll('.col-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function selectMode(el) {
+    document.querySelectorAll('.cp-mode').forEach(m => m.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function openCollect(party, amt) {
+    if (party) {
+      document.getElementById('cpTitle').textContent = 'Collect from ' + party;
+      document.getElementById('cpSub').textContent = 'Outstanding: ₹' + Number(amt).toLocaleString();
+      document.getElementById('cpAmount').value = '₹ ' + Number(amt).toLocaleString();
+    } else {
+      document.getElementById('cpTitle').textContent = 'Collect Payment';
+      document.getElementById('cpSub').textContent = 'Enter payment details below';
+      document.getElementById('cpAmount').value = '';
+    }
+    document.getElementById('cpOverlay').classList.add('show');
+    document.getElementById('cpSheet').classList.add('show');
+  }
+  function closeCollect() {
+    document.getElementById('cpOverlay').classList.remove('show');
+    document.getElementById('cpSheet').classList.remove('show');
+  }
+
+  var receiptData = {
+    c1: { id:'RCP-2026-0089', party:'Ram Stores', mode:'Cash', ref:'—', amount:'₹8,400', osBefore:'₹10,800', osAfter:'₹2,400' },
+    c2: { id:'RCP-2026-0090', party:'Nepal Mart', mode:'UPI', ref:'UPI8734291', amount:'₹5,600', osBefore:'₹6,700', osAfter:'₹1,100' },
+    c3: { id:'RCP-2026-0091', party:'Shree Traders', mode:'Cheque #784512', ref:'784512', amount:'₹12,000', osBefore:'₹19,850', osAfter:'₹7,850' },
+    c4: { id:'RCP-2026-0092', party:'Bhaktapur Traders', mode:'Bank Transfer', ref:'NEFT9012', amount:'₹3,250', osBefore:'₹21,750', osAfter:'₹18,500' },
+    c5: { id:'RCP-2026-0093', party:'Ganesh Provision', mode:'Cash', ref:'—', amount:'₹2,000', osBefore:'₹6,200', osAfter:'₹4,200' },
+    c6: { id:'RCP-2026-0094', party:'Mahalaxmi Store', mode:'UPI', ref:'UPI2938471', amount:'₹1,200', osBefore:'₹9,900', osAfter:'₹8,700' },
+  };
+
+  function showReceipt(key) {
+    var d = receiptData[key];
+    if (!d) return;
+    document.getElementById('rcId').textContent = d.id;
+    document.getElementById('rcParty').textContent = d.party;
+    document.getElementById('rcMode').textContent = d.mode;
+    document.getElementById('rcRef').textContent = d.ref;
+    document.getElementById('rcAmount').textContent = d.amount;
+    document.getElementById('rcOverlay').classList.add('show');
+    document.getElementById('rcSheet').classList.add('show');
+  }
+  function closeReceipt() {
+    document.getElementById('rcOverlay').classList.remove('show');
+    document.getElementById('rcSheet').classList.remove('show');
+  }
+
+(function(){
+  const scroll = document.querySelector('.screen-scroll');
+  let startY = 0, pulling = false;
+  const ptr = document.getElementById('ptr');
+
+  scroll.addEventListener('touchstart', function(e){
+    if(scroll.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; }
+  });
+
+  scroll.addEventListener('touchmove', function(e){
+    if(!pulling) return;
+    const dy = e.touches[0].clientY - startY;
+    if(dy > 0 && dy < 120) {
+      ptr.style.height = Math.min(dy * 0.5, 50) + 'px';
+      ptr.style.opacity = Math.min(dy / 80, 1);
+    }
+  });
+
+  scroll.addEventListener('touchend', function(){
+    if(!pulling) return;
+    pulling = false;
+    const h = parseInt(ptr.style.height) || 0;
+    if(h > 30) {
+      ptr.style.height = '50px';
+      ptr.style.opacity = '1';
+      simulateRefresh(function(){
+        ptr.style.height = '0';
+        ptr.style.opacity = '0';
+      });
+    } else {
+      ptr.style.height = '0';
+      ptr.style.opacity = '0';
+    }
+  });
+})();
+
+  // Check localStorage for pre-fill data from Outstanding page
+  (function() {
+    var prefill = localStorage.getItem('adera_collect_party');
+    if (prefill) {
+      localStorage.removeItem('adera_collect_party');
+      try {
+        var data = JSON.parse(prefill);
+        if (data.name) {
+          setTimeout(function() {
+            openCollect(data.name, data.amount || '');
+          }, 400);
+        }
+      } catch(e) {}
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Competitor Intel — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Search Area ── */
+    .ci-search-area { background:var(--primary); padding:0 14px 16px; }
+    .ci-search-wrap {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.15); border-radius:12px; padding:0 12px; height:42px;
+    }
+    .ci-search-wrap svg { width:18px; height:18px; color:rgba(255,255,255,.7); flex-shrink:0; }
+    .ci-search-wrap input { border:none; outline:none; width:100%; font-size:13px; background:transparent; color:#fff; }
+    .ci-search-wrap input::placeholder { color:rgba(255,255,255,.6); }
+
+    /* ── Stats Strip ── */
+    .ci-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+    .ci-stat {
+      background:#fff; border-radius:12px; padding:10px 6px; text-align:center;
+      box-shadow:0 1px 4px rgba(48,102,190,.08);
+    }
+    .ci-stat-val { font-size:17px; font-weight:800; }
+    .ci-stat-lbl { font-size:10px; color:#64748b; margin-top:2px; text-transform:uppercase; letter-spacing:.3px; }
+    .ci-stat.blue .ci-stat-val { color:#3066be; }
+    .ci-stat.green .ci-stat-val { color:#28a745; }
+    .ci-stat.amber .ci-stat-val { color:#f59e0b; }
+    .ci-stat.red .ci-stat-val { color:#e05252; }
+
+    /* ── Filter Tabs ── */
+    .ci-tabs { display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px; }
+    .ci-tab {
+      flex:1; text-align:center; padding:8px 4px; font-size:11px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition:all .2s; white-space:nowrap;
+    }
+    .ci-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Intel Card ── */
+    .intel-card {
+      background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); cursor:pointer; transition:transform .15s;
+      border-left:4px solid #3066be;
+    }
+    .intel-card:active { transform:scale(.98); }
+    .intel-card.type-pricing { border-left-color:#3066be; }
+    .intel-card.type-product { border-left-color:#28a745; }
+    .intel-card.type-promotion { border-left-color:#f59e0b; }
+    .intel-card.type-shelf { border-left-color:#7c3aed; }
+
+    .ic-top { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .ic-logo {
+      width:40px; height:40px; border-radius:10px; display:flex; align-items:center;
+      justify-content:center; font-size:16px; font-weight:700; flex-shrink:0;
+    }
+    .ic-logo.bg-blue { background:#e8f0fe; color:#3066be; }
+    .ic-logo.bg-green { background:#e8f5ed; color:#28a745; }
+    .ic-logo.bg-amber { background:#fef3cd; color:#d97706; }
+    .ic-logo.bg-red { background:#fde8e8; color:#e05252; }
+    .ic-logo.bg-purple { background:#f3e8ff; color:#7c3aed; }
+    .ic-logo.bg-teal { background:#e0f2fe; color:#0284c7; }
+    .ic-info { flex:1; min-width:0; }
+    .ic-brand { font-size:14px; font-weight:700; color:#1a2540; display:flex; align-items:center; gap:6px; }
+    .ic-type-badge {
+      padding:2px 8px; border-radius:12px; font-size:10px; font-weight:700;
+    }
+    .ic-type-badge.pricing { background:#e8f0fe; color:#3066be; }
+    .ic-type-badge.product { background:#e8f5ed; color:#28a745; }
+    .ic-type-badge.promotion { background:#fef3cd; color:#d97706; }
+    .ic-type-badge.shelf { background:#f3e8ff; color:#7c3aed; }
+
+    .ic-location { font-size:12px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ic-desc { font-size:13px; color:#475569; margin-bottom:8px; line-height:1.4;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+    .ic-footer { display:flex; justify-content:space-between; align-items:center; }
+    .ic-time { font-size:11px; color:#94a3b8; }
+    .ic-meta { display:flex; align-items:center; gap:10px; }
+    .ic-photos { font-size:11px; color:#64748b; display:flex; align-items:center; gap:3px; }
+    .ic-photos svg { width:13px; height:13px; }
+    .ic-reporter { font-size:11px; color:#94a3b8; }
+
+    /* ── Add Intel Sheet ── */
+    .ai-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .ai-overlay.show { opacity:1; pointer-events:auto; }
+    .ai-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:92vh; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:201; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom:32px; scrollbar-width:none;
+    }
+    .ai-sheet::-webkit-scrollbar { display:none; }
+    .ai-sheet.show { transform:translateX(-50%) translateY(0); }
+    .ai-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+
+    .ai-header {
+      display:flex; justify-content:space-between; align-items:center; padding:4px 20px 16px;
+    }
+    .ai-header-title { font-size:18px; font-weight:800; color:#1a2540; }
+    .ai-header-sub { font-size:12px; color:#94a3b8; margin-top:2px; }
+    .ai-close {
+      width:32px; height:32px; border-radius:50%; background:#f1f5f9;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .ai-close svg { width:18px; height:18px; color:#64748b; }
+
+    .ai-form { padding:0 20px; }
+    .ai-section-label { font-size:12px; font-weight:700; color:#3066be; text-transform:uppercase; letter-spacing:.5px; margin:16px 0 10px; }
+    .ai-field { margin-bottom:14px; }
+    .ai-label { font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; display:block; }
+    .ai-label .req { color:#e05252; }
+    .ai-input, .ai-select, .ai-textarea {
+      width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid #e2e8f0;
+      font-size:13px; color:#1a2540; background:#fff; font-family:inherit; outline:none;
+      transition:border-color .2s;
+    }
+    .ai-input:focus, .ai-select:focus, .ai-textarea:focus { border-color:#3066be; }
+    .ai-textarea { min-height:80px; resize:vertical; }
+
+    .ai-chips { display:flex; gap:8px; flex-wrap:wrap; }
+    .ai-chip {
+      padding:8px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      border:1.5px solid #e2e8f0; background:#fff; color:#64748b; cursor:pointer; transition:all .2s;
+    }
+    .ai-chip.active { background:#3066be; color:#fff; border-color:#3066be; }
+    .ai-chip.active.green { background:#28a745; border-color:#28a745; }
+    .ai-chip.active.amber { background:#f59e0b; border-color:#f59e0b; }
+    .ai-chip.active.purple { background:#7c3aed; border-color:#7c3aed; }
+
+    .ai-price-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+    .ai-upload-zone {
+      border:2px dashed #d1d5db; border-radius:12px; padding:24px; text-align:center;
+      cursor:pointer; transition:border-color .2s; background:#fff;
+    }
+    .ai-upload-zone:hover { border-color:#3066be; }
+    .ai-upload-zone svg { width:32px; height:32px; color:#94a3b8; margin-bottom:6px; }
+    .ai-upload-zone p { font-size:12px; color:#94a3b8; margin-top:4px; }
+
+    .ai-submit {
+      width:100%; padding:14px; border-radius:12px; border:none;
+      background:linear-gradient(135deg,#3066be,#4a90e2); color:#fff;
+      font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
+    }
+    .ai-submit:active { transform:scale(.98); }
+
+    /* ── Detail Sheet ── */
+    .id-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:300;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .id-overlay.show { opacity:1; pointer-events:auto; }
+    .id-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:88vh; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:301; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom:24px;
+    }
+    .id-sheet.show { transform:translateX(-50%) translateY(0); }
+    .id-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+
+    .id-header {
+      background:linear-gradient(135deg,#3066be 0%,#4a90e2 100%);
+      padding:20px; margin:0 0 16px; border-radius:0 0 20px 20px; color:#fff;
+    }
+    .id-header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+    .id-close {
+      width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.2);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .id-close svg { width:18px; height:18px; color:#fff; }
+    .id-brand-row { display:flex; align-items:center; gap:14px; }
+    .id-avatar {
+      width:52px; height:52px; border-radius:14px; background:rgba(255,255,255,.2);
+      display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800;
+    }
+    .id-brand-name { font-size:20px; font-weight:800; }
+    .id-type { font-size:12px; opacity:.85; margin-top:2px; }
+    .id-location { font-size:12px; opacity:.7; margin-top:2px; }
+
+    .id-section { padding:0 16px 16px; }
+    .id-section-title { font-size:13px; font-weight:700; color:#1a2540; margin-bottom:10px; }
+    .id-desc { font-size:13px; color:#475569; line-height:1.5; margin-bottom:12px; padding:0 16px; }
+
+    .id-photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .id-photo-box {
+      aspect-ratio:1; background:#e2e8f0; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .id-photo-box svg { width:24px; height:24px; color:#94a3b8; }
+
+    .id-actions { padding:0 16px; display:flex; gap:8px; }
+    .id-action-item {
+      background:#fff; border-radius:10px; padding:10px 12px; flex:1;
+      box-shadow:0 1px 3px rgba(0,0,0,.05); font-size:12px; color:#475569;
+      display:flex; align-items:center; gap:6px;
+    }
+    .id-action-item svg { width:16px; height:16px; color:#3066be; flex-shrink:0; }
+
+    .id-urgent-btn {
+      width:calc(100% - 32px); margin:16px auto 0; display:block; padding:12px;
+      border-radius:12px; border:2px solid #e05252; background:#fff;
+      color:#e05252; font-size:13px; font-weight:700; cursor:pointer; text-align:center;
+    }
+    .id-urgent-btn:active { background:#fde8e8; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Competitor Intel</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">&#128100;</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">&#127919; Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collection</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+      <span class="drawer-item-label">Competitor Intel</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Competitor Intel</div>
+      <button class="icon-btn" onclick="openAddIntel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+
+    <!-- Search Area -->
+    <div class="ci-search-area">
+      <div class="ci-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="ciSearch" placeholder="Search brands, locations, intel..." oninput="filterIntel()">
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Stats Strip -->
+      <div class="ci-stats">
+        <div class="ci-stat blue">
+          <div class="ci-stat-val">24</div>
+          <div class="ci-stat-lbl">Reports</div>
+        </div>
+        <div class="ci-stat green">
+          <div class="ci-stat-val">8</div>
+          <div class="ci-stat-lbl">Brands</div>
+        </div>
+        <div class="ci-stat amber">
+          <div class="ci-stat-val">5</div>
+          <div class="ci-stat-lbl">Price Alerts</div>
+        </div>
+        <div class="ci-stat red">
+          <div class="ci-stat-val">7</div>
+          <div class="ci-stat-lbl">This Week</div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="ci-tabs">
+        <div class="ci-tab active" onclick="filterByTab(this, 'all')">All</div>
+        <div class="ci-tab" onclick="filterByTab(this, 'pricing')">Pricing</div>
+        <div class="ci-tab" onclick="filterByTab(this, 'product')">Products</div>
+        <div class="ci-tab" onclick="filterByTab(this, 'promotion')">Promos</div>
+        <div class="ci-tab" onclick="filterByTab(this, 'shelf')">Shelf</div>
+      </div>
+
+      <!-- Intel Cards -->
+      <div id="intelList">
+
+        <!-- 1. Amul — Pricing -->
+        <div class="intel-card type-pricing" data-type="pricing" data-brand="amul" data-location="krishna store" data-desc="reduced buttermilk price by 5 per unit at krishna store" onclick="openDetail(this)" data-idx="0">
+          <div class="ic-top">
+            <div class="ic-logo bg-blue">A</div>
+            <div class="ic-info">
+              <div class="ic-brand">Amul <span class="ic-type-badge pricing">Pricing</span></div>
+              <div class="ic-location">Krishna Store, Lajpat Nagar</div>
+            </div>
+          </div>
+          <div class="ic-desc">Reduced buttermilk price by &#8377;5/unit at Krishna Store. New MRP stickers applied on shelf.</div>
+          <div class="ic-footer">
+            <span class="ic-time">2 hours ago</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 2 photos</span>
+              <span class="ic-reporter">Raj K.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Britannia — Product -->
+        <div class="intel-card type-product" data-type="product" data-brand="britannia" data-location="metro mart" data-desc="new protein biscuit variant spotted at metro mart" onclick="openDetail(this)" data-idx="1">
+          <div class="ic-top">
+            <div class="ic-logo bg-green">B</div>
+            <div class="ic-info">
+              <div class="ic-brand">Britannia <span class="ic-type-badge product">Product</span></div>
+              <div class="ic-location">Metro Mart, Saket</div>
+            </div>
+          </div>
+          <div class="ic-desc">New protein biscuit variant spotted at Metro Mart. 80g pack at &#8377;30. Positioned near health snacks aisle.</div>
+          <div class="ic-footer">
+            <span class="ic-time">3 hours ago</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 3 photos</span>
+              <span class="ic-reporter">Priya S.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Parle — Promotion -->
+        <div class="intel-card type-promotion" data-type="promotion" data-brand="parle" data-location="sharma general" data-desc="buy 2 get 1 on monaco at sharma general" onclick="openDetail(this)" data-idx="2">
+          <div class="ic-top">
+            <div class="ic-logo bg-amber">P</div>
+            <div class="ic-info">
+              <div class="ic-brand">Parle <span class="ic-type-badge promotion">Promotion</span></div>
+              <div class="ic-location">Sharma General Store, Nehru Place</div>
+            </div>
+          </div>
+          <div class="ic-desc">Buy 2 Get 1 Free on Monaco biscuits at Sharma General Store. Scheme running till month-end.</div>
+          <div class="ic-footer">
+            <span class="ic-time">Yesterday</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 1 photo</span>
+              <span class="ic-reporter">Amit V.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Nestle — Shelf -->
+        <div class="intel-card type-shelf" data-type="shelf" data-brand="nestle" data-location="city supermart" data-desc="premium shelf placement at city supermart 3 facings" onclick="openDetail(this)" data-idx="3">
+          <div class="ic-top">
+            <div class="ic-logo bg-purple">N</div>
+            <div class="ic-info">
+              <div class="ic-brand">Nestl&#233; <span class="ic-type-badge shelf">Shelf Space</span></div>
+              <div class="ic-location">City Supermart, Connaught Place</div>
+            </div>
+          </div>
+          <div class="ic-desc">Premium shelf placement at City Supermart with 3 facings at eye-level. Maggi range fully stocked.</div>
+          <div class="ic-footer">
+            <span class="ic-time">Yesterday</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 4 photos</span>
+              <span class="ic-reporter">Suman D.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ITC — Pricing -->
+        <div class="intel-card type-pricing" data-type="pricing" data-brand="itc" data-location="local kirana" data-desc="sunfeast dark fantasy 10 pack now 8" onclick="openDetail(this)" data-idx="4">
+          <div class="ic-top">
+            <div class="ic-logo bg-blue">I</div>
+            <div class="ic-info">
+              <div class="ic-brand">ITC <span class="ic-type-badge pricing">Pricing</span></div>
+              <div class="ic-location">Local Kirana, Rajouri Garden</div>
+            </div>
+          </div>
+          <div class="ic-desc">Sunfeast Dark Fantasy &#8377;10 pack now selling at &#8377;8 across multiple outlets. Possible trade scheme.</div>
+          <div class="ic-footer">
+            <span class="ic-time">2 days ago</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 1 photo</span>
+              <span class="ic-reporter">Raj K.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Dabur — Product -->
+        <div class="intel-card type-product" data-type="product" data-brand="dabur" data-location="super bazaar" data-desc="new real juice 150ml tetra pack" onclick="openDetail(this)" data-idx="5">
+          <div class="ic-top">
+            <div class="ic-logo bg-green">D</div>
+            <div class="ic-info">
+              <div class="ic-brand">Dabur <span class="ic-type-badge product">Product</span></div>
+              <div class="ic-location">Super Bazaar, Karol Bagh</div>
+            </div>
+          </div>
+          <div class="ic-desc">New Real juice 150ml tetra pack spotted. Mango and Mixed Fruit variants. Priced at &#8377;20.</div>
+          <div class="ic-footer">
+            <span class="ic-time">2 days ago</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 2 photos</span>
+              <span class="ic-reporter">Meena R.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. HUL — Promotion -->
+        <div class="intel-card type-promotion" data-type="promotion" data-brand="hul" data-location="daily needs store" data-desc="surf excel 20 percent extra free campaign" onclick="openDetail(this)" data-idx="6">
+          <div class="ic-top">
+            <div class="ic-logo bg-amber">H</div>
+            <div class="ic-info">
+              <div class="ic-brand">HUL <span class="ic-type-badge promotion">Promotion</span></div>
+              <div class="ic-location">Daily Needs Store, Dwarka</div>
+            </div>
+          </div>
+          <div class="ic-desc">Surf Excel 20% extra free campaign running aggressively. POS materials placed at billing counter.</div>
+          <div class="ic-footer">
+            <span class="ic-time">3 days ago</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 3 photos</span>
+              <span class="ic-reporter">Vikram T.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Marico — Shelf -->
+        <div class="intel-card type-shelf" data-type="shelf" data-brand="marico" data-location="big bazaar" data-desc="parachute end cap display at big bazaar" onclick="openDetail(this)" data-idx="7">
+          <div class="ic-top">
+            <div class="ic-logo bg-purple">M</div>
+            <div class="ic-info">
+              <div class="ic-brand">Marico <span class="ic-type-badge shelf">Shelf Space</span></div>
+              <div class="ic-location">Big Bazaar, Noida Sec 18</div>
+            </div>
+          </div>
+          <div class="ic-desc">Parachute end-cap display at Big Bazaar. Prominent position near hair care aisle with branding.</div>
+          <div class="ic-footer">
+            <span class="ic-time">3 days ago</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 2 photos</span>
+              <span class="ic-reporter">Priya S.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Godrej — Pricing -->
+        <div class="intel-card type-pricing" data-type="pricing" data-brand="godrej" data-location="general store" data-desc="good knight refill price matched to ours" onclick="openDetail(this)" data-idx="8">
+          <div class="ic-top">
+            <div class="ic-logo bg-teal">G</div>
+            <div class="ic-info">
+              <div class="ic-brand">Godrej <span class="ic-type-badge pricing">Pricing</span></div>
+              <div class="ic-location">Gupta General Store, Rohini</div>
+            </div>
+          </div>
+          <div class="ic-desc">Good Knight liquid refill price matched to our brand at &#8377;72. Previously was &#8377;78.</div>
+          <div class="ic-footer">
+            <span class="ic-time">This week</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 1 photo</span>
+              <span class="ic-reporter">Amit V.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. Patanjali — Product -->
+        <div class="intel-card type-product" data-type="product" data-brand="patanjali" data-location="health stores" data-desc="new organic honey variant at health stores" onclick="openDetail(this)" data-idx="9">
+          <div class="ic-top">
+            <div class="ic-logo bg-green">P</div>
+            <div class="ic-info">
+              <div class="ic-brand">Patanjali <span class="ic-type-badge product">Product</span></div>
+              <div class="ic-location">Nature Health Store, South Ex</div>
+            </div>
+          </div>
+          <div class="ic-desc">New organic honey variant at health stores. 250g jar priced at &#8377;199. Organic certification displayed.</div>
+          <div class="ic-footer">
+            <span class="ic-time">This week</span>
+            <div class="ic-meta">
+              <span class="ic-photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 2 photos</span>
+              <span class="ic-reporter">Suman D.</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /intelList -->
+
+      <!-- Empty state for no results -->
+      <div id="noResults" style="display:none; text-align:center; padding:40px 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div style="font-size:14px;font-weight:700;color:#64748b;">No matching intel found</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Try adjusting your search or filters</div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center" onclick="openAddIntel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        <span>Intel</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Add Intel Bottom Sheet ═══ -->
+  <div class="ai-overlay" id="aiOverlay" onclick="closeAddIntel()"></div>
+  <div class="ai-sheet" id="aiSheet">
+    <div class="ai-handle"></div>
+
+    <div class="ai-header">
+      <div>
+        <div class="ai-header-title">Add Intel Report</div>
+        <div class="ai-header-sub">Report competitor activity you spotted</div>
+      </div>
+      <button class="ai-close" onclick="closeAddIntel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="ai-form" id="aiForm">
+
+      <div class="ai-section-label">Competitor Details</div>
+
+      <div class="ai-field">
+        <label class="ai-label">Competitor Brand <span class="req">*</span></label>
+        <select class="ai-select" id="aiBrand">
+          <option value="">Select brand...</option>
+          <option value="amul">Amul</option>
+          <option value="britannia">Britannia</option>
+          <option value="parle">Parle</option>
+          <option value="nestle">Nestl&#233;</option>
+          <option value="itc">ITC</option>
+          <option value="dabur">Dabur</option>
+          <option value="hul">HUL</option>
+          <option value="marico">Marico</option>
+          <option value="godrej">Godrej</option>
+          <option value="patanjali">Patanjali</option>
+          <option value="colgate">Colgate-Palmolive</option>
+          <option value="pepsi">PepsiCo</option>
+        </select>
+      </div>
+
+      <div class="ai-field">
+        <label class="ai-label">Intel Type <span class="req">*</span></label>
+        <div class="ai-chips" id="aiTypeChips">
+          <div class="ai-chip active" onclick="selectIntelType(this, 'pricing')">Pricing</div>
+          <div class="ai-chip green" onclick="selectIntelType(this, 'product')">Product Launch</div>
+          <div class="ai-chip amber" onclick="selectIntelType(this, 'promotion')">Promotion</div>
+          <div class="ai-chip purple" onclick="selectIntelType(this, 'shelf')">Shelf Space</div>
+        </div>
+      </div>
+
+      <div class="ai-field">
+        <label class="ai-label">Shop / Location <span class="req">*</span></label>
+        <input class="ai-input" type="text" id="aiLocation" placeholder="e.g. Krishna Store, Lajpat Nagar">
+      </div>
+
+      <div class="ai-field">
+        <label class="ai-label">Description <span class="req">*</span></label>
+        <textarea class="ai-textarea" id="aiDesc" placeholder="Describe what you observed..."></textarea>
+      </div>
+
+      <!-- Price Comparison (shown only for Pricing type) -->
+      <div id="aiPriceSection">
+        <div class="ai-section-label">Price Comparison</div>
+        <div class="ai-price-row">
+          <div class="ai-field">
+            <label class="ai-label">Their Price (&#8377;)</label>
+            <input class="ai-input" type="number" id="aiTheirPrice" placeholder="0.00">
+          </div>
+          <div class="ai-field">
+            <label class="ai-label">Our Price (&#8377;)</label>
+            <input class="ai-input" type="number" id="aiOurPrice" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-section-label">Evidence</div>
+
+      <div class="ai-field">
+        <div class="ai-upload-zone" onclick="showToast('Camera / gallery would open here','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <p><strong>Add Photos</strong></p>
+          <p>Tap to capture or upload evidence</p>
+        </div>
+      </div>
+
+      <button class="ai-submit" onclick="submitIntel()">Submit Intel Report</button>
+    </div>
+  </div>
+
+  <!-- ═══ Intel Detail Bottom Sheet ═══ -->
+  <div class="id-overlay" id="idOverlay" onclick="closeDetail()"></div>
+  <div class="id-sheet" id="idSheet">
+    <div class="id-handle"></div>
+
+    <div class="id-header">
+      <div class="id-header-top">
+        <div class="id-brand-row">
+          <div class="id-avatar" id="idAvatar">A</div>
+          <div>
+            <div class="id-brand-name" id="idBrand">Amul</div>
+            <div class="id-type" id="idType">Pricing</div>
+            <div class="id-location" id="idLocation">Krishna Store, Lajpat Nagar</div>
+          </div>
+        </div>
+        <button class="id-close" onclick="closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="id-desc" id="idDesc">
+      Reduced buttermilk price by &#8377;5/unit at Krishna Store. New MRP stickers applied on shelf.
+    </div>
+
+    <div class="id-section">
+      <div class="id-section-title">Photos</div>
+      <div class="id-photo-grid" id="idPhotos">
+        <div class="id-photo-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <div class="id-photo-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+      </div>
+    </div>
+
+    <div class="id-section">
+      <div class="id-section-title">Action Items</div>
+      <div class="id-actions">
+        <div class="id-action-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Review pricing strategy
+        </div>
+        <div class="id-action-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          Notify manager
+        </div>
+      </div>
+    </div>
+
+    <button class="id-urgent-btn" onclick="flagUrgent()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      Flag as Urgent
+    </button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── Intel data for detail view ──
+  var intelData = [
+    { brand:'Amul', initial:'A', type:'Pricing', location:'Krishna Store, Lajpat Nagar', desc:'Reduced buttermilk price by \u20B95/unit at Krishna Store. New MRP stickers applied on shelf.', time:'2 hours ago', photos:2, reporter:'Raj K.', logoBg:'bg-blue' },
+    { brand:'Britannia', initial:'B', type:'Product', location:'Metro Mart, Saket', desc:'New protein biscuit variant spotted at Metro Mart. 80g pack at \u20B930. Positioned near health snacks aisle.', time:'3 hours ago', photos:3, reporter:'Priya S.', logoBg:'bg-green' },
+    { brand:'Parle', initial:'P', type:'Promotion', location:'Sharma General Store, Nehru Place', desc:'Buy 2 Get 1 Free on Monaco biscuits at Sharma General Store. Scheme running till month-end.', time:'Yesterday', photos:1, reporter:'Amit V.', logoBg:'bg-amber' },
+    { brand:'Nestl\u00e9', initial:'N', type:'Shelf Space', location:'City Supermart, Connaught Place', desc:'Premium shelf placement at City Supermart with 3 facings at eye-level. Maggi range fully stocked.', time:'Yesterday', photos:4, reporter:'Suman D.', logoBg:'bg-purple' },
+    { brand:'ITC', initial:'I', type:'Pricing', location:'Local Kirana, Rajouri Garden', desc:'Sunfeast Dark Fantasy \u20B910 pack now selling at \u20B98 across multiple outlets. Possible trade scheme.', time:'2 days ago', photos:1, reporter:'Raj K.', logoBg:'bg-blue' },
+    { brand:'Dabur', initial:'D', type:'Product', location:'Super Bazaar, Karol Bagh', desc:'New Real juice 150ml tetra pack spotted. Mango and Mixed Fruit variants. Priced at \u20B920.', time:'2 days ago', photos:2, reporter:'Meena R.', logoBg:'bg-green' },
+    { brand:'HUL', initial:'H', type:'Promotion', location:'Daily Needs Store, Dwarka', desc:'Surf Excel 20% extra free campaign running aggressively. POS materials placed at billing counter.', time:'3 days ago', photos:3, reporter:'Vikram T.', logoBg:'bg-amber' },
+    { brand:'Marico', initial:'M', type:'Shelf Space', location:'Big Bazaar, Noida Sec 18', desc:'Parachute end-cap display at Big Bazaar. Prominent position near hair care aisle with branding.', time:'3 days ago', photos:2, reporter:'Priya S.', logoBg:'bg-purple' },
+    { brand:'Godrej', initial:'G', type:'Pricing', location:'Gupta General Store, Rohini', desc:'Good Knight liquid refill price matched to our brand at \u20B972. Previously was \u20B978.', time:'This week', photos:1, reporter:'Amit V.', logoBg:'bg-teal' },
+    { brand:'Patanjali', initial:'P', type:'Product', location:'Nature Health Store, South Ex', desc:'New organic honey variant at health stores. 250g jar priced at \u20B9199. Organic certification displayed.', time:'This week', photos:2, reporter:'Suman D.', logoBg:'bg-green' }
+  ];
+
+  // ── Current filter state ──
+  var currentTab = 'all';
+  var currentSearch = '';
+
+  // ── Tab filtering ──
+  function filterByTab(el, type) {
+    document.querySelectorAll('.ci-tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    currentTab = type;
+    applyFilters();
+  }
+
+  // ── Search filtering ──
+  function filterIntel() {
+    currentSearch = document.getElementById('ciSearch').value.toLowerCase();
+    applyFilters();
+  }
+
+  // ── Apply combined filters ──
+  function applyFilters() {
+    var cards = document.querySelectorAll('.intel-card');
+    var visible = 0;
+    cards.forEach(function(card) {
+      var typeMatch = currentTab === 'all' || card.getAttribute('data-type') === currentTab;
+      var brand = card.getAttribute('data-brand') || '';
+      var location = card.getAttribute('data-location') || '';
+      var desc = card.getAttribute('data-desc') || '';
+      var searchMatch = !currentSearch || brand.indexOf(currentSearch) !== -1 || location.indexOf(currentSearch) !== -1 || desc.indexOf(currentSearch) !== -1;
+      if (typeMatch && searchMatch) {
+        card.style.display = '';
+        visible++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  // ── Add Intel Sheet ──
+  function openAddIntel() {
+    document.getElementById('aiOverlay').classList.add('show');
+    document.getElementById('aiSheet').classList.add('show');
+  }
+  function closeAddIntel() {
+    document.getElementById('aiOverlay').classList.remove('show');
+    document.getElementById('aiSheet').classList.remove('show');
+  }
+
+  // ── Intel type chip selection ──
+  var selectedIntelType = 'pricing';
+  function selectIntelType(el, type) {
+    document.querySelectorAll('#aiTypeChips .ai-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+    selectedIntelType = type;
+    // Show/hide price section
+    document.getElementById('aiPriceSection').style.display = type === 'pricing' ? 'block' : 'none';
+  }
+
+  // ── Submit Intel ──
+  function submitIntel() {
+    var brand = document.getElementById('aiBrand').value;
+    var location = document.getElementById('aiLocation').value.trim();
+    var desc = document.getElementById('aiDesc').value.trim();
+
+    if (!brand) { showToast('Please select a competitor brand', 'error'); return; }
+    if (!location) { showToast('Please enter the shop/location', 'error'); return; }
+    if (!desc) { showToast('Please add a description', 'error'); return; }
+
+    showToast('Intel report submitted successfully!', 'success');
+    closeAddIntel();
+
+    // Reset form
+    document.getElementById('aiBrand').value = '';
+    document.getElementById('aiLocation').value = '';
+    document.getElementById('aiDesc').value = '';
+    document.getElementById('aiTheirPrice').value = '';
+    document.getElementById('aiOurPrice').value = '';
+  }
+
+  // ── Detail Sheet ──
+  function openDetail(cardEl) {
+    var idx = parseInt(cardEl.getAttribute('data-idx'));
+    var data = intelData[idx];
+    if (!data) return;
+
+    document.getElementById('idAvatar').textContent = data.initial;
+    document.getElementById('idAvatar').className = 'id-avatar';
+    document.getElementById('idBrand').textContent = data.brand;
+    document.getElementById('idType').textContent = data.type + ' \u00B7 ' + data.time;
+    document.getElementById('idLocation').textContent = data.location;
+    document.getElementById('idDesc').textContent = data.desc;
+
+    // Build photo grid
+    var photoHtml = '';
+    for (var i = 0; i < data.photos; i++) {
+      photoHtml += '<div class="id-photo-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+    }
+    document.getElementById('idPhotos').innerHTML = photoHtml;
+
+    document.getElementById('idOverlay').classList.add('show');
+    document.getElementById('idSheet').classList.add('show');
+  }
+  function closeDetail() {
+    document.getElementById('idOverlay').classList.remove('show');
+    document.getElementById('idSheet').classList.remove('show');
+  }
+
+  // ── Flag as Urgent ──
+  function flagUrgent() {
+    showToast('Intel flagged as urgent! Manager notified.', 'warning');
+    closeDetail();
+  }
+</script>
+</body>
+</html>

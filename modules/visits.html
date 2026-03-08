@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Visits — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Date Filter Chips ── */
+    .date-chips { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; }
+    .date-chip {
+      padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      white-space:nowrap; cursor:pointer; border:1.5px solid #e2e8f0; background:#fff; color:#64748b;
+      transition: all .2s;
+    }
+    .date-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+    /* ── Stats Strip ── */
+    .visit-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
+    .visit-stat {
+      background:var(--surface); border-radius:12px; padding:12px 6px; text-align:center;
+      box-shadow:var(--shadow-sm); position:relative; overflow:hidden;
+    }
+    .visit-stat::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:12px 12px 0 0; }
+    .visit-stat.s-total::before  { background:var(--primary); }
+    .visit-stat.s-prod::before   { background:var(--success); }
+    .visit-stat.s-nonprod::before{ background:var(--danger); }
+    .visit-stat.s-avg::before    { background:var(--warning); }
+    .visit-stat-val { font-size:20px; font-weight:800; line-height:1; }
+    .visit-stat-lbl { font-size:9px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.3px; margin-top:4px; }
+
+    /* ── Visit Card ── */
+    .visit-card {
+      background:var(--surface); border-radius:14px; padding:14px; margin-bottom:10px;
+      box-shadow:var(--shadow-sm); cursor:pointer; transition:transform .15s;
+      border-left:3px solid transparent;
+    }
+    .visit-card:active { transform:scale(.98); }
+    .visit-card.order    { border-left-color:var(--success); }
+    .visit-card.collection { border-left-color:var(--primary); }
+    .visit-card.no-order { border-left-color:var(--danger); }
+    .visit-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px; }
+    .visit-card-shop { font-size:14px; font-weight:700; color:var(--text-primary); }
+    .visit-card-addr { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+    .visit-card-bottom { display:flex; align-items:center; justify-content:space-between; }
+    .visit-card-meta { display:flex; align-items:center; gap:10px; }
+    .visit-card-time { font-size:11px; color:var(--text-muted); font-weight:600; display:flex; align-items:center; gap:4px; }
+    .visit-card-time svg { width:12px; height:12px; }
+    .visit-card-dur { font-size:11px; color:var(--text-secondary); font-weight:600; background:#f0f4fb; padding:2px 8px; border-radius:8px; }
+    .visit-type-badge {
+      padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.3px;
+    }
+    .vt-order      { background:#e6f4ea; color:var(--success); }
+    .vt-collection { background:#e8f0fa; color:var(--primary); }
+    .vt-no-order   { background:#ffe8e8; color:var(--danger); }
+
+    /* ── Bottom Sheet ── */
+    .sheet-overlay {
+      position:absolute; inset:0; background:rgba(26,39,68,.5); z-index:400;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .sheet-overlay.open { opacity:1; pointer-events:all; }
+    .sheet {
+      position:absolute; bottom:-100%; left:0; right:0; z-index:500;
+      background:var(--surface); border-radius:24px 24px 0 0;
+      max-height:80%; overflow-y:auto; transition:bottom .35s cubic-bezier(.4,0,.2,1);
+      scrollbar-width:none;
+    }
+    .sheet::-webkit-scrollbar { display:none; }
+    .sheet.open { bottom:0; }
+    .sheet-handle { width:36px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto 8px; }
+    .sheet-header { padding:0 20px 12px; border-bottom:1px solid #e2e8f0; }
+    .sheet-title { font-size:16px; font-weight:700; color:var(--text-primary); }
+    .sheet-sub { font-size:12px; color:var(--text-secondary); margin-top:2px; }
+    .sheet-body { padding:16px 20px 32px; }
+    .sheet-close {
+      position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%;
+      background:#f0f4fb; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    }
+    .sheet-close svg { width:16px; height:16px; color:var(--text-secondary); }
+
+    /* ── Detail Sections ── */
+    .detail-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f4fb; }
+    .detail-label { font-size:12px; color:var(--text-secondary); }
+    .detail-value { font-size:12px; font-weight:600; color:var(--text-primary); }
+    .photo-grid { display:flex; gap:8px; margin-top:8px; }
+    .photo-thumb {
+      width:64px; height:64px; border-radius:10px; background:linear-gradient(135deg,#e8f0fa,#dce8f8);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .photo-thumb svg { width:20px; height:20px; color:var(--text-muted); }
+    .note-box {
+      background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px;
+      font-size:12px; color:var(--text-secondary); line-height:1.5; margin-top:8px;
+    }
+
+    /* ── Mini Map ── */
+    .mini-map {
+      background:linear-gradient(135deg,#e8f0fa,#dce8f8); border-radius:12px;
+      height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:6px; margin-bottom:14px;
+    }
+    .mini-map svg { width:28px; height:28px; color:var(--primary); opacity:.5; }
+    .mini-map span { font-size:11px; color:var(--text-muted); font-weight:600; }
+  </style>
+</head>
+<body>
+<p class="page-title">Adera Sales · Visit History</p>
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer (Simplified) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collections</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <span class="drawer-item-label">Visits</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Bottom Sheet Overlay -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+
+  <!-- Visit Detail Bottom Sheet -->
+  <div class="sheet" id="visitSheet">
+    <div class="sheet-handle"></div>
+    <button class="sheet-close" onclick="closeSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheetShopName">Ram Stores</div>
+      <div class="sheet-sub" id="sheetShopAddr">New Baneshwor, Kathmandu</div>
+    </div>
+    <div class="sheet-body">
+      <!-- Mini Map -->
+      <div class="mini-map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Visit Location on Map</span>
+      </div>
+
+      <!-- Visit Details -->
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Visit Details</div>
+      <div class="detail-row">
+        <span class="detail-label">Check-in Time</span>
+        <span class="detail-value">9:45 AM</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Check-out Time</span>
+        <span class="detail-value">10:20 AM</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Duration</span>
+        <span class="detail-value">35 min</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Visit Type</span>
+        <span class="detail-value" style="color:var(--success);">Order Placed</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Order Value</span>
+        <span class="detail-value">Rs 12,450</span>
+      </div>
+      <div class="detail-row" style="border-bottom:none;">
+        <span class="detail-label">Distance from Beat</span>
+        <span class="detail-value">0.2 km</span>
+      </div>
+
+      <!-- Timeline -->
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 12px;">Activity Timeline</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot success"></div>
+          <div class="timeline-time">9:45 AM</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Checked In</div>
+            <div class="timeline-desc">GPS verified · 27.6915, 85.3420</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-time">9:52 AM</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Order Created</div>
+            <div class="timeline-desc">12 items · Rs 12,450</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot warning"></div>
+          <div class="timeline-time">10:15 AM</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Photos Captured</div>
+            <div class="timeline-desc">3 shelf photos uploaded</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot success"></div>
+          <div class="timeline-time">10:20 AM</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Checked Out</div>
+            <div class="timeline-desc">Total duration: 35 min</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photos -->
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 8px;">Photos (3)</div>
+      <div class="photo-grid">
+        <div class="photo-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="photo-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="photo-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+      </div>
+
+      <!-- Notes -->
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 8px;">Notes</div>
+      <div class="note-box">
+        Good shelf visibility. Owner requested additional display rack. Follow up next week for payment of previous invoice #2847.
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Visit History</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Date Filter Chips -->
+      <div class="date-chips">
+        <div class="date-chip active" onclick="selectChip(this)">Today</div>
+        <div class="date-chip" onclick="selectChip(this)">Yesterday</div>
+        <div class="date-chip" onclick="selectChip(this)">This Week</div>
+        <div class="date-chip" onclick="selectChip(this)">This Month</div>
+      </div>
+
+      <!-- Stats Strip: 4 columns -->
+      <div class="visit-stats">
+        <div class="visit-stat s-total">
+          <div class="visit-stat-val" style="color:var(--primary);">10</div>
+          <div class="visit-stat-lbl">Total</div>
+        </div>
+        <div class="visit-stat s-prod">
+          <div class="visit-stat-val" style="color:var(--success);">7</div>
+          <div class="visit-stat-lbl">Productive</div>
+        </div>
+        <div class="visit-stat s-nonprod">
+          <div class="visit-stat-val" style="color:var(--danger);">3</div>
+          <div class="visit-stat-lbl">Non-Prod</div>
+        </div>
+        <div class="visit-stat s-avg">
+          <div class="visit-stat-val" style="color:var(--warning);">28m</div>
+          <div class="visit-stat-lbl">Avg Dur</div>
+        </div>
+      </div>
+
+      <!-- Section Header -->
+      <div class="section-header">
+        <span class="section-title">Today's Visits</span>
+        <span class="section-action">08 Mar 2026</span>
+      </div>
+
+      <!-- Visit 1: Order -->
+      <div class="visit-card order" onclick="openSheet('Ram Stores','New Baneshwor, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Ram Stores</div>
+            <div class="visit-card-addr">New Baneshwor, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-order">Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              9:45 – 10:20
+            </span>
+            <span class="visit-card-dur">35 min</span>
+          </div>
+          <span class="badge badge-success" style="font-size:9px;">Rs 12,450</span>
+        </div>
+      </div>
+
+      <!-- Visit 2: Collection -->
+      <div class="visit-card collection" onclick="openSheet('Nepal Mart','Koteshwor, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Nepal Mart</div>
+            <div class="visit-card-addr">Koteshwor, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-collection">Collection</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              10:35 – 11:05
+            </span>
+            <span class="visit-card-dur">30 min</span>
+          </div>
+          <span class="badge badge-primary" style="font-size:9px;">Rs 8,200</span>
+        </div>
+      </div>
+
+      <!-- Visit 3: Order -->
+      <div class="visit-card order" onclick="openSheet('Himalaya Shop','Putalisadak, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Himalaya Shop</div>
+            <div class="visit-card-addr">Putalisadak, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-order">Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              11:20 – 11:55
+            </span>
+            <span class="visit-card-dur">35 min</span>
+          </div>
+          <span class="badge badge-success" style="font-size:9px;">Rs 18,900</span>
+        </div>
+      </div>
+
+      <!-- Visit 4: No Order -->
+      <div class="visit-card no-order" onclick="openSheet('Shree Traders','Balaju, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Shree Traders</div>
+            <div class="visit-card-addr">Balaju, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-no-order">No Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              12:10 – 12:25
+            </span>
+            <span class="visit-card-dur">15 min</span>
+          </div>
+          <span class="badge badge-danger" style="font-size:9px;">Closed</span>
+        </div>
+      </div>
+
+      <!-- Visit 5: Order -->
+      <div class="visit-card order" onclick="openSheet('City Bazaar','Kalanki, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">City Bazaar</div>
+            <div class="visit-card-addr">Kalanki, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-order">Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              1:00 – 1:30
+            </span>
+            <span class="visit-card-dur">30 min</span>
+          </div>
+          <span class="badge badge-success" style="font-size:9px;">Rs 9,750</span>
+        </div>
+      </div>
+
+      <!-- Visit 6: No Order -->
+      <div class="visit-card no-order" onclick="openSheet('Laxmi General','Chabahil, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Laxmi General</div>
+            <div class="visit-card-addr">Chabahil, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-no-order">No Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              1:45 – 2:05
+            </span>
+            <span class="visit-card-dur">20 min</span>
+          </div>
+          <span class="badge badge-danger" style="font-size:9px;">No Stock</span>
+        </div>
+      </div>
+
+      <!-- Visit 7: Order -->
+      <div class="visit-card order" onclick="openSheet('Pokhara Wholesale','Maharajgunj, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Pokhara Wholesale</div>
+            <div class="visit-card-addr">Maharajgunj, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-order">Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              2:20 – 2:55
+            </span>
+            <span class="visit-card-dur">35 min</span>
+          </div>
+          <span class="badge badge-success" style="font-size:9px;">Rs 22,300</span>
+        </div>
+      </div>
+
+      <!-- Visit 8: Collection -->
+      <div class="visit-card collection" onclick="openSheet('Siddhartha Traders','Banasthali, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Siddhartha Traders</div>
+            <div class="visit-card-addr">Banasthali, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-collection">Collection</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              3:10 – 3:35
+            </span>
+            <span class="visit-card-dur">25 min</span>
+          </div>
+          <span class="badge badge-primary" style="font-size:9px;">Rs 15,000</span>
+        </div>
+      </div>
+
+      <!-- Visit 9: Order -->
+      <div class="visit-card order" onclick="openSheet('Everest Mart','Thamel, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Everest Mart</div>
+            <div class="visit-card-addr">Thamel, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-order">Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              3:50 – 4:20
+            </span>
+            <span class="visit-card-dur">30 min</span>
+          </div>
+          <span class="badge badge-success" style="font-size:9px;">Rs 6,800</span>
+        </div>
+      </div>
+
+      <!-- Visit 10: No Order -->
+      <div class="visit-card no-order" onclick="openSheet('Ganesh Store','Lazimpat, Kathmandu')">
+        <div class="visit-card-top">
+          <div>
+            <div class="visit-card-shop">Ganesh Store</div>
+            <div class="visit-card-addr">Lazimpat, Kathmandu</div>
+          </div>
+          <span class="visit-type-badge vt-no-order">No Order</span>
+        </div>
+        <div class="visit-card-bottom">
+          <div class="visit-card-meta">
+            <span class="visit-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              4:35 – 4:50
+            </span>
+            <span class="visit-card-dur">15 min</span>
+          </div>
+          <span class="badge badge-danger" style="font-size:9px;">Budget Issue</span>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+function openSheet(name, addr) {
+  document.getElementById('sheetShopName').textContent = name;
+  document.getElementById('sheetShopAddr').textContent = addr;
+  document.getElementById('visitSheet').classList.add('open');
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('visitSheet').classList.remove('open');
+  document.getElementById('sheetOverlay').classList.remove('open');
+}
+</script>
+</body>
+</html>

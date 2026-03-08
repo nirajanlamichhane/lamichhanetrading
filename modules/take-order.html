@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Take Order — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .search-view-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #3066be, #2554a0);
+      padding: 10px 16px 12px;
+      margin: 0 -16px;
+    }
+    .search-view-row .search-input {
+      flex: 1;
+      height: 38px;
+      border-radius: 10px;
+      border: none;
+      padding: 0 12px;
+      font-size: 13px;
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      outline: none;
+    }
+    .search-view-row .search-input::placeholder {
+      color: rgba(255,255,255,.6);
+    }
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+    }
+    .view-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .view-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .view-btn.active {
+      background: rgba(255,255,255,.35);
+    }
+    .category-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 0 8px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .category-chips::-webkit-scrollbar { display: none; }
+    .category-chip {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f0f4fb;
+      color: #5a6e8a;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+    .category-chip.active {
+      background: linear-gradient(135deg, #3066be, #2554a0);
+      color: #fff;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .product-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      transition: transform .15s;
+      position: relative;
+    }
+    .product-card:active {
+      transform: scale(.97);
+    }
+    .product-img {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      background: linear-gradient(145deg, #f0f4fb 0%, #e0eaf8 50%, #d8e4f4 100%);
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+    .product-img-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.55) 0%, rgba(0,0,0,.02) 100%);
+      padding: 8px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .product-img-overlay .product-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      text-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+    .product-img-overlay .product-pack {
+      font-size: 10px;
+      color: rgba(255,255,255,.8);
+    }
+    .product-img-overlay .price-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .product-img-overlay .mrp {
+      font-size: 10px;
+      text-decoration: line-through;
+      color: rgba(255,255,255,.6);
+    }
+    .product-img-overlay .price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #6ff09c;
+      text-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+    .product-img-overlay .stock-info {
+      font-size: 9px;
+      color: rgba(255,255,255,.75);
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+    .product-info {
+      padding: 8px 10px 10px;
+    }
+    .product-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a2744;
+      line-height: 1.3;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .product-pack {
+      font-size: 10px;
+      color: #9aabcc;
+      margin-top: 2px;
+    }
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .mrp {
+      font-size: 11px;
+      text-decoration: line-through;
+      color: #9aabcc;
+    }
+    .price {
+      font-size: 13px;
+      font-weight: 800;
+      color: #28a745;
+    }
+    .stock-info {
+      font-size: 10px;
+      color: #0d9488;
+      margin-top: 2px;
+    }
+    /* ── Fullscreen Lightbox ── */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.92);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox.open {
+      display: flex;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10001;
+    }
+    .lightbox-emoji {
+      font-size: 140px;
+      margin-bottom: 24px;
+      animation: lightboxIn .3s ease;
+    }
+    .lightbox-info {
+      text-align: center;
+      color: #fff;
+    }
+    .lightbox-info .lb-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .lightbox-info .lb-pack {
+      font-size: 14px;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 12px;
+    }
+    .lightbox-info .lb-prices {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .lightbox-info .lb-mrp {
+      font-size: 16px;
+      text-decoration: line-through;
+      color: rgba(255,255,255,.45);
+    }
+    .lightbox-info .lb-price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #6ff09c;
+    }
+    .lightbox-info .lb-stock {
+      font-size: 13px;
+      color: rgba(255,255,255,.6);
+      margin-top: 8px;
+    }
+    @keyframes lightboxIn {
+      from { transform: scale(.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .add-cart-btn {
+      width: 100%;
+      margin-top: 0;
+      padding: 8px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #28a745, #1e8c3a);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: .3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .add-cart-btn:active {
+      transform: scale(.97);
+    }
+    .add-cart-btn.added {
+      background: #e6f4ea;
+      color: #28a745;
+    }
+    .offer-tag {
+      position: absolute;
+      top: 8px; left: 8px;
+      font-size: 8px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: .3px;
+      z-index: 2;
+      box-shadow: 0 2px 6px rgba(245,158,11,.3);
+    }
+    .offer-tag-inline {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      padding: 2px 6px;
+      border-radius: 5px;
+      margin-left: 6px;
+      vertical-align: middle;
+      letter-spacing: .3px;
+    }
+    /* List View */
+    .product-list-item {
+      display: flex;
+      gap: 12px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      align-items: center;
+    }
+    .product-list-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      background: linear-gradient(145deg, #f0f4fb, #d8e4f4);
+      cursor: pointer;
+    }
+    .product-list-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .product-list-info .product-name {
+      font-size: 12px;
+    }
+    .product-list-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .product-list-bottom {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .product-list-bottom .add-cart-btn {
+      width: auto;
+      margin-top: 0;
+      padding: 6px 12px;
+      font-size: 10px;
+    }
+    .cart-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #f44336;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .top-bar-sub {
+      font-size: 10px;
+      color: rgba(255,255,255,.7);
+      margin-top: 1px;
+      font-weight: 400;
+    }
+
+    /* ── Add-to-Cart Popup ── */
+    .add-popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 10000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .add-popup-overlay.open {
+      display: flex;
+    }
+    .add-popup {
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 20px 20px 0 0;
+      padding: 0;
+      animation: popupSlideUp .3s ease;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    @keyframes popupSlideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .add-popup-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .add-popup-emoji {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #f0f4fb, #d8e4f4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .add-popup-title {
+      flex: 1;
+      min-width: 0;
+    }
+    .add-popup-title .popup-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a2744;
+    }
+    .add-popup-title .popup-pack {
+      font-size: 11px;
+      color: #7a8aaa;
+      margin-top: 2px;
+    }
+    .add-popup-title .popup-prices {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .add-popup-title .popup-mrp {
+      font-size: 12px;
+      text-decoration: line-through;
+      color: #b0b8cc;
+    }
+    .add-popup-title .popup-price {
+      font-size: 16px;
+      font-weight: 800;
+      color: #28a745;
+    }
+    .add-popup-title .popup-stock {
+      font-size: 10px;
+      color: #0d9488;
+      font-weight: 600;
+    }
+    .add-popup-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f0f2f5;
+      border: none;
+      font-size: 16px;
+      color: #5a6a8a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .add-popup-body {
+      padding: 16px 18px 20px;
+    }
+    .popup-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #5a6a8a;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 8px;
+    }
+    .popup-unit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .popup-unit-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+      background: #fff;
+    }
+    .popup-unit-card.selected {
+      border-color: #3066be;
+      background: #f0f4fb;
+    }
+    .popup-unit-card .unit-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a2744;
+    }
+    .popup-unit-card .unit-conv {
+      font-size: 10px;
+      color: #7a8aaa;
+      margin-top: 2px;
+    }
+    .popup-unit-card .unit-price {
+      font-size: 12px;
+      font-weight: 700;
+      color: #28a745;
+      margin-top: 4px;
+    }
+    .popup-qty-section {
+      margin-bottom: 18px;
+    }
+    .popup-qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .popup-qty-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3066be;
+      transition: all .15s;
+    }
+    .popup-qty-btn:active {
+      background: #e8f0fa;
+      transform: scale(.95);
+    }
+    .popup-qty-input {
+      width: 72px;
+      height: 48px;
+      border-radius: 12px;
+      border: 2px solid #3066be;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #1a2744;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .popup-qty-input::-webkit-outer-spin-button,
+    .popup-qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .popup-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 1px solid #f0f2f5;
+      margin-bottom: 14px;
+    }
+    .popup-total-label {
+      font-size: 13px;
+      color: #5a6a8a;
+      font-weight: 600;
+    }
+    .popup-total-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1a2744;
+    }
+    .popup-confirm-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #28a745, #1e8c3a);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: .3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform .15s;
+    }
+    .popup-confirm-btn:active {
+      transform: scale(.97);
+    }
+    .popup-note {
+      text-align: center;
+      font-size: 10px;
+      color: #9aabcc;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Take Order</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collection</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/leaves.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span class="drawer-item-label">Leave</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/notes.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Notes</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/expenses.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div>
+      <span class="drawer-item-label">Expenses</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/activities.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <span class="drawer-item-label">Activities</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/beatplans.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+      <span class="drawer-item-label">Beatplans</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/stock.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Stock Taking</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/returns.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></div>
+      <span class="drawer-item-label">Returns</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/visits.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <span class="drawer-item-label">Visits</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/outstanding.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10M10 20V4M14 20V10M18 20V4"/></svg></div>
+      <span class="drawer-item-label">Outstanding</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/eod.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <span class="drawer-item-label">EOD Report</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/approvals.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <span class="drawer-item-label">Approvals</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/odometer.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <span class="drawer-item-label">Odometer</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/collaterals.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <span class="drawer-item-label">Collaterals</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/tour.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+      <span class="drawer-item-label">Tour Plans</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/remarks.html')">
+      <div class="drawer-item-icon ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Day Remarks</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span class="drawer-item-label">Send Crash Report</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
+      <span class="drawer-item-label">Back Up Data</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div style="flex:1;min-width:0;">
+        <div class="top-bar-title" style="font-size:16px;">Take Order</div>
+        <div class="top-bar-sub">Himalaya Shop · Thamel</div>
+      </div>
+      <button class="icon-btn" style="position:relative;" onclick="goTo('cart.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="cart-badge">3</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:0;">
+
+      <!-- Search + View Toggle -->
+      <div class="search-view-row">
+        <input type="text" class="search-input" placeholder="Search products...">
+        <button class="view-btn" onclick="showToast('Opening barcode scanner...','info')" title="Scan Barcode" style="flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/><line x1="13" y1="8" x2="13" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg>
+        </button>
+        <div class="view-toggle">
+          <button class="view-btn active" id="gridBtn" onclick="toggleView('grid')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" id="listBtn" onclick="toggleView('list')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="category-chips">
+        <button class="category-chip active" onclick="selectCategory(this)">All</button>
+        <button class="category-chip" onclick="selectCategory(this)">Soaps</button>
+        <button class="category-chip" onclick="selectCategory(this)">Shampoo</button>
+        <button class="category-chip" onclick="selectCategory(this)">Detergent</button>
+        <button class="category-chip" onclick="selectCategory(this)">Dental</button>
+        <button class="category-chip" onclick="selectCategory(this)">Skincare</button>
+        <button class="category-chip" onclick="selectCategory(this)">Hair Care</button>
+        <button class="category-chip" onclick="selectCategory(this)" style="background:linear-gradient(135deg,#fef3cd,#fde68a);color:#92400e;border:1px solid #fbbf24;">★ Last Ordered</button>
+      </div>
+
+      <!-- GRID VIEW (default) -->
+      <div id="gridView" class="product-grid">
+
+        <!-- Product 1 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧼','Adera Soap 500g','500g','₹120','₹98','48')">🧼
+            <div class="offer-tag">Buy 2 Get 1</div>
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Soap 500g</div>
+              <div class="price-row"><span class="mrp">₹120</span><span class="price">₹98</span></div>
+              <div class="stock-info">Stock: 48</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn added" onclick="openAddPopup(0)">✓ Added (2)</button>
+          </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧴','Adera Shampoo 200ml','200ml','₹180','₹145','32')">🧴
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Shampoo 200ml</div>
+              <div class="price-row"><span class="mrp">₹180</span><span class="price">₹145</span></div>
+              <div class="stock-info">Stock: 32</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn added" onclick="openAddPopup(1)">✓ Added (1)</button>
+          </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🫧','Adera Detergent 1kg','1kg','₹220','₹185','24')">🫧
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Detergent 1kg</div>
+              <div class="price-row"><span class="mrp">₹220</span><span class="price">₹185</span></div>
+              <div class="stock-info">Stock: 24</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(2)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 4 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🪥','Adera Toothpaste 150g','150g','₹85','₹68','56')">🪥
+            <div class="offer-tag">5% off on 3+</div>
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Toothpaste 150g</div>
+              <div class="price-row"><span class="mrp">₹85</span><span class="price">₹68</span></div>
+              <div class="stock-info">Stock: 56</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn added" onclick="openAddPopup(3)">✓ Added (3)</button>
+          </div>
+        </div>
+
+        <!-- Product 5 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧴','Adera Body Lotion 300ml','300ml','₹250','₹210','18')">🧴
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Body Lotion 300ml</div>
+              <div class="price-row"><span class="mrp">₹250</span><span class="price">₹210</span></div>
+              <div class="stock-info">Stock: 18</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(4)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 6 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧼','Adera Face Wash 100ml','100ml','₹150','₹125','40')">🧼
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Face Wash 100ml</div>
+              <div class="price-row"><span class="mrp">₹150</span><span class="price">₹125</span></div>
+              <div class="stock-info">Stock: 40</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(5)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 7 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧴','Adera Hair Oil 200ml','200ml','₹140','₹115','36')">🧴
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Hair Oil 200ml</div>
+              <div class="price-row"><span class="mrp">₹140</span><span class="price">₹115</span></div>
+              <div class="stock-info">Stock: 36</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(6)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 8 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧼','Adera Hand Wash 250ml','250ml','₹95','₹78','52')">🧼
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Hand Wash 250ml</div>
+              <div class="price-row"><span class="mrp">₹95</span><span class="price">₹78</span></div>
+              <div class="stock-info">Stock: 52</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(7)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 9 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🫧','Adera Dish Wash 500ml','500ml','₹110','₹92','30')">🫧
+            <div class="offer-tag">10% off</div>
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Dish Wash 500ml</div>
+              <div class="price-row"><span class="mrp">₹110</span><span class="price">₹92</span></div>
+              <div class="stock-info">Stock: 30</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(8)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 10 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🪥','Adera Mouthwash 250ml','250ml','₹160','₹132','22')">🪥
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Mouthwash 250ml</div>
+              <div class="price-row"><span class="mrp">₹160</span><span class="price">₹132</span></div>
+              <div class="stock-info">Stock: 22</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(9)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 11 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧴','Adera Conditioner 200ml','200ml','₹200','₹168','28')">🧴
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Conditioner 200ml</div>
+              <div class="price-row"><span class="mrp">₹200</span><span class="price">₹168</span></div>
+              <div class="stock-info">Stock: 28</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(10)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Product 12 -->
+        <div class="product-card">
+          <div class="product-img" ondblclick="openLightbox('🧼','Adera Sanitizer 500ml','500ml','₹130','₹108','44')">🧼
+            <div class="product-img-overlay">
+              <div class="product-name">Adera Sanitizer 500ml</div>
+              <div class="price-row"><span class="mrp">₹130</span><span class="price">₹108</span></div>
+              <div class="stock-info">Stock: 44</div>
+            </div>
+          </div>
+          <div class="product-info">
+            <button class="add-cart-btn" onclick="openAddPopup(11)">+ Add</button>
+          </div>
+        </div>
+
+      </div><!-- /gridView -->
+
+      <!-- LIST VIEW (hidden by default) -->
+      <div id="listView" style="display:none;">
+
+        <!-- Product 1 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧼','Adera Soap 500g','500g','₹120','₹98','48')">🧼</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Soap 500g <span class="offer-tag-inline">Buy 2 Get 1</span></div>
+            <div class="product-pack">Pack: 500g</div>
+            <div class="stock-info">Stock: 48</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn added" onclick="openAddPopup(0)">✓ Added (2)</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹120</span>
+            <span class="price">₹98</span>
+          </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧴','Adera Shampoo 200ml','200ml','₹180','₹145','32')">🧴</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Shampoo 200ml</div>
+            <div class="product-pack">Pack: 200ml</div>
+            <div class="stock-info">Stock: 32</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn added" onclick="openAddPopup(1)">✓ Added (1)</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹180</span>
+            <span class="price">₹145</span>
+          </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🫧','Adera Detergent 1kg','1kg','₹220','₹185','24')">🫧</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Detergent 1kg</div>
+            <div class="product-pack">Pack: 1kg</div>
+            <div class="stock-info">Stock: 24</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(2)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹220</span>
+            <span class="price">₹185</span>
+          </div>
+        </div>
+
+        <!-- Product 4 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🪥','Adera Toothpaste 150g','150g','₹85','₹68','56')">🪥</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Toothpaste 150g <span class="offer-tag-inline">5% off on 3+</span></div>
+            <div class="product-pack">Pack: 150g</div>
+            <div class="stock-info">Stock: 56</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn added" onclick="openAddPopup(3)">✓ Added (3)</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹85</span>
+            <span class="price">₹68</span>
+          </div>
+        </div>
+
+        <!-- Product 5 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧴','Adera Body Lotion 300ml','300ml','₹250','₹210','18')">🧴</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Body Lotion 300ml</div>
+            <div class="product-pack">Pack: 300ml</div>
+            <div class="stock-info">Stock: 18</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(4)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹250</span>
+            <span class="price">₹210</span>
+          </div>
+        </div>
+
+        <!-- Product 6 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧼','Adera Face Wash 100ml','100ml','₹150','₹125','40')">🧼</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Face Wash 100ml</div>
+            <div class="product-pack">Pack: 100ml</div>
+            <div class="stock-info">Stock: 40</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(5)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹150</span>
+            <span class="price">₹125</span>
+          </div>
+        </div>
+
+        <!-- Product 7 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧴','Adera Hair Oil 200ml','200ml','₹140','₹115','36')">🧴</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Hair Oil 200ml</div>
+            <div class="product-pack">Pack: 200ml</div>
+            <div class="stock-info">Stock: 36</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(6)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹140</span>
+            <span class="price">₹115</span>
+          </div>
+        </div>
+
+        <!-- Product 8 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧼','Adera Hand Wash 250ml','250ml','₹95','₹78','52')">🧼</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Hand Wash 250ml</div>
+            <div class="product-pack">Pack: 250ml</div>
+            <div class="stock-info">Stock: 52</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(7)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹95</span>
+            <span class="price">₹78</span>
+          </div>
+        </div>
+
+        <!-- Product 9 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🫧','Adera Dish Wash 500ml','500ml','₹110','₹92','30')">🫧</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Dish Wash 500ml <span class="offer-tag-inline">10% off</span></div>
+            <div class="product-pack">Pack: 500ml</div>
+            <div class="stock-info">Stock: 30</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(8)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹110</span>
+            <span class="price">₹92</span>
+          </div>
+        </div>
+
+        <!-- Product 10 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🪥','Adera Mouthwash 250ml','250ml','₹160','₹132','22')">🪥</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Mouthwash 250ml</div>
+            <div class="product-pack">Pack: 250ml</div>
+            <div class="stock-info">Stock: 22</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(9)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹160</span>
+            <span class="price">₹132</span>
+          </div>
+        </div>
+
+        <!-- Product 11 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧴','Adera Conditioner 200ml','200ml','₹200','₹168','28')">🧴</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Conditioner 200ml</div>
+            <div class="product-pack">Pack: 200ml</div>
+            <div class="stock-info">Stock: 28</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(10)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹200</span>
+            <span class="price">₹168</span>
+          </div>
+        </div>
+
+        <!-- Product 12 -->
+        <div class="product-list-item">
+          <div class="product-list-img" ondblclick="openLightbox('🧼','Adera Sanitizer 500ml','500ml','₹130','₹108','44')">🧼</div>
+          <div class="product-list-info">
+            <div class="product-name">Adera Sanitizer 500ml</div>
+            <div class="product-pack">Pack: 500ml</div>
+            <div class="stock-info">Stock: 44</div>
+            <div class="product-list-bottom">
+              <button class="add-cart-btn" onclick="openAddPopup(11)">+ Add</button>
+            </div>
+          </div>
+          <div class="product-list-right">
+            <span class="mrp">MRP: ₹130</span>
+            <span class="price">₹108</span>
+          </div>
+        </div>
+
+      </div><!-- /listView -->
+
+      <div style="height:80px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+</div><!-- /phone-frame -->
+
+<!-- Fullscreen Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event)">✕</button>
+  <div class="lightbox-emoji" id="lbEmoji"></div>
+  <div class="lightbox-info">
+    <div class="lb-name" id="lbName"></div>
+    <div class="lb-pack" id="lbPack"></div>
+    <div class="lb-prices">
+      <span class="lb-mrp" id="lbMrp"></span>
+      <span class="lb-price" id="lbPrice"></span>
+    </div>
+    <div class="lb-stock" id="lbStock"></div>
+  </div>
+</div>
+
+<!-- Add to Cart Popup -->
+<div class="add-popup-overlay" id="addPopup" onclick="closeAddPopup(event)">
+  <div class="add-popup" onclick="event.stopPropagation()">
+    <div class="add-popup-header">
+      <div class="add-popup-emoji" id="popupEmoji"></div>
+      <div class="add-popup-title">
+        <div class="popup-name" id="popupName"></div>
+        <div class="popup-pack" id="popupPack"></div>
+        <div class="popup-prices">
+          <span class="popup-mrp" id="popupMrp"></span>
+          <span class="popup-price" id="popupPrice"></span>
+        </div>
+        <div class="popup-stock" id="popupStock"></div>
+      </div>
+      <button class="add-popup-close" onclick="closeAddPopup(event)">✕</button>
+    </div>
+    <div class="add-popup-body">
+
+      <div class="popup-section-label">Select Unit</div>
+      <div class="popup-unit-grid" id="popupUnits">
+        <!-- Units rendered by JS -->
+      </div>
+
+      <div class="popup-section-label">Quantity</div>
+      <div class="popup-qty-section">
+        <div class="popup-qty-row">
+          <button class="popup-qty-btn" onclick="popupChangeQty(-1)">−</button>
+          <input type="number" class="popup-qty-input" id="popupQtyInput" value="1" min="1" max="999" oninput="updatePopupTotal()">
+          <button class="popup-qty-btn" onclick="popupChangeQty(1)">+</button>
+        </div>
+      </div>
+
+      <div class="popup-total-row">
+        <span class="popup-total-label">Total</span>
+        <span class="popup-total-value" id="popupTotal">₹0</span>
+      </div>
+
+      <button class="popup-confirm-btn" onclick="confirmAddToCart()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        Add to Cart
+      </button>
+      <div class="popup-note">Units fetched from server · Prices may vary by unit</div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  /* ── Product Data ── */
+  var products = [
+    { emoji:'🧼', name:'Adera Soap 500g', pack:'500g', mrp:120, price:98, stock:48,
+      units: [
+        { name:'Piece', conv:'1 pc', price:98 },
+        { name:'Box', conv:'12 pcs/box', price:1100 },
+        { name:'Carton', conv:'48 pcs/ctn', price:4200 },
+        { name:'Dozen', conv:'12 pcs', price:1100 }
+      ]
+    },
+    { emoji:'🧴', name:'Adera Shampoo 200ml', pack:'200ml', mrp:180, price:145, stock:32,
+      units: [
+        { name:'Piece', conv:'1 pc', price:145 },
+        { name:'Box', conv:'6 pcs/box', price:820 },
+        { name:'Carton', conv:'24 pcs/ctn', price:3200 },
+        { name:'Dozen', conv:'12 pcs', price:1620 }
+      ]
+    },
+    { emoji:'🫧', name:'Adera Detergent 1kg', pack:'1kg', mrp:220, price:185, stock:24,
+      units: [
+        { name:'Piece', conv:'1 pc', price:185 },
+        { name:'Box', conv:'10 pcs/box', price:1750 },
+        { name:'Carton', conv:'40 pcs/ctn', price:6800 }
+      ]
+    },
+    { emoji:'🪥', name:'Adera Toothpaste 150g', pack:'150g', mrp:85, price:68, stock:56,
+      units: [
+        { name:'Piece', conv:'1 pc', price:68 },
+        { name:'Box', conv:'12 pcs/box', price:780 },
+        { name:'Carton', conv:'48 pcs/ctn', price:3000 },
+        { name:'Dozen', conv:'12 pcs', price:780 }
+      ]
+    },
+    { emoji:'🧴', name:'Adera Body Lotion 300ml', pack:'300ml', mrp:250, price:210, stock:18,
+      units: [
+        { name:'Piece', conv:'1 pc', price:210 },
+        { name:'Box', conv:'6 pcs/box', price:1200 },
+        { name:'Carton', conv:'24 pcs/ctn', price:4600 }
+      ]
+    },
+    { emoji:'🧼', name:'Adera Face Wash 100ml', pack:'100ml', mrp:150, price:125, stock:40,
+      units: [
+        { name:'Piece', conv:'1 pc', price:125 },
+        { name:'Box', conv:'6 pcs/box', price:710 },
+        { name:'Carton', conv:'24 pcs/ctn', price:2760 }
+      ]
+    },
+    { emoji:'🧴', name:'Adera Hair Oil 200ml', pack:'200ml', mrp:140, price:115, stock:36,
+      units: [
+        { name:'Piece', conv:'1 pc', price:115 },
+        { name:'Box', conv:'6 pcs/box', price:660 },
+        { name:'Carton', conv:'24 pcs/ctn', price:2520 }
+      ]
+    },
+    { emoji:'🧼', name:'Adera Hand Wash 250ml', pack:'250ml', mrp:95, price:78, stock:52,
+      units: [
+        { name:'Piece', conv:'1 pc', price:78 },
+        { name:'Box', conv:'12 pcs/box', price:900 },
+        { name:'Carton', conv:'48 pcs/ctn', price:3400 }
+      ]
+    },
+    { emoji:'🫧', name:'Adera Dish Wash 500ml', pack:'500ml', mrp:110, price:92, stock:30,
+      units: [
+        { name:'Piece', conv:'1 pc', price:92 },
+        { name:'Box', conv:'12 pcs/box', price:1060 },
+        { name:'Carton', conv:'48 pcs/ctn', price:4080 }
+      ]
+    },
+    { emoji:'🪥', name:'Adera Mouthwash 250ml', pack:'250ml', mrp:160, price:132, stock:22,
+      units: [
+        { name:'Piece', conv:'1 pc', price:132 },
+        { name:'Box', conv:'6 pcs/box', price:750 },
+        { name:'Carton', conv:'24 pcs/ctn', price:2900 }
+      ]
+    },
+    { emoji:'🧴', name:'Adera Conditioner 200ml', pack:'200ml', mrp:200, price:168, stock:28,
+      units: [
+        { name:'Piece', conv:'1 pc', price:168 },
+        { name:'Box', conv:'6 pcs/box', price:960 },
+        { name:'Carton', conv:'24 pcs/ctn', price:3720 }
+      ]
+    },
+    { emoji:'🧼', name:'Adera Sanitizer 500ml', pack:'500ml', mrp:130, price:108, stock:44,
+      units: [
+        { name:'Piece', conv:'1 pc', price:108 },
+        { name:'Box', conv:'12 pcs/box', price:1240 },
+        { name:'Carton', conv:'48 pcs/ctn', price:4760 }
+      ]
+    }
+  ];
+
+  var currentProductIdx = -1;
+  var currentUnitIdx = 0;
+
+  /* ── View Toggle ── */
+  function toggleView(view) {
+    var gridView = document.getElementById('gridView');
+    var listView = document.getElementById('listView');
+    var gridBtn = document.getElementById('gridBtn');
+    var listBtn = document.getElementById('listBtn');
+    if (view === 'grid') {
+      gridView.style.display = 'grid';
+      listView.style.display = 'none';
+      gridBtn.classList.add('active');
+      listBtn.classList.remove('active');
+    } else {
+      gridView.style.display = 'none';
+      listView.style.display = 'block';
+      gridBtn.classList.remove('active');
+      listBtn.classList.add('active');
+    }
+  }
+
+  function selectCategory(chip) {
+    document.querySelectorAll('.category-chip').forEach(function(c) {
+      c.classList.remove('active');
+    });
+    chip.classList.add('active');
+  }
+
+  /* ── Lightbox ── */
+  function openLightbox(emoji, name, pack, mrp, price, stock) {
+    document.getElementById('lbEmoji').textContent = emoji;
+    document.getElementById('lbName').textContent = name;
+    document.getElementById('lbPack').textContent = 'Pack: ' + pack;
+    document.getElementById('lbMrp').textContent = 'MRP: ' + mrp;
+    document.getElementById('lbPrice').textContent = price;
+    document.getElementById('lbStock').textContent = 'Available Stock: ' + stock + ' units';
+    document.getElementById('lightbox').classList.add('open');
+  }
+
+  function closeLightbox(e) {
+    if (e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')) {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+  }
+
+  /* ── Add Popup ── */
+  function openAddPopup(idx) {
+    currentProductIdx = idx;
+    currentUnitIdx = 0;
+    var p = products[idx];
+
+    document.getElementById('popupEmoji').textContent = p.emoji;
+    document.getElementById('popupName').textContent = p.name;
+    document.getElementById('popupPack').textContent = 'Pack: ' + p.pack;
+    document.getElementById('popupMrp').textContent = 'MRP ₹' + p.mrp;
+    document.getElementById('popupPrice').textContent = '₹' + p.price;
+    document.getElementById('popupStock').textContent = 'Available: ' + p.stock + ' in stock';
+
+    // Render unit cards
+    var unitsHtml = '';
+    for (var i = 0; i < p.units.length; i++) {
+      var u = p.units[i];
+      var sel = i === 0 ? ' selected' : '';
+      unitsHtml += '<div class="popup-unit-card' + sel + '" onclick="selectUnit(' + i + ')">';
+      unitsHtml += '<div class="unit-name">' + u.name + '</div>';
+      unitsHtml += '<div class="unit-conv">' + u.conv + '</div>';
+      unitsHtml += '<div class="unit-price">₹' + u.price + '</div>';
+      unitsHtml += '</div>';
+    }
+    document.getElementById('popupUnits').innerHTML = unitsHtml;
+
+    document.getElementById('popupQtyInput').value = 1;
+    updatePopupTotal();
+    document.getElementById('addPopup').classList.add('open');
+  }
+
+  function selectUnit(idx) {
+    currentUnitIdx = idx;
+    var cards = document.querySelectorAll('.popup-unit-card');
+    cards.forEach(function(c) { c.classList.remove('selected'); });
+    cards[idx].classList.add('selected');
+    updatePopupTotal();
+  }
+
+  function popupChangeQty(delta) {
+    var input = document.getElementById('popupQtyInput');
+    var val = parseInt(input.value) || 1;
+    val = Math.max(1, Math.min(999, val + delta));
+    input.value = val;
+    updatePopupTotal();
+  }
+
+  function updatePopupTotal() {
+    if (currentProductIdx < 0) return;
+    var p = products[currentProductIdx];
+    var u = p.units[currentUnitIdx];
+    var qty = parseInt(document.getElementById('popupQtyInput').value) || 1;
+    var total = u.price * qty;
+    document.getElementById('popupTotal').textContent = '₹' + total.toLocaleString('en-IN');
+  }
+
+  function closeAddPopup(e) {
+    if (e && e.target !== document.getElementById('addPopup') && !e.target.classList.contains('add-popup-close')) return;
+    document.getElementById('addPopup').classList.remove('open');
+  }
+
+  function confirmAddToCart() {
+    var p = products[currentProductIdx];
+    var u = p.units[currentUnitIdx];
+    var qty = parseInt(document.getElementById('popupQtyInput').value) || 1;
+
+    // Update button states in both views
+    var gridBtns = document.querySelectorAll('#gridView .add-cart-btn');
+    var listBtns = document.querySelectorAll('#listView .add-cart-btn');
+    if (gridBtns[currentProductIdx]) {
+      gridBtns[currentProductIdx].classList.add('added');
+      gridBtns[currentProductIdx].textContent = '✓ Added (' + qty + ' ' + u.name + ')';
+    }
+    if (listBtns[currentProductIdx]) {
+      listBtns[currentProductIdx].classList.add('added');
+      listBtns[currentProductIdx].textContent = '✓ Added (' + qty + ' ' + u.name + ')';
+    }
+
+    document.getElementById('addPopup').classList.remove('open');
+  }
+
+  /* ── Keyboard ── */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('addPopup').classList.remove('open');
+    }
+  });
+
+  // Check localStorage for pre-selected party from Parties page
+  (function() {
+    var partyName = localStorage.getItem('adera_order_party');
+    if (partyName) {
+      localStorage.removeItem('adera_order_party');
+      var subEl = document.querySelector('.top-bar-sub');
+      if (subEl) {
+        subEl.textContent = partyName;
+      }
+    }
+  })();
+</script>
+</body>
+</html>

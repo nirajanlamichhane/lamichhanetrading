@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Attendance — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Check-in Hero ── */
+    .ci-hero {
+      background:linear-gradient(135deg,#28a745 0%,#20c997 100%);
+      border-radius:16px; padding:20px; color:#fff; margin-bottom:14px; position:relative; overflow:hidden;
+    }
+    .ci-hero.checked-out { background:linear-gradient(135deg,#3066be 0%,#4a90e2 100%); }
+    .ci-hero-badge {
+      display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.2);
+      border-radius:20px; padding:4px 12px; font-size:11px; font-weight:700; margin-bottom:12px;
+    }
+    .ci-hero-badge svg { width:14px; height:14px; }
+    .ci-hero-time { font-size:36px; font-weight:800; letter-spacing:-1px; }
+    .ci-hero-date { font-size:13px; opacity:.8; margin-top:2px; }
+    .ci-hero-loc { font-size:12px; opacity:.7; margin-top:8px; display:flex; align-items:center; gap:4px; }
+    .ci-hero-loc svg { width:14px; height:14px; }
+    .ci-hero-row { display:flex; gap:10px; margin-top:16px; }
+    .ci-hero-stat {
+      flex:1; background:rgba(255,255,255,.15); border-radius:10px; padding:10px 8px; text-align:center;
+    }
+    .ci-hero-stat-val { font-size:15px; font-weight:800; }
+    .ci-hero-stat-lbl { font-size:10px; opacity:.8; margin-top:2px; }
+    .ci-hero-selfie {
+      position:absolute; top:16px; right:16px; width:56px; height:56px;
+      border-radius:50%; border:3px solid rgba(255,255,255,.4);
+      background:#e8f5ed; display:flex; align-items:center; justify-content:center;
+      font-size:24px; overflow:hidden;
+    }
+
+    /* ── Check-out Button ── */
+    .checkout-btn {
+      width:100%; padding:14px; border-radius:14px; background:#e05252; color:#fff;
+      font-size:15px; font-weight:700; border:none; cursor:pointer; margin-bottom:14px;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .checkout-btn svg { width:20px; height:20px; }
+
+    /* ── Today Timeline ── */
+    .tl-card {
+      background:#fff; border-radius:14px; padding:16px; margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08);
+    }
+    .tl-title { font-size:14px; font-weight:700; color:#1a2540; margin-bottom:12px; }
+    .tl-step { display:flex; gap:12px; position:relative; padding-bottom:16px; }
+    .tl-step:last-child { padding-bottom:0; }
+    .tl-step::before {
+      content:''; position:absolute; left:15px; top:32px; bottom:0;
+      width:2px; background:#e2e8f0;
+    }
+    .tl-step:last-child::before { display:none; }
+    .tl-dot {
+      width:32px; height:32px; border-radius:50%; display:flex; align-items:center;
+      justify-content:center; flex-shrink:0; z-index:1;
+    }
+    .tl-dot.green { background:#e8f5ed; }
+    .tl-dot.green svg { color:#28a745; }
+    .tl-dot.blue { background:#e8f0fe; }
+    .tl-dot.blue svg { color:#3066be; }
+    .tl-dot.amber { background:#fef3cd; }
+    .tl-dot.amber svg { color:#d97706; }
+    .tl-dot.red { background:#fde8e8; }
+    .tl-dot.red svg { color:#e05252; }
+    .tl-dot.purple { background:#f3e8ff; }
+    .tl-dot.purple svg { color:#7c3aed; }
+    .tl-dot svg { width:16px; height:16px; }
+    .tl-info { flex:1; }
+    .tl-label { font-size:13px; font-weight:600; color:#1a2540; }
+    .tl-sub { font-size:11px; color:#94a3b8; margin-top:1px; }
+    .tl-time { font-size:11px; font-weight:600; color:#3066be; }
+    .tl-photo {
+      width:48px; height:48px; border-radius:8px; background:#f1f5f9;
+      display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;
+    }
+
+    /* ── Calendar ── */
+    .cal-card {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:14px;
+      box-shadow:0 2px 10px rgba(48,102,190,.07);
+    }
+    .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .cal-title { font-size:15px; font-weight:700; color:#1a2540; }
+    .cal-nav-btn {
+      background:none; border:none; cursor:pointer; width:28px; height:28px;
+      border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);
+    }
+    .cal-nav-btn svg { width:16px; height:16px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .cal-day-header { text-align:center; font-size:10px; font-weight:700; color:#999; padding:4px 0 6px; letter-spacing:.3px; }
+    .cal-day {
+      aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+      border-radius:50%; font-size:11px; font-weight:500; color:#444; cursor:pointer; position:relative;
+    }
+    .cal-day.empty { pointer-events:none; }
+    .cal-day.present { background:#e8f5ed; color:#28a745; font-weight:700; }
+    .cal-day.absent { background:#fdecea; color:var(--danger); font-weight:700; }
+    .cal-day.leave { background:#fef3e2; color:var(--warning); font-weight:700; }
+    .cal-day.holiday { background:#f3e8ff; color:#7c3aed; font-weight:700; }
+    .cal-day.today { background:var(--primary); color:#fff; font-weight:800; box-shadow:0 2px 6px rgba(48,102,190,.35); }
+    .cal-legend { display:flex; gap:12px; margin-top:12px; justify-content:center; flex-wrap:wrap; }
+    .cal-legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:#666; }
+    .cal-legend-dot { width:10px; height:10px; border-radius:50%; }
+    .cal-legend-dot.present { background:#28a745; }
+    .cal-legend-dot.absent { background:var(--danger); }
+    .cal-legend-dot.leave { background:var(--warning); }
+    .cal-legend-dot.holiday { background:#7c3aed; }
+
+    /* ── Stats Grid ── */
+    .att-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
+    .att-stat {
+      background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,.05);
+    }
+    .att-stat-val { font-size:20px; font-weight:800; }
+    .att-stat-lbl { font-size:11px; color:#94a3b8; margin-top:2px; }
+    .att-stat-bar { height:4px; border-radius:2px; background:#f1f5f9; margin-top:8px; }
+    .att-stat-bar-fill { height:100%; border-radius:2px; }
+    .att-stat.green .att-stat-val { color:#28a745; }
+    .att-stat.green .att-stat-bar-fill { background:#28a745; }
+    .att-stat.red .att-stat-val { color:#e05252; }
+    .att-stat.red .att-stat-bar-fill { background:#e05252; }
+    .att-stat.amber .att-stat-val { color:#f59e0b; }
+    .att-stat.amber .att-stat-bar-fill { background:#f59e0b; }
+    .att-stat.blue .att-stat-val { color:#3066be; }
+    .att-stat.blue .att-stat-bar-fill { background:#3066be; }
+
+    /* ── Recent Log ── */
+    .log-item {
+      display:flex; align-items:center; gap:12px; background:#fff; border-radius:12px;
+      padding:12px 14px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .log-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .log-dot.in { background:#28a745; }
+    .log-dot.out { background:#e05252; }
+    .log-info { flex:1; }
+    .log-date { font-size:13px; font-weight:600; color:#1a2540; }
+    .log-detail { font-size:11px; color:#94a3b8; }
+    .log-times { text-align:right; }
+    .log-in-time { font-size:12px; color:#28a745; font-weight:600; }
+    .log-out-time { font-size:12px; color:#e05252; font-weight:600; }
+    .log-hours { font-size:11px; color:#64748b; font-weight:600; margin-top:2px; }
+
+    /* ── Selfie Upload Zone ── */
+    .selfie-upload-zone {
+      width:100%; aspect-ratio:1; border-radius:16px; background:#f8fafe; border:2px dashed #b0c4de;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;
+      margin-bottom:16px; overflow:hidden; position:relative; transition:all .3s;
+    }
+    .selfie-upload-zone:hover { border-color:#3066be; background:#eef4fb; }
+    .selfie-upload-zone .selfie-icon svg { width:52px; height:52px; color:#3066be; margin-bottom:8px; }
+    .selfie-upload-zone .selfie-label { font-size:14px; color:#3066be; font-weight:700; }
+    .selfie-upload-zone .selfie-hint { font-size:11px; color:#94a3b8; margin-top:4px; }
+
+    /* Flash Effect */
+    .selfie-flash {
+      position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:10;
+    }
+    .selfie-flash.fire { animation:flashAnim .5s ease-out; }
+    @keyframes flashAnim {
+      0% { opacity:1; }
+      100% { opacity:0; }
+    }
+
+    /* Captured State */
+    .selfie-captured {
+      width:100%; aspect-ratio:1; border-radius:16px; background:linear-gradient(135deg,#e8f5ed 0%,#d4edda 100%);
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      margin-bottom:16px; position:relative; overflow:hidden; border:2px solid #28a745;
+    }
+    .selfie-captured.show { display:flex; }
+    .selfie-captured .avatar-silhouette {
+      width:100px; height:100px; border-radius:50%; background:#c3e6cb;
+      display:flex; align-items:center; justify-content:center; margin-bottom:12px;
+      border:3px solid #28a745; position:relative;
+    }
+    .selfie-captured .avatar-silhouette svg { width:56px; height:56px; color:#28a745; }
+    .selfie-captured .check-overlay {
+      position:absolute; bottom:-2px; right:-2px; width:32px; height:32px;
+      background:#28a745; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      border:3px solid #e8f5ed;
+    }
+    .selfie-captured .check-overlay svg { width:18px; height:18px; color:#fff; }
+    .selfie-captured .captured-text { font-size:15px; font-weight:700; color:#28a745; }
+    .selfie-captured .captured-time { font-size:11px; color:#6c9a6e; margin-top:2px; }
+    .selfie-retake {
+      display:none; width:100%; padding:10px; border-radius:12px; background:#fff; border:2px solid #d1d5db;
+      font-size:13px; font-weight:700; color:#64748b; cursor:pointer; text-align:center;
+      margin-bottom:16px; transition:all .2s;
+    }
+    .selfie-retake:hover { border-color:#3066be; color:#3066be; }
+    .selfie-retake.show { display:block; }
+
+    /* ── Selfie Sheet ── */
+    .sf-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .sf-overlay.show { opacity:1; pointer-events:auto; }
+    .sf-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .sf-sheet.show { transform:translateX(-50%) translateY(0); }
+    .sf-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:0 auto 16px; }
+    .sf-title { font-size:18px; font-weight:800; color:#1a2540; margin-bottom:4px; }
+    .sf-sub { font-size:13px; color:#94a3b8; margin-bottom:16px; }
+    .sf-camera-box {
+      width:100%; aspect-ratio:1; border-radius:16px; background:#f1f5f9; border:2px dashed #d1d5db;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;
+      margin-bottom:16px; overflow:hidden;
+    }
+    .sf-camera-box svg { width:48px; height:48px; color:#94a3b8; margin-bottom:8px; }
+    .sf-camera-box span { font-size:13px; color:#94a3b8; }
+    .sf-loc {
+      display:flex; align-items:center; gap:8px; background:#f0f4fb; border-radius:12px;
+      padding:12px; margin-bottom:16px;
+    }
+    .sf-loc svg { width:20px; height:20px; color:#3066be; flex-shrink:0; }
+    .sf-loc-text { font-size:12px; color:#1a2540; }
+    .sf-loc-coords { font-size:10px; color:#94a3b8; }
+    .sf-submit {
+      width:100%; padding:14px; border-radius:14px; font-size:15px; font-weight:700;
+      border:none; cursor:pointer; color:#fff;
+    }
+    .sf-submit.checkin { background:#28a745; }
+    .sf-submit.checkout { background:#e05252; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Attendance</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="drawer-item-label">Parties</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
+    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/leaves.html')"><div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span class="drawer-item-label">Leave</span></div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
+    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Attendance</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Check-in Hero -->
+      <div class="ci-hero">
+        <div class="ci-hero-selfie">👤</div>
+        <div class="ci-hero-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Checked In
+        </div>
+        <div class="ci-hero-time">09:15 AM</div>
+        <div class="ci-hero-date">Sunday, 08 March 2026</div>
+        <div class="ci-hero-loc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          New Road, Kathmandu · GPS Verified
+        </div>
+        <div class="ci-hero-row">
+          <div class="ci-hero-stat">
+            <div class="ci-hero-stat-val">4h 26m</div>
+            <div class="ci-hero-stat-lbl">Duration</div>
+          </div>
+          <div class="ci-hero-stat">
+            <div class="ci-hero-stat-val">3.2 km</div>
+            <div class="ci-hero-stat-lbl">Distance</div>
+          </div>
+          <div class="ci-hero-stat">
+            <div class="ci-hero-stat-val">5</div>
+            <div class="ci-hero-stat-lbl">Visits</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Check-out Button -->
+      <button class="checkout-btn" onclick="openCheckout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Check Out Now
+      </button>
+
+      <!-- Today's Timeline -->
+      <div class="tl-card">
+        <div class="tl-title">Today's Activity</div>
+
+        <div class="tl-step">
+          <div class="tl-dot green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="tl-info">
+            <div class="tl-label">Check In</div>
+            <div class="tl-sub">New Road, Kathmandu</div>
+          </div>
+          <div class="tl-photo">📸</div>
+          <div class="tl-time">09:15</div>
+        </div>
+
+        <div class="tl-step">
+          <div class="tl-dot blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="tl-info">
+            <div class="tl-label">Visit: Ram Stores</div>
+            <div class="tl-sub">Order placed · ₹8,420</div>
+          </div>
+          <div class="tl-time">09:35</div>
+        </div>
+
+        <div class="tl-step">
+          <div class="tl-dot blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="tl-info">
+            <div class="tl-label">Visit: Shree Traders</div>
+            <div class="tl-sub">Collection · ₹12,000</div>
+          </div>
+          <div class="tl-time">10:20</div>
+        </div>
+
+        <div class="tl-step">
+          <div class="tl-dot amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="tl-info">
+            <div class="tl-label">Visit: Nepal Mart</div>
+            <div class="tl-sub">No Order · Owner Absent</div>
+          </div>
+          <div class="tl-time">11:05</div>
+        </div>
+
+        <div class="tl-step">
+          <div class="tl-dot purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          <div class="tl-info">
+            <div class="tl-label">Visit: Bhaktapur Traders</div>
+            <div class="tl-sub">Order + Collection · ₹6,890</div>
+          </div>
+          <div class="tl-time">12:15</div>
+        </div>
+
+        <div class="tl-step">
+          <div class="tl-dot blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="tl-info">
+            <div class="tl-label">Visit: Ganesh Provision</div>
+            <div class="tl-sub">Order placed · ₹4,280</div>
+          </div>
+          <div class="tl-time">01:30</div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="cal-card">
+        <div class="cal-header">
+          <button class="cal-nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="cal-title">March 2026</div>
+          <button class="cal-nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-header">S</div><div class="cal-day-header">M</div><div class="cal-day-header">T</div><div class="cal-day-header">W</div><div class="cal-day-header">T</div><div class="cal-day-header">F</div><div class="cal-day-header">S</div>
+
+          <div class="cal-day present">1</div>
+          <div class="cal-day present">2</div>
+          <div class="cal-day present">3</div>
+          <div class="cal-day present">4</div>
+          <div class="cal-day present">5</div>
+          <div class="cal-day present">6</div>
+          <div class="cal-day holiday">7</div>
+
+          <div class="cal-day today">8</div>
+          <div class="cal-day">9</div>
+          <div class="cal-day">10</div>
+          <div class="cal-day">11</div>
+          <div class="cal-day">12</div>
+          <div class="cal-day">13</div>
+          <div class="cal-day">14</div>
+
+          <div class="cal-day">15</div>
+          <div class="cal-day">16</div>
+          <div class="cal-day">17</div>
+          <div class="cal-day">18</div>
+          <div class="cal-day">19</div>
+          <div class="cal-day">20</div>
+          <div class="cal-day">21</div>
+
+          <div class="cal-day">22</div>
+          <div class="cal-day">23</div>
+          <div class="cal-day">24</div>
+          <div class="cal-day">25</div>
+          <div class="cal-day">26</div>
+          <div class="cal-day">27</div>
+          <div class="cal-day">28</div>
+
+          <div class="cal-day">29</div>
+          <div class="cal-day">30</div>
+          <div class="cal-day">31</div>
+        </div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-dot present"></div><span>Present</span></div>
+          <div class="cal-legend-item"><div class="cal-legend-dot absent"></div><span>Absent</span></div>
+          <div class="cal-legend-item"><div class="cal-legend-dot leave"></div><span>Leave</span></div>
+          <div class="cal-legend-item"><div class="cal-legend-dot holiday"></div><span>Holiday</span></div>
+        </div>
+      </div>
+
+      <!-- Monthly Stats -->
+      <div class="att-stats">
+        <div class="att-stat green">
+          <div class="att-stat-val">6</div>
+          <div class="att-stat-lbl">Present Days</div>
+          <div class="att-stat-bar"><div class="att-stat-bar-fill" style="width:85%;"></div></div>
+        </div>
+        <div class="att-stat red">
+          <div class="att-stat-val">0</div>
+          <div class="att-stat-lbl">Absent Days</div>
+          <div class="att-stat-bar"><div class="att-stat-bar-fill" style="width:0%;"></div></div>
+        </div>
+        <div class="att-stat amber">
+          <div class="att-stat-val">1</div>
+          <div class="att-stat-lbl">Holidays</div>
+          <div class="att-stat-bar"><div class="att-stat-bar-fill" style="width:14%;"></div></div>
+        </div>
+        <div class="att-stat blue">
+          <div class="att-stat-val">09:12</div>
+          <div class="att-stat-lbl">Avg Check-in</div>
+          <div class="att-stat-bar"><div class="att-stat-bar-fill" style="width:92%;"></div></div>
+        </div>
+      </div>
+
+      <!-- Recent Log -->
+      <div style="font-size:14px;font-weight:700;color:#1a2540;margin-bottom:10px;">Recent Days</div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Sat, Mar 7</div>
+          <div class="log-detail">Holiday (Weekend)</div>
+        </div>
+        <div class="log-times">
+          <div style="font-size:12px;color:#7c3aed;font-weight:600;">Holiday</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Fri, Mar 6</div>
+          <div class="log-detail">6 visits · 4.1 km traveled</div>
+        </div>
+        <div class="log-times">
+          <div class="log-in-time">In: 09:05</div>
+          <div class="log-out-time">Out: 17:45</div>
+          <div class="log-hours">8h 40m</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Thu, Mar 5</div>
+          <div class="log-detail">8 visits · 5.3 km traveled</div>
+        </div>
+        <div class="log-times">
+          <div class="log-in-time">In: 09:10</div>
+          <div class="log-out-time">Out: 18:15</div>
+          <div class="log-hours">9h 05m</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Wed, Mar 4</div>
+          <div class="log-detail">7 visits · 3.8 km traveled</div>
+        </div>
+        <div class="log-times">
+          <div class="log-in-time">In: 09:22</div>
+          <div class="log-out-time">Out: 17:30</div>
+          <div class="log-hours">8h 08m</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Tue, Mar 3</div>
+          <div class="log-detail">5 visits · 2.9 km traveled</div>
+        </div>
+        <div class="log-times">
+          <div class="log-in-time">In: 09:08</div>
+          <div class="log-out-time">Out: 17:50</div>
+          <div class="log-hours">8h 42m</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Mon, Mar 2</div>
+          <div class="log-detail">6 visits · 4.5 km traveled</div>
+        </div>
+        <div class="log-times">
+          <div class="log-in-time">In: 09:15</div>
+          <div class="log-out-time">Out: 18:00</div>
+          <div class="log-hours">8h 45m</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot in"></div>
+        <div class="log-info">
+          <div class="log-date">Sun, Mar 1</div>
+          <div class="log-detail">4 visits · 2.2 km traveled</div>
+        </div>
+        <div class="log-times">
+          <div class="log-in-time">In: 09:30</div>
+          <div class="log-out-time">Out: 16:45</div>
+          <div class="log-hours">7h 15m</div>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center" onclick="goTo('../modules/orders.html')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Check-out Sheet ═══ -->
+  <div class="sf-overlay" id="sfOverlay" onclick="closeCheckout()"></div>
+  <div class="sf-sheet" id="sfSheet">
+    <div class="sf-handle"></div>
+    <div class="sf-title">Check Out</div>
+    <div class="sf-sub">Take a selfie and confirm your location</div>
+
+    <!-- Selfie Upload Zone -->
+    <div class="selfie-upload-zone" id="selfieZone" onclick="document.getElementById('selfieFileInput').click()">
+      <div class="selfie-flash" id="selfieFlash"></div>
+      <div class="selfie-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+      <div class="selfie-label">Take Selfie</div>
+      <div class="selfie-hint">Tap to open camera</div>
+    </div>
+    <input type="file" id="selfieFileInput" accept="image/*" capture="user" style="display:none;" onchange="handleSelfieFile(this)">
+
+    <!-- Captured State -->
+    <div class="selfie-captured" id="selfieCaptured">
+      <div class="avatar-silhouette">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div class="check-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="captured-text">Selfie Captured</div>
+      <div class="captured-time" id="selfieTime"></div>
+    </div>
+    <button class="selfie-retake" id="selfieRetake" onclick="retakeSelfie()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.26-12.13L1 10"/></svg>
+      Retake Selfie
+    </button>
+
+    <div class="sf-loc">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <div>
+        <div class="sf-loc-text">New Road, Kathmandu</div>
+        <div class="sf-loc-coords">27.7045° N, 85.3145° E · Accuracy: 5m</div>
+      </div>
+    </div>
+
+    <button class="sf-submit checkout" onclick="closeCheckout(); showToast('Checked out at 01:41 PM','success')">
+      Confirm Check Out
+    </button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  function openCheckout() {
+    document.getElementById('sfOverlay').classList.add('show');
+    document.getElementById('sfSheet').classList.add('show');
+  }
+  function closeCheckout() {
+    document.getElementById('sfOverlay').classList.remove('show');
+    document.getElementById('sfSheet').classList.remove('show');
+  }
+
+  // Handle real camera file input
+  function handleSelfieFile(input) {
+    if (!input.files || !input.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      // Show preview in the captured area
+      var capturedEl = document.getElementById('selfieCaptured');
+      var silhouette = capturedEl.querySelector('.avatar-silhouette');
+      if (silhouette) {
+        silhouette.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      }
+      captureSelfie();
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  // Selfie capture with flash
+  function captureSelfie() {
+    var flash = document.getElementById('selfieFlash');
+    flash.classList.remove('fire');
+    void flash.offsetWidth;
+    flash.classList.add('fire');
+
+    setTimeout(function() {
+      document.getElementById('selfieZone').style.display = 'none';
+      document.getElementById('selfieCaptured').classList.add('show');
+      document.getElementById('selfieRetake').classList.add('show');
+      var now = new Date();
+      var h = now.getHours(); var m = now.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if (h === 0) h = 12;
+      document.getElementById('selfieTime').textContent = 'Captured at ' + h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+      showToast('Selfie captured successfully', 'success');
+    }, 500);
+  }
+
+  function retakeSelfie() {
+    document.getElementById('selfieCaptured').classList.remove('show');
+    document.getElementById('selfieRetake').classList.remove('show');
+    document.getElementById('selfieZone').style.display = 'flex';
+  }
+</script>
+</body>
+</html>

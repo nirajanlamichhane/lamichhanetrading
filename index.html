@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Adera Sales</title>
+  <link rel="stylesheet" href="css/style.css">
+<style>
+/* ── Onboarding Walkthrough ── */
+.onboard-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9998;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.onboard-overlay.active { opacity: 1; }
+.onboard-overlay.hiding { opacity: 0; }
+
+.onboard-spotlight {
+  position: absolute;
+  z-index: 9998;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4000px rgba(0,0,0,0.7);
+  pointer-events: none;
+  transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;
+}
+
+.onboard-tooltip {
+  position: absolute;
+  z-index: 9999;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  max-width: 280px;
+  width: 280px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: auto;
+}
+.onboard-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.onboard-tooltip .arrow {
+  position: absolute;
+  width: 0; height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+}
+.onboard-tooltip .arrow.arrow-up {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom: 10px solid #fff;
+}
+.onboard-tooltip .arrow.arrow-down {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top: 10px solid #fff;
+}
+.onboard-tooltip .arrow.arrow-left {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right: 10px solid #fff;
+}
+
+.onboard-tooltip .ob-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e293b;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.onboard-tooltip .ob-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.onboard-tooltip .ob-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.onboard-tooltip .ob-dot.active {
+  background: #3b82f6;
+  transform: scale(1.25);
+}
+
+.onboard-tooltip .ob-counter {
+  font-size: 11px;
+  color: #94a3b8;
+  text-align: center;
+  margin-bottom: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.onboard-tooltip .ob-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.onboard-tooltip .ob-skip {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 2px;
+  font-weight: 500;
+}
+.onboard-tooltip .ob-skip:hover { color: #64748b; }
+.onboard-tooltip .ob-next {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.onboard-tooltip .ob-next:hover { background: #2563eb; }
+
+/* Help (?) button */
+.onboard-help-btn {
+  position: absolute;
+  bottom: 70px;
+  right: 10px;
+  z-index: 900;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(59,130,246,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+.onboard-help-btn:hover { transform: scale(1.1); }
+</style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Home</p>
+
+<div class="phone-frame">
+
+  <!-- Target Overlay -->
+  <div class="target-overlay" id="targetOverlay" onclick="closeTarget()"></div>
+
+  <!-- Target Bottom Sheet -->
+  <div class="target-sheet" id="targetSheet">
+    <div class="target-sheet-header">
+      <div class="target-sheet-handle"></div>
+      <button class="target-sheet-close" onclick="closeTarget()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="target-sheet-title">Sales Target</div>
+      <div class="target-sheet-subtitle">December 2025 · Kathmandu Zone</div>
+
+      <div class="target-hero">
+        <div class="target-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="target-ring-track" cx="50" cy="50" r="42"/>
+            <circle class="target-ring-fill" cx="50" cy="50" r="42"
+              stroke-dasharray="263.9" stroke-dashoffset="132"/>
+          </svg>
+          <div class="target-ring-center">
+            <span class="target-ring-pct">50%</span>
+            <span class="target-ring-label">Achieved</span>
+          </div>
+        </div>
+        <div class="target-hero-stats">
+          <div class="target-hero-stat">
+            <div class="target-hero-stat-val">7,852</div>
+            <div class="target-hero-stat-lbl">Target (KG)</div>
+          </div>
+          <div class="target-hero-stat">
+            <div class="target-hero-stat-val">3,926</div>
+            <div class="target-hero-stat-lbl">Achieved (KG)</div>
+          </div>
+          <div class="target-hero-stat">
+            <div class="target-hero-stat-val">3,926</div>
+            <div class="target-hero-stat-lbl">Remaining (KG)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="target-body">
+      <div class="target-summary-row">
+        <div class="target-summary-card">
+          <div class="target-summary-val text-success">67%</div>
+          <div class="target-summary-lbl">Active Coverage</div>
+        </div>
+        <div class="target-summary-card">
+          <div class="target-summary-val text-blue">1,497</div>
+          <div class="target-summary-lbl">Total Outlets</div>
+        </div>
+      </div>
+      <div class="target-summary-row">
+        <div class="target-summary-card">
+          <div class="target-summary-val" style="color:var(--warning);">18</div>
+          <div class="target-summary-lbl">Days Remaining</div>
+        </div>
+        <div class="target-summary-card">
+          <div class="target-summary-val text-success">₹4.2L</div>
+          <div class="target-summary-lbl">Revenue MTD</div>
+        </div>
+      </div>
+
+      <div class="target-cat-title">Category-wise Breakdown</div>
+
+      <div class="target-cat-item">
+        <div class="target-cat-row">
+          <span class="target-cat-name">Premium Blend</span>
+          <span class="target-cat-nums"><strong>1,400</strong> / 2,000 KG</span>
+        </div>
+        <div class="target-cat-bar"><div class="target-cat-fill green" style="width:70%;"></div></div>
+      </div>
+      <div class="target-cat-item">
+        <div class="target-cat-row">
+          <span class="target-cat-name">Classic Range</span>
+          <span class="target-cat-nums"><strong>1,200</strong> / 2,500 KG</span>
+        </div>
+        <div class="target-cat-bar"><div class="target-cat-fill orange" style="width:48%;"></div></div>
+      </div>
+      <div class="target-cat-item">
+        <div class="target-cat-row">
+          <span class="target-cat-name">Economy Pack</span>
+          <span class="target-cat-nums"><strong>926</strong> / 2,352 KG</span>
+        </div>
+        <div class="target-cat-bar"><div class="target-cat-fill orange" style="width:39%;"></div></div>
+      </div>
+      <div class="target-cat-item">
+        <div class="target-cat-row">
+          <span class="target-cat-name">Specialty Items</span>
+          <span class="target-cat-nums"><strong>400</strong> / 1,000 KG</span>
+        </div>
+        <div class="target-cat-bar"><div class="target-cat-fill red" style="width:40%;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn" onclick="closeDrawer(); setTimeout(openTarget, 300);">🎯 Your Target</button>
+    </div>
+
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collection</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/leaves.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span class="drawer-item-label">Leave</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/notes.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Notes</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">DMS Modules</div>
+    <div class="drawer-item" onclick="goTo('modules/inventory.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <span class="drawer-item-label">Inventory</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/salesforce.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Sales Force</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/reports.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <span class="drawer-item-label">Reports</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/config.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+      <span class="drawer-item-label">Configuration</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('modules/support.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span class="drawer-item-label">Support</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span class="drawer-item-label">Send Crash Report</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
+      <span class="drawer-item-label">Back Up Data</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M2 12h2M20 12h2"/></svg></div>
+      <span class="drawer-item-label">Demo Mode</span>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Offline Banner -->
+    <div class="offline-banner" id="offlineBanner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/><path d="M5 12.55a10.94 10.94 0 015.17-2.39"/><path d="M10.71 5.05A16 16 0 0122.56 9"/><path d="M1.42 9a15.91 15.91 0 014.7-2.88"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      You're offline — showing cached data
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+      <div class="top-bar-title">
+        Adera Sales
+        <div class="top-bar-subtitle">Good morning, Elon 👋</div>
+      </div>
+      <button class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+      <div class="badge-btn">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </button>
+        <div class="badge-dot"></div>
+      </div>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting-banner">
+      <div class="greeting-row">
+        <div class="avatar">👤</div>
+        <div class="greeting-text">
+          <h3>Elon Musk</h3>
+          <p>Sales Rep · Kathmandu Zone</p>
+        </div>
+        <button class="target-pill" onclick="openTarget()">🎯 Target</button>
+      </div>
+    </div>
+
+    <!-- Check-In -->
+    <div class="checkin-section">
+      <button class="checkin-btn" id="checkinBtn" onclick="handleCheckin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span id="checkinLabel">CHECK-IN</span>
+      </button>
+      <button class="checkin-btn" onclick="goTo('modules/route.html')" style="margin-top:10px;background:linear-gradient(135deg,#28a745,#1e8c3a);box-shadow:0 4px 20px rgba(40,167,69,.45);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+        </svg>
+        START ROUTE
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+
+      <!-- Target & Achievement KPIs -->
+      <div class="section-header">
+        <span class="section-title">Distributor KPIs</span>
+        <span class="section-action">Dec 2025 →</span>
+      </div>
+
+      <div class="stats-row" style="margin-bottom:10px;">
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:18px;">7,852</div>
+          <div class="stat-label">Target (KG)</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-value" style="font-size:18px;">50%</div>
+          <div class="stat-label">Achievement</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-value" style="font-size:18px;">67%</div>
+          <div class="stat-label">Active Cover</div>
+        </div>
+      </div>
+
+      <div class="kpi-card" style="margin-bottom:14px;">
+        <div class="kpi-header">
+          <span class="kpi-label">Sales Target Progress (MTD)</span>
+          <span class="kpi-value" style="color:var(--warning);">50%</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar warning" style="width:50%;"></div>
+        </div>
+        <div class="kpi-sub">3,926 of 7,852 KG achieved</div>
+      </div>
+
+      <div class="stats-row" style="margin-bottom:10px;">
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:16px;">1,497</div>
+          <div class="stat-label">Outlets</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-value" style="font-size:16px;">1</div>
+          <div class="stat-label">Active SO</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:16px;">0</div>
+          <div class="stat-label">On Leave</div>
+        </div>
+      </div>
+
+      <!-- Today's Summary -->
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-title">Today's Summary</span>
+        <span class="section-action">View All →</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value">7</div>
+          <div class="stat-label">Visits</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-value">₹24k</div>
+          <div class="stat-label">Orders</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+
+      <!-- Modules -->
+      <div class="section-header">
+        <span class="section-title">Modules</span>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-card bar-blue" onclick="goTo('modules/parties.html')">
+          <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div class="module-label">Parties</div>
+        </div>
+        <div class="module-card bar-orange" onclick="goTo('modules/orders.html')">
+          <div class="module-badge">5</div>
+          <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+          <div class="module-label">Orders</div>
+        </div>
+        <div class="module-card bar-green" onclick="goTo('modules/collections.html')">
+          <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          <div class="module-label">Collections</div>
+        </div>
+        <div class="module-card bar-indigo" onclick="goTo('modules/attendance.html')">
+          <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="module-label">Attendance</div>
+        </div>
+        <div class="module-card bar-teal" onclick="goTo('modules/leaves.html')">
+          <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div class="module-label">Leaves</div>
+        </div>
+        <div class="module-card bar-yellow" onclick="goTo('modules/notes.html')">
+          <div class="module-icon-wrap ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="module-label">Notes</div>
+        </div>
+        <div class="module-card bar-red" onclick="goTo('modules/expenses.html')">
+          <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div>
+          <div class="module-label">Expenses</div>
+        </div>
+        <div class="module-card bar-purple" onclick="goTo('modules/activities.html')">
+          <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="module-label">Activities</div>
+        </div>
+        <div class="module-card bar-blue" onclick="goTo('modules/beatplans.html')">
+          <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+          <div class="module-label">Beatplans</div>
+        </div>
+        <div class="module-card bar-teal" onclick="goTo('modules/stock.html')">
+          <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="module-label">Stock Taking</div>
+        </div>
+        <div class="module-card bar-orange" onclick="goTo('modules/returns.html')">
+          <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></div>
+          <div class="module-label">Returns</div>
+        </div>
+        <div class="module-card bar-indigo" onclick="goTo('modules/collaterals.html')">
+          <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+          <div class="module-label">Collaterals</div>
+        </div>
+        <div class="module-card bar-blue" onclick="goTo('modules/tour.html')">
+          <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+          <div class="module-label">Tour Plans</div>
+        </div>
+        <div class="module-card bar-green" onclick="goTo('modules/visits.html')">
+          <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="module-label">Visits</div>
+        </div>
+        <div class="module-card bar-yellow" onclick="goTo('modules/remarks.html')">
+          <div class="module-icon-wrap ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <div class="module-label">Day Remarks</div>
+        </div>
+        <div class="module-card bar-purple" onclick="goTo('modules/performance.html')">
+          <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <div class="module-label">Performance</div>
+        </div>
+        <div class="module-card bar-teal" onclick="goTo('modules/eod.html')">
+          <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="module-label">EOD Report</div>
+        </div>
+        <div class="module-card bar-pink" onclick="goTo('modules/custom.html')">
+          <div class="module-icon-wrap ic-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M2 12h2M20 12h2"/></svg></div>
+          <div class="module-label">Custom Module</div>
+        </div>
+        <div class="module-card bar-green" onclick="goTo('modules/approvals.html')">
+          <div class="module-badge">2</div>
+          <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div class="module-label">Approvals</div>
+        </div>
+        <div class="module-card bar-blue" onclick="goTo('modules/odometer.html')">
+          <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="module-label">Odometer</div>
+        </div>
+        <div class="module-card bar-red" onclick="goTo('modules/outstanding.html')">
+          <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M6 20V10M10 20V4M14 20V10M18 20V4"/></svg></div>
+          <div class="module-label">Outstanding</div>
+        </div>
+        <div class="module-card bar-teal" onclick="goTo('modules/inventory.html')">
+          <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+          <div class="module-label">Inventory</div>
+        </div>
+        <div class="module-card bar-indigo" onclick="goTo('modules/salesforce.html')">
+          <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div class="module-label">Sales Force</div>
+        </div>
+        <div class="module-card bar-purple" onclick="goTo('modules/reports.html')">
+          <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="module-label">Reports</div>
+        </div>
+        <div class="module-card bar-orange" onclick="goTo('modules/config.html')">
+          <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+          <div class="module-label">Config</div>
+        </div>
+        <div class="module-card bar-red" onclick="goTo('modules/support.html')">
+          <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="module-label">Support</div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('modules/orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item" onclick="goTo('modules/profile.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- Onboarding Help Button -->
+  <button class="onboard-help-btn" id="onboardHelpBtn" onclick="startOnboarding()" title="Show walkthrough">?</button>
+
+  <!-- Onboarding Overlay -->
+  <div class="onboard-overlay" id="onboardOverlay"></div>
+  <div class="onboard-spotlight" id="onboardSpotlight" style="display:none;"></div>
+  <div class="onboard-tooltip" id="onboardTooltip" style="display:none;">
+    <div class="arrow arrow-up" id="onboardArrow"></div>
+    <div class="ob-text" id="onboardText"></div>
+    <div class="ob-dots" id="onboardDots"></div>
+    <div class="ob-counter" id="onboardCounter"></div>
+    <div class="ob-actions">
+      <button class="ob-skip" onclick="skipOnboarding()">Skip</button>
+      <button class="ob-next" id="onboardNextBtn" onclick="nextStep()">Next</button>
+    </div>
+  </div>
+</div><!-- /phone-frame -->
+
+<script src="js/app.js"></script>
+<script>
+  // ── Check-In Button Logic ──
+  function updateCheckinUI() {
+    var status = getCheckinStatus();
+    var btn = document.getElementById('checkinBtn');
+    var label = document.getElementById('checkinLabel');
+    if (!btn || !label) return;
+
+    if (status.checked && !status.checkedOut) {
+      label.textContent = 'CHECK-OUT (' + status.checkinTime + ')';
+      btn.style.background = 'linear-gradient(135deg, #e05252, #c0392b)';
+      btn.style.boxShadow = '0 4px 20px rgba(224,82,82,.45)';
+    } else if (status.checked && status.checkedOut) {
+      label.textContent = 'CHECKED OUT ' + status.checkoutTime;
+      btn.style.background = 'linear-gradient(135deg, #64748b, #475569)';
+      btn.style.boxShadow = '0 4px 20px rgba(100,116,139,.35)';
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.7';
+    } else {
+      label.textContent = 'CHECK-IN';
+      btn.style.background = '';
+      btn.style.boxShadow = '';
+    }
+  }
+
+  function handleCheckin() {
+    performCheckin(function() {
+      updateCheckinUI();
+    });
+  }
+
+  // Init on load
+  updateCheckinUI();
+  initOfflineBanner();
+</script>
+
+<script>
+// ── Onboarding Walkthrough ──
+(function() {
+  var currentStep = 0;
+  var isActive = false;
+
+  var steps = [
+    {
+      target: '#checkinBtn',
+      text: 'Start your day by checking in with GPS & selfie',
+      position: 'below'
+    },
+    {
+      target: '.module-grid',
+      text: 'Access all your sales tools from here',
+      position: 'above'
+    },
+    {
+      target: '.top-bar .icon-btn',
+      text: 'Tap to open navigation & DMS modules',
+      position: 'below'
+    },
+    {
+      target: '.bottom-nav',
+      text: 'Quick access to Parties, Orders & Reports',
+      position: 'above'
+    }
+  ];
+
+  var overlay = document.getElementById('onboardOverlay');
+  var spotlight = document.getElementById('onboardSpotlight');
+  var tooltip = document.getElementById('onboardTooltip');
+  var textEl = document.getElementById('onboardText');
+  var dotsEl = document.getElementById('onboardDots');
+  var counterEl = document.getElementById('onboardCounter');
+  var arrowEl = document.getElementById('onboardArrow');
+  var nextBtn = document.getElementById('onboardNextBtn');
+  var phoneFrame = document.querySelector('.phone-frame');
+
+  function getRelativeRect(el) {
+    var elRect = el.getBoundingClientRect();
+    var frameRect = phoneFrame.getBoundingClientRect();
+    return {
+      top: elRect.top - frameRect.top,
+      left: elRect.left - frameRect.left,
+      width: elRect.width,
+      height: elRect.height,
+      frameWidth: frameRect.width,
+      frameHeight: frameRect.height
+    };
+  }
+
+  function showStep(idx) {
+    currentStep = idx;
+    var step = steps[idx];
+    var targetEl = phoneFrame.querySelector(step.target);
+    if (!targetEl) return;
+
+    // Scroll target into view within phone screen
+    var scrollContainer = phoneFrame.querySelector('.screen-scroll');
+    if (scrollContainer && step.target !== '.bottom-nav') {
+      var containerRect = scrollContainer.getBoundingClientRect();
+      var targetRect = targetEl.getBoundingClientRect();
+      if (targetRect.top < containerRect.top || targetRect.bottom > containerRect.bottom) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    setTimeout(function() {
+      var rect = getRelativeRect(targetEl);
+      var pad = 8;
+
+      // Position spotlight
+      spotlight.style.display = 'block';
+      spotlight.style.top = (rect.top - pad) + 'px';
+      spotlight.style.left = (rect.left - pad) + 'px';
+      spotlight.style.width = (rect.width + pad * 2) + 'px';
+      spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+      // Text
+      textEl.textContent = step.text;
+
+      // Counter
+      counterEl.textContent = 'Step ' + (idx + 1) + ' of ' + steps.length;
+
+      // Dots
+      dotsEl.innerHTML = '';
+      for (var i = 0; i < steps.length; i++) {
+        var dot = document.createElement('div');
+        dot.className = 'ob-dot' + (i === idx ? ' active' : '');
+        dotsEl.appendChild(dot);
+      }
+
+      // Button text
+      nextBtn.textContent = (idx === steps.length - 1) ? 'Got it!' : 'Next';
+
+      // Arrow direction & tooltip position
+      arrowEl.className = 'arrow';
+      var tooltipTop, tooltipLeft;
+      var tooltipW = 280;
+
+      if (step.position === 'below') {
+        arrowEl.classList.add('arrow-up');
+        tooltipTop = rect.top + rect.height + pad + 14;
+        tooltipLeft = Math.max(10, Math.min(rect.left + rect.width / 2 - tooltipW / 2, rect.frameWidth - tooltipW - 10));
+        // Adjust arrow horizontal position
+        var arrowOffset = rect.left + rect.width / 2 - tooltipLeft;
+        arrowEl.style.left = arrowOffset + 'px';
+        arrowEl.style.top = '-10px';
+        arrowEl.style.transform = '';
+      } else {
+        arrowEl.classList.add('arrow-down');
+        tooltipTop = rect.top - pad - 14;
+        tooltipLeft = Math.max(10, Math.min(rect.left + rect.width / 2 - tooltipW / 2, rect.frameWidth - tooltipW - 10));
+        // Measure tooltip height after making it visible but hidden
+        tooltip.style.display = 'block';
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.left = tooltipLeft + 'px';
+        tooltip.style.top = '0px';
+        var ttHeight = tooltip.offsetHeight;
+        tooltip.style.visibility = '';
+        tooltipTop = rect.top - pad - 14 - ttHeight;
+        var arrowOffset2 = rect.left + rect.width / 2 - tooltipLeft;
+        arrowEl.style.left = arrowOffset2 + 'px';
+        arrowEl.style.bottom = '-10px';
+        arrowEl.style.top = '';
+        arrowEl.style.transform = '';
+      }
+
+      tooltip.style.display = 'block';
+      tooltip.style.left = tooltipLeft + 'px';
+      tooltip.style.top = tooltipTop + 'px';
+
+      // Animate in
+      tooltip.classList.remove('visible');
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          tooltip.classList.add('visible');
+        });
+      });
+    }, step.target === '.module-grid' || step.target === '.bottom-nav' ? 350 : 50);
+  }
+
+  window.startOnboarding = function() {
+    if (isActive) return;
+    isActive = true;
+    currentStep = 0;
+
+    overlay.style.display = 'block';
+    overlay.classList.remove('hiding');
+    requestAnimationFrame(function() {
+      overlay.classList.add('active');
+    });
+
+    showStep(0);
+  };
+
+  window.nextStep = function() {
+    if (currentStep < steps.length - 1) {
+      tooltip.classList.remove('visible');
+      setTimeout(function() {
+        showStep(currentStep + 1);
+      }, 200);
+    } else {
+      skipOnboarding();
+    }
+  };
+
+  window.skipOnboarding = function() {
+    isActive = false;
+    localStorage.setItem('adera_onboarded', 'true');
+
+    tooltip.classList.remove('visible');
+    overlay.classList.add('hiding');
+    overlay.classList.remove('active');
+
+    setTimeout(function() {
+      overlay.style.display = 'none';
+      overlay.classList.remove('hiding');
+      spotlight.style.display = 'none';
+      tooltip.style.display = 'none';
+    }, 350);
+  };
+
+  // Auto-start on first visit after 1s delay
+  if (!localStorage.getItem('adera_onboarded')) {
+    setTimeout(function() {
+      startOnboarding();
+    }, 1000);
+  }
+})();
+
+  // Read session data from localStorage (set during login)
+  (function() {
+    var session = localStorage.getItem('adera_session');
+    if (session) {
+      try {
+        var data = JSON.parse(session);
+        // Session persists so the app remembers the logged-in user
+        if (data.user) {
+          var greetingH3 = document.querySelector('.greeting-text h3');
+          if (greetingH3) greetingH3.textContent = data.user;
+          var drawerName = document.querySelector('.drawer-name');
+          if (drawerName) drawerName.textContent = data.user;
+        }
+        if (data.company) {
+          var drawerRole = document.querySelector('.drawer-role');
+          if (drawerRole) drawerRole.textContent = 'Sales Representative · ' + data.company;
+        }
+      } catch(e) {}
+    }
+  })();
+</script>
+</body>
+</html>

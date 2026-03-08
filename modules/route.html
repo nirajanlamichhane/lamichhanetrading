@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Start Route — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    @keyframes pulseBorder {
+      0%, 100% { border-left-color: #3066be; }
+      50% { border-left-color: #93b5f5; }
+    }
+    .stop-current {
+      background: #f0f4fb !important;
+      animation: pulseBorder 2s ease-in-out infinite;
+    }
+    .route-header {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      border-radius: 16px;
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .route-header-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: .85;
+      margin-bottom: 4px;
+    }
+    .route-header-name {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .route-header-progress-text {
+      font-size: 13px;
+      opacity: .9;
+      margin-bottom: 8px;
+    }
+    .route-progress-bar-wrap {
+      background: rgba(255,255,255,.25);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .route-progress-bar-fill {
+      background: #fff;
+      height: 100%;
+      border-radius: 8px;
+      transition: width .4s;
+    }
+    .route-header-time {
+      font-size: 12px;
+      opacity: .8;
+    }
+    .stop-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(48,102,190,.10);
+      border-left: 4px solid transparent;
+    }
+    .stop-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .stop-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .stop-info { flex: 1; }
+    .stop-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a2744;
+    }
+    .stop-addr {
+      font-size: 12px;
+      color: #5a6a8a;
+    }
+    .stop-meta {
+      font-size: 12px;
+      margin-bottom: 10px;
+      padding-left: 44px;
+    }
+    .stop-actions {
+      display: flex;
+      gap: 8px;
+      padding-left: 44px;
+    }
+    .end-route-section {
+      margin-top: 8px;
+      margin-bottom: 24px;
+    }
+    .btn-end-route {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-end-route svg {
+      width: 18px;
+      height: 18px;
+    }
+    .top-bar-end-btn {
+      font-size: 12px;
+      font-weight: 700;
+      color: #dc3545;
+      background: rgba(220,53,69,.08);
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    /* Distance & Credit pills */
+    .stop-pills {
+      display: flex;
+      gap: 6px;
+      padding-left: 44px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .stop-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f0f4fb;
+      color: #5a6a8a;
+    }
+    .stop-pill svg { width: 11px; height: 11px; flex-shrink: 0; }
+    .stop-pill.credit-ok { background: #e6f4ea; color: #28a745; }
+    .stop-pill.credit-warn { background: #fff3cd; color: #d97706; }
+    .stop-pill.credit-danger { background: #fce4e4; color: #e05252; }
+    /* No Order popup */
+    .no-order-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 999;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .no-order-overlay.open { display: flex; }
+    .no-order-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 390px;
+      padding: 20px 20px 28px;
+      animation: slideUp .3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .no-order-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1a2744;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .reason-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .reason-btn {
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 2px solid #e8ecf2;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1a2744;
+      cursor: pointer;
+      text-align: center;
+      transition: all .2s;
+    }
+    .reason-btn.active {
+      border-color: #3066be;
+      background: #f0f4fb;
+      color: #3066be;
+    }
+    .no-order-note {
+      width: 100%;
+      border: 2px solid #e8ecf2;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-family: var(--font);
+      resize: none;
+      height: 60px;
+      margin-bottom: 14px;
+      outline: none;
+    }
+    .no-order-note:focus { border-color: #3066be; }
+    .no-order-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .no-order-actions .btn { flex: 1; }
+    /* Photo capture area */
+    .photo-capture-area {
+      margin-bottom: 14px;
+    }
+    .photo-capture-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1a2744;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .photo-capture-label .required { color: #e05252; }
+    .photo-capture-box {
+      width: 100%;
+      height: 120px;
+      border: 2px dashed #c8d3e5;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      background: #f8fafd;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .photo-capture-box:active { background: #edf2fa; }
+    .photo-capture-box svg { width: 32px; height: 32px; color: #5a6a8a; }
+    .photo-capture-box span { font-size: 11px; color: #5a6a8a; font-weight: 600; }
+    .photo-capture-box.has-photo {
+      border-style: solid;
+      border-color: #28a745;
+      background: #e6f4ea;
+    }
+    .photo-capture-box.has-photo svg { color: #28a745; }
+    .photo-capture-box.has-photo span { color: #28a745; }
+    .photo-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+      display: none;
+    }
+    .photo-capture-box.has-photo .photo-preview { display: block; }
+    .photo-capture-box.has-photo .cam-placeholder { display: none; }
+    .photo-retake-btn {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+    .photo-capture-box.has-photo .photo-retake-btn { display: block; }
+    /* Camera fullscreen overlay */
+    .camera-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 1100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .camera-overlay.open { display: flex; }
+    .camera-overlay video {
+      width: 100%;
+      max-width: 390px;
+      height: 70%;
+      object-fit: cover;
+      border-radius: 0;
+    }
+    .camera-overlay canvas { display: none; }
+    .camera-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+    }
+    .camera-snap-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+    }
+    .camera-snap-btn::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .15s;
+    }
+    .camera-snap-btn:active::after { transform: scale(.85); }
+    .camera-close-btn {
+      color: #fff;
+      background: rgba(255,255,255,.15);
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .camera-close-btn svg { width: 22px; height: 22px; }
+    /* End Route confirm modal */
+    .end-route-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .end-route-overlay.open { display: flex; }
+    .end-route-modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 85%;
+      max-width: 340px;
+      padding: 28px 24px;
+      text-align: center;
+      animation: popIn .25s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .end-route-modal .modal-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #fce4e4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .end-route-modal .modal-icon svg { width: 28px; height: 28px; color: #e05252; }
+    .end-route-modal h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1a2744;
+      margin-bottom: 6px;
+    }
+    .end-route-modal p {
+      font-size: 12px;
+      color: #5a6a8a;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .end-route-modal .modal-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .end-route-modal .modal-btns .btn { flex: 1; }
+    /* Visit Detail Bottom Sheet */
+    .visit-detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 999;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .visit-detail-overlay.open { display: flex; }
+    .visit-detail-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 390px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 0 0 28px;
+      animation: slideUp .3s ease;
+    }
+    .visit-detail-sheet::-webkit-scrollbar { display: none; }
+    .vd-handle {
+      width: 36px;
+      height: 4px;
+      border-radius: 4px;
+      background: #d0d5dd;
+      margin: 10px auto 0;
+    }
+    .vd-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .vd-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .vd-header-info { flex: 1; }
+    .vd-shop-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1a2744;
+    }
+    .vd-shop-addr {
+      font-size: 11px;
+      color: #5a6a8a;
+      margin-top: 2px;
+    }
+    .vd-status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+    .vd-status-badge.success { background: #e6f4ea; color: #28a745; }
+    .vd-status-badge.info { background: #dce6f7; color: #3066be; }
+    .vd-status-badge.warning { background: #fff3cd; color: #d97706; }
+    .vd-section {
+      padding: 14px 20px;
+    }
+    .vd-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #5a6a8a;
+      margin-bottom: 10px;
+    }
+    .vd-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .vd-stat {
+      background: #f8fafd;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .vd-stat-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1a2744;
+    }
+    .vd-stat-label {
+      font-size: 10px;
+      color: #5a6a8a;
+      margin-top: 2px;
+      font-weight: 600;
+    }
+    .vd-timeline {
+      position: relative;
+      padding-left: 20px;
+    }
+    .vd-timeline::before {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: #e8ecf2;
+      border-radius: 2px;
+    }
+    .vd-timeline-item {
+      position: relative;
+      padding-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .vd-timeline-item:last-child { padding-bottom: 0; }
+    .vd-timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3066be;
+      flex-shrink: 0;
+      margin-top: 3px;
+      position: relative;
+      z-index: 1;
+      margin-left: -20px;
+    }
+    .vd-timeline-dot.green { background: #28a745; }
+    .vd-timeline-dot.amber { background: #f59e0b; }
+    .vd-timeline-content { flex: 1; }
+    .vd-timeline-time {
+      font-size: 10px;
+      font-weight: 700;
+      color: #5a6a8a;
+    }
+    .vd-timeline-text {
+      font-size: 12px;
+      color: #1a2744;
+      font-weight: 600;
+    }
+    /* Order items in detail */
+    .vd-order-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .vd-order-item:last-child { border-bottom: none; }
+    .vd-order-emoji {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #f0f4fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .vd-order-info { flex: 1; }
+    .vd-order-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a2744;
+    }
+    .vd-order-qty {
+      font-size: 10px;
+      color: #5a6a8a;
+      margin-top: 1px;
+    }
+    .vd-order-price {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1a2744;
+    }
+    .vd-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 0;
+      border-top: 2px solid #1a2744;
+      margin-top: 4px;
+    }
+    .vd-total-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1a2744;
+    }
+    .vd-total-value {
+      font-size: 16px;
+      font-weight: 800;
+      color: #3066be;
+    }
+    .vd-photo-row {
+      display: flex;
+      gap: 8px;
+    }
+    .vd-photo-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #8ec5fc, #e0c3fc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+      font-weight: 700;
+    }
+    .vd-actions {
+      display: flex;
+      gap: 8px;
+      padding: 16px 20px 0;
+    }
+    .vd-actions .btn { flex: 1; }
+  </style>
+</head>
+<body>
+<p class="page-title">Adera Sales · Start Route</p>
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collection</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('leaves.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span class="drawer-item-label">Leave</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('notes.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Notes</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('expenses.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div>
+      <span class="drawer-item-label">Expenses</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('activities.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <span class="drawer-item-label">Activities</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('beatplans.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+      <span class="drawer-item-label">Beatplans</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('stock.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Stock Taking</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('returns.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></div>
+      <span class="drawer-item-label">Returns</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('collaterals.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <span class="drawer-item-label">Collaterals</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('tour.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+      <span class="drawer-item-label">Tour Plans</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('visits.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <span class="drawer-item-label">Visits</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('remarks.html')">
+      <div class="drawer-item-icon ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="drawer-item-label">Day Remarks</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('eod.html')">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <span class="drawer-item-label">EOD Report</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('approvals.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <span class="drawer-item-label">Approvals</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('odometer.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <span class="drawer-item-label">Odometer</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('outstanding.html')">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10M10 20V4M14 20V10M18 20V4"/></svg></div>
+      <span class="drawer-item-label">Outstanding</span>
+    </div>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span class="drawer-item-label">Send Crash Report</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
+      <span class="drawer-item-label">Back Up Data</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Today's Route</div>
+      <button class="top-bar-end-btn" onclick="showEndRoute()">End Route</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Route Progress Header -->
+      <div class="route-header">
+        <div class="route-header-label">Route In Progress</div>
+        <div class="route-header-name">Kathmandu Central Beat</div>
+        <div class="route-header-progress-text">3 of 8 visits done</div>
+        <div class="route-progress-bar-wrap">
+          <div class="route-progress-bar-fill" style="width:37%;"></div>
+        </div>
+        <div class="route-header-time">Started at 9:15 AM</div>
+      </div>
+
+      <!-- Quick Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card success">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Visited</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#f59e0b;">
+          <div class="stat-value" style="color:#f59e0b;">5</div>
+          <div class="stat-label">Remaining</div>
+        </div>
+        <div class="stat-card" style="border-top-color:var(--primary);">
+          <div class="stat-value" style="color:var(--primary);">₹18.4k</div>
+          <div class="stat-label">Orders</div>
+        </div>
+      </div>
+
+      <!-- Map Placeholder -->
+      <div class="map-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Live Route Map</span>
+      </div>
+
+      <!-- Route Stops Section -->
+      <div class="section-header">
+        <span class="section-title">Route Stops</span>
+        <span class="section-action">Reorder</span>
+      </div>
+
+      <!-- Stop 1 — COMPLETED -->
+      <div class="stop-card" style="border-left-color:#28a745;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#e6f4ea;color:#28a745;">1</div>
+          <div class="stop-info">
+            <div class="stop-name">Ram Stores</div>
+            <div class="stop-addr">New Road, Kathmandu</div>
+          </div>
+          <span class="badge-success">Visited</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>0.8 km</span>
+          <span class="stop-pill credit-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹50k</span>
+        </div>
+        <div class="stop-meta" style="color:#28a745;">✓ Order placed ₹8,400 · 9:45 AM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-secondary" onclick="showVisitDetail('order')" style="display:flex;align-items:center;gap:4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            View Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Stop 2 — COMPLETED -->
+      <div class="stop-card" style="border-left-color:#28a745;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#e6f4ea;color:#28a745;">2</div>
+          <div class="stop-info">
+            <div class="stop-name">Nepal Mart</div>
+            <div class="stop-addr">Durbar Marg</div>
+          </div>
+          <span class="badge-success">Visited</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>1.2 km</span>
+          <span class="stop-pill credit-warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹15k (80%)</span>
+        </div>
+        <div class="stop-meta" style="color:#28a745;">✓ No order · Demo only · 10:30 AM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-secondary" onclick="showVisitDetail('noorder')">View Details</button>
+        </div>
+      </div>
+
+      <!-- Stop 3 — COMPLETED -->
+      <div class="stop-card" style="border-left-color:#28a745;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#e6f4ea;color:#28a745;">3</div>
+          <div class="stop-info">
+            <div class="stop-name">Shree Traders</div>
+            <div class="stop-addr">Ason Tole</div>
+          </div>
+          <span class="badge-success">Visited</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>2.0 km</span>
+          <span class="stop-pill credit-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹1L</span>
+        </div>
+        <div class="stop-meta" style="color:#28a745;">✓ Collection ₹12,000 · 11:15 AM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-secondary" onclick="showVisitDetail('collection')">View Details</button>
+        </div>
+      </div>
+
+      <!-- Stop 4 — CURRENT / ACTIVE -->
+      <div class="stop-card stop-current" style="border-left-color:#3066be;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#dce6f7;color:#3066be;">4</div>
+          <div class="stop-info">
+            <div class="stop-name">Himalaya Shop</div>
+            <div class="stop-addr">Thamel</div>
+          </div>
+          <span class="badge-primary">Current</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>0.3 km · 2 min</span>
+          <span class="stop-pill credit-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹5k (Exceeded)</span>
+        </div>
+        <div class="stop-actions" style="flex-wrap:wrap;">
+          <button class="btn btn-sm btn-success" onclick="goTo('take-order.html')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            Take Order
+          </button>
+          <button class="btn btn-sm btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Check In
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="openNoOrder('Himalaya Shop')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;border:1.5px solid #e05252;color:#e05252;background:transparent;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Stop 5 — UPCOMING -->
+      <div class="stop-card" style="border-left-color:#f59e0b;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#fef3cd;color:#f59e0b;">5</div>
+          <div class="stop-info">
+            <div class="stop-name">City Bazaar</div>
+            <div class="stop-addr">Indrachowk</div>
+          </div>
+          <span class="badge-warning">Upcoming</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>1.5 km · 8 min</span>
+          <span class="stop-pill credit-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹75k</span>
+        </div>
+        <div class="stop-meta" style="color:#5a6a8a;">Est. arrival ~1:30 PM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-success" onclick="goTo('take-order.html')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            Take Order
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="openNoOrder('City Bazaar')" style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;border:1.5px solid #e05252;color:#e05252;background:transparent;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Stop 6 — UPCOMING -->
+      <div class="stop-card" style="border-left-color:#f59e0b;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#fef3cd;color:#f59e0b;">6</div>
+          <div class="stop-info">
+            <div class="stop-name">Sunrise Retail</div>
+            <div class="stop-addr">Balaju</div>
+          </div>
+          <span class="badge-warning">Upcoming</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>3.2 km · 15 min</span>
+          <span class="stop-pill credit-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹40k</span>
+        </div>
+        <div class="stop-meta" style="color:#5a6a8a;">Est. arrival ~2:15 PM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-success" onclick="goTo('take-order.html')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            Take Order
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="openNoOrder('Sunrise Retail')" style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;border:1.5px solid #e05252;color:#e05252;background:transparent;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Stop 7 — UPCOMING -->
+      <div class="stop-card" style="border-left-color:#f59e0b;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#fef3cd;color:#f59e0b;">7</div>
+          <div class="stop-info">
+            <div class="stop-name">Lakshmi Enterprises</div>
+            <div class="stop-addr">Kalimati</div>
+          </div>
+          <span class="badge-warning">Upcoming</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>4.8 km · 22 min</span>
+          <span class="stop-pill credit-warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹20k (75%)</span>
+        </div>
+        <div class="stop-meta" style="color:#5a6a8a;">Est. arrival ~3:00 PM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-success" onclick="goTo('take-order.html')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            Take Order
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="openNoOrder('Lakshmi Enterprises')" style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;border:1.5px solid #e05252;color:#e05252;background:transparent;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Stop 8 — UPCOMING -->
+      <div class="stop-card" style="border-left-color:#f59e0b;">
+        <div class="stop-top">
+          <div class="stop-num" style="background:#fef3cd;color:#f59e0b;">8</div>
+          <div class="stop-info">
+            <div class="stop-name">Golden Distributors</div>
+            <div class="stop-addr">Kalanki</div>
+          </div>
+          <span class="badge-warning">Upcoming</span>
+        </div>
+        <div class="stop-pills">
+          <span class="stop-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>6.1 km · 28 min</span>
+          <span class="stop-pill credit-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Credit: ₹2L</span>
+        </div>
+        <div class="stop-meta" style="color:#5a6a8a;">Est. arrival ~3:45 PM</div>
+        <div class="stop-actions">
+          <button class="btn btn-sm btn-success" onclick="goTo('take-order.html')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            Take Order
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="openNoOrder('Golden Distributors')" style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;border:1.5px solid #e05252;color:#e05252;background:transparent;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No Order
+          </button>
+        </div>
+      </div>
+
+      <!-- End Route Button -->
+      <div class="end-route-section">
+        <button class="btn btn-danger btn-block btn-end-route" onclick="showEndRoute()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/></svg>
+          End Route
+        </button>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- No Order Bottom Sheet -->
+  <div class="no-order-overlay" id="noOrderOverlay" onclick="if(event.target===this)closeNoOrder()">
+    <div class="no-order-sheet">
+      <div class="no-order-title">No Order — <span id="noOrderShop"></span></div>
+      <div class="reason-grid">
+        <button class="reason-btn" onclick="selectReason(this)">Shop Closed</button>
+        <button class="reason-btn" onclick="selectReason(this)">Owner Absent</button>
+        <button class="reason-btn" onclick="selectReason(this)">Has Stock</button>
+        <button class="reason-btn" onclick="selectReason(this)">No Budget</button>
+        <button class="reason-btn" onclick="selectReason(this)">Not Interested</button>
+        <button class="reason-btn" onclick="selectReason(this)">Other</button>
+      </div>
+      <textarea class="no-order-note" id="noOrderNote" placeholder="Add a note (optional)..."></textarea>
+      <div class="photo-capture-area">
+        <div class="photo-capture-label">Shop Photo <span class="required">*</span></div>
+        <div class="photo-capture-box" id="photoCaptureBox" onclick="openCamera()">
+          <div class="cam-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Tap to take photo</span>
+          </div>
+          <img class="photo-preview" id="photoPreview" alt="Captured">
+          <button class="photo-retake-btn" onclick="event.stopPropagation();retakePhoto()">Retake</button>
+        </div>
+      </div>
+      <div class="no-order-actions">
+        <button class="btn btn-sm btn-secondary" onclick="closeNoOrder()" style="flex:1;">Cancel</button>
+        <button class="btn btn-sm btn-danger" onclick="submitNoOrder()" style="flex:1;">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Camera Fullscreen -->
+  <div class="camera-overlay" id="cameraOverlay">
+    <video id="cameraVideo" autoplay playsinline></video>
+    <canvas id="cameraCanvas"></canvas>
+    <div class="camera-controls">
+      <button class="camera-close-btn" onclick="closeCamera()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button class="camera-snap-btn" onclick="snapPhoto()"></button>
+      <div style="width:44px;"></div>
+    </div>
+  </div>
+
+  <!-- Visit Detail Bottom Sheet -->
+  <div class="visit-detail-overlay" id="visitDetailOverlay" onclick="if(event.target===this)closeVisitDetail()">
+    <div class="visit-detail-sheet" id="visitDetailSheet">
+      <div class="vd-handle"></div>
+      <!-- Content injected by JS -->
+    </div>
+  </div>
+
+  <!-- End Route Modal -->
+  <div class="end-route-overlay" id="endRouteOverlay" onclick="if(event.target===this)closeEndRoute()">
+    <div class="end-route-modal">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/></svg>
+      </div>
+      <h3>End Route?</h3>
+      <p>You have <strong>5 remaining stops</strong>. Ending now will mark unvisited stops as skipped.</p>
+      <div class="modal-btns">
+        <button class="btn btn-sm btn-secondary" onclick="closeEndRoute()">Cancel</button>
+        <button class="btn btn-sm btn-danger" onclick="closeEndRoute();showToast('Route ended successfully','success');setTimeout(function(){goBack()},1200);">End Route</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+<script src="../js/app.js"></script>
+<script>
+  var noOrderShopName = '';
+  var photoTaken = false;
+  var cameraStream = null;
+
+  function openNoOrder(name) {
+    noOrderShopName = name;
+    document.getElementById('noOrderShop').textContent = name;
+    document.getElementById('noOrderOverlay').classList.add('open');
+    document.querySelectorAll('.reason-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById('noOrderNote').value = '';
+    // Reset photo
+    photoTaken = false;
+    document.getElementById('photoCaptureBox').classList.remove('has-photo');
+    document.getElementById('photoPreview').style.display = 'none';
+  }
+  function closeNoOrder() {
+    document.getElementById('noOrderOverlay').classList.remove('open');
+  }
+  function selectReason(el) {
+    document.querySelectorAll('.reason-btn').forEach(function(b){ b.classList.remove('active'); });
+    el.classList.add('active');
+  }
+  function submitNoOrder() {
+    var selected = document.querySelector('.reason-btn.active');
+    if (!selected) {
+      showToast('Please select a reason', 'warning');
+      return;
+    }
+    if (!photoTaken) {
+      showToast('Shop photo is required', 'warning');
+      openCamera();
+      return;
+    }
+    closeNoOrder();
+    showToast('No Order logged for ' + noOrderShopName, 'success');
+  }
+
+  /* Camera functions */
+  function openCamera() {
+    var overlay = document.getElementById('cameraOverlay');
+    overlay.classList.add('open');
+    var video = document.getElementById('cameraVideo');
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      }).then(function(stream) {
+        cameraStream = stream;
+        video.srcObject = stream;
+      }).catch(function() {
+        // Camera not available — simulate with placeholder
+        showToast('Camera not available — using demo photo', 'info');
+        simulatePhoto();
+      });
+    } else {
+      showToast('Camera not supported — using demo photo', 'info');
+      simulatePhoto();
+    }
+  }
+  function closeCamera() {
+    document.getElementById('cameraOverlay').classList.remove('open');
+    stopCamera();
+  }
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(function(t) { t.stop(); });
+      cameraStream = null;
+    }
+    var video = document.getElementById('cameraVideo');
+    video.srcObject = null;
+  }
+  function snapPhoto() {
+    var video = document.getElementById('cameraVideo');
+    var canvas = document.getElementById('cameraCanvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    applyPhoto(dataUrl);
+    closeCamera();
+  }
+  function simulatePhoto() {
+    // Generate a simple colored placeholder as a "photo"
+    var canvas = document.getElementById('cameraCanvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    var ctx = canvas.getContext('2d');
+    // gradient background simulating a shop front
+    var grad = ctx.createLinearGradient(0, 0, 640, 480);
+    grad.addColorStop(0, '#8ec5fc');
+    grad.addColorStop(1, '#e0c3fc');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 640, 480);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Shop Photo', 320, 220);
+    ctx.font = '16px sans-serif';
+    ctx.fillText(noOrderShopName, 320, 260);
+    ctx.fillText(new Date().toLocaleTimeString(), 320, 290);
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    applyPhoto(dataUrl);
+    closeCamera();
+  }
+  function applyPhoto(dataUrl) {
+    photoTaken = true;
+    var box = document.getElementById('photoCaptureBox');
+    var preview = document.getElementById('photoPreview');
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    box.classList.add('has-photo');
+    showToast('Photo captured', 'success');
+  }
+  function retakePhoto() {
+    photoTaken = false;
+    document.getElementById('photoCaptureBox').classList.remove('has-photo');
+    document.getElementById('photoPreview').style.display = 'none';
+    openCamera();
+  }
+
+  function showEndRoute() {
+    document.getElementById('endRouteOverlay').classList.add('open');
+  }
+  function closeEndRoute() {
+    document.getElementById('endRouteOverlay').classList.remove('open');
+  }
+
+  /* Visit Detail data */
+  var visitData = {
+    order: {
+      shop: 'Ram Stores',
+      addr: 'New Road, Kathmandu',
+      color: '#28a745',
+      initial: 'R',
+      status: 'Order Placed',
+      statusClass: 'success',
+      stats: [
+        { value: '₹8,400', label: 'Order Value' },
+        { value: '6', label: 'Items' },
+        { value: '15 min', label: 'Visit Duration' },
+        { value: '₹50k', label: 'Credit Limit' }
+      ],
+      timeline: [
+        { time: '9:32 AM', text: 'Checked in at shop', dot: 'green' },
+        { time: '9:35 AM', text: 'Started taking order', dot: '' },
+        { time: '9:42 AM', text: 'Order confirmed — 6 items', dot: '' },
+        { time: '9:44 AM', text: 'Photo captured', dot: '' },
+        { time: '9:45 AM', text: 'Checked out', dot: 'green' }
+      ],
+      items: [
+        { emoji: '🧼', name: 'Adera Soap 500g', qty: '2 Box (24 pcs)', price: '₹2,352' },
+        { emoji: '🧴', name: 'Adera Shampoo 200ml', qty: '1 Carton (12 pcs)', price: '₹1,740' },
+        { emoji: '🫧', name: 'Adera Detergent 1kg', qty: '3 Piece', price: '₹555' },
+        { emoji: '🪥', name: 'Adera Toothpaste 150g', qty: '2 Dozen (24 pcs)', price: '₹1,632' },
+        { emoji: '🧼', name: 'Adera Face Wash 100ml', qty: '1 Box (12 pcs)', price: '₹1,500' },
+        { emoji: '🧼', name: 'Adera Hand Wash 250ml', qty: '2 Piece', price: '₹156' }
+      ],
+      total: '₹8,400',
+      photos: ['Shop Front', 'Counter']
+    },
+    noorder: {
+      shop: 'Nepal Mart',
+      addr: 'Durbar Marg',
+      color: '#f59e0b',
+      initial: 'N',
+      status: 'No Order',
+      statusClass: 'warning',
+      stats: [
+        { value: '₹0', label: 'Order Value' },
+        { value: '0', label: 'Items' },
+        { value: '8 min', label: 'Visit Duration' },
+        { value: '₹15k', label: 'Credit Limit' }
+      ],
+      timeline: [
+        { time: '10:22 AM', text: 'Checked in at shop', dot: 'green' },
+        { time: '10:25 AM', text: 'Product demo given', dot: '' },
+        { time: '10:28 AM', text: 'No order — Owner Absent', dot: 'amber' },
+        { time: '10:29 AM', text: 'Photo captured', dot: '' },
+        { time: '10:30 AM', text: 'Checked out', dot: 'green' }
+      ],
+      reason: 'Owner Absent',
+      note: 'Staff said owner will return tomorrow. Scheduled follow-up.',
+      items: [],
+      total: '₹0',
+      photos: ['Shop Closed']
+    },
+    collection: {
+      shop: 'Shree Traders',
+      addr: 'Ason Tole',
+      color: '#3066be',
+      initial: 'S',
+      status: 'Collection',
+      statusClass: 'info',
+      stats: [
+        { value: '₹12,000', label: 'Collected' },
+        { value: 'Cash', label: 'Payment Mode' },
+        { value: '12 min', label: 'Visit Duration' },
+        { value: '₹1L', label: 'Credit Limit' }
+      ],
+      timeline: [
+        { time: '11:05 AM', text: 'Checked in at shop', dot: 'green' },
+        { time: '11:08 AM', text: 'Discussed outstanding ₹28,000', dot: '' },
+        { time: '11:12 AM', text: 'Collected ₹12,000 (Cash)', dot: 'green' },
+        { time: '11:14 AM', text: 'Receipt generated #RCP-0412', dot: '' },
+        { time: '11:15 AM', text: 'Checked out', dot: 'green' }
+      ],
+      items: [],
+      total: '₹12,000',
+      photos: ['Receipt Photo']
+    }
+  };
+
+  function showVisitDetail(type) {
+    var d = visitData[type];
+    if (!d) return;
+    var html = '';
+    // Header
+    html += '<div class="vd-header">';
+    html += '<div class="vd-avatar" style="background:' + d.color + ';">' + d.initial + '</div>';
+    html += '<div class="vd-header-info"><div class="vd-shop-name">' + d.shop + '</div><div class="vd-shop-addr">' + d.addr + '</div></div>';
+    html += '<span class="vd-status-badge ' + d.statusClass + '">' + d.status + '</span>';
+    html += '</div>';
+    // Stats
+    html += '<div class="vd-section"><div class="vd-section-title">Summary</div><div class="vd-stats-grid">';
+    d.stats.forEach(function(s) {
+      html += '<div class="vd-stat"><div class="vd-stat-value">' + s.value + '</div><div class="vd-stat-label">' + s.label + '</div></div>';
+    });
+    html += '</div></div>';
+    // Timeline
+    html += '<div class="vd-section" style="border-top:1px solid #f0f2f5;"><div class="vd-section-title">Activity Timeline</div><div class="vd-timeline">';
+    d.timeline.forEach(function(t) {
+      html += '<div class="vd-timeline-item"><div class="vd-timeline-dot ' + t.dot + '"></div><div class="vd-timeline-content"><div class="vd-timeline-time">' + t.time + '</div><div class="vd-timeline-text">' + t.text + '</div></div></div>';
+    });
+    html += '</div></div>';
+    // No Order reason
+    if (d.reason) {
+      html += '<div class="vd-section" style="border-top:1px solid #f0f2f5;"><div class="vd-section-title">No Order Reason</div>';
+      html += '<div style="display:inline-block;padding:6px 14px;border-radius:8px;background:#fff3cd;color:#d97706;font-size:12px;font-weight:700;">' + d.reason + '</div>';
+      if (d.note) {
+        html += '<div style="margin-top:8px;font-size:12px;color:#5a6a8a;line-height:1.5;">Note: ' + d.note + '</div>';
+      }
+      html += '</div>';
+    }
+    // Order items
+    if (d.items.length > 0) {
+      html += '<div class="vd-section" style="border-top:1px solid #f0f2f5;"><div class="vd-section-title">Order Items (' + d.items.length + ')</div>';
+      d.items.forEach(function(item) {
+        html += '<div class="vd-order-item"><div class="vd-order-emoji">' + item.emoji + '</div><div class="vd-order-info"><div class="vd-order-name">' + item.name + '</div><div class="vd-order-qty">' + item.qty + '</div></div><div class="vd-order-price">' + item.price + '</div></div>';
+      });
+      html += '<div class="vd-total-row"><span class="vd-total-label">Grand Total</span><span class="vd-total-value">' + d.total + '</span></div>';
+      html += '</div>';
+    }
+    // Collection total
+    if (type === 'collection') {
+      html += '<div class="vd-section" style="border-top:1px solid #f0f2f5;"><div class="vd-section-title">Collection</div>';
+      html += '<div class="vd-total-row" style="border-top:none;padding-top:0;"><span class="vd-total-label">Amount Collected</span><span class="vd-total-value">' + d.total + '</span></div>';
+      html += '<div style="margin-top:6px;font-size:11px;color:#5a6a8a;">Remaining outstanding: ₹16,000</div>';
+      html += '</div>';
+    }
+    // Photos
+    html += '<div class="vd-section" style="border-top:1px solid #f0f2f5;"><div class="vd-section-title">Photos</div><div class="vd-photo-row">';
+    d.photos.forEach(function(p) {
+      html += '<div class="vd-photo-thumb">' + p + '</div>';
+    });
+    html += '</div></div>';
+    // Actions
+    html += '<div class="vd-actions">';
+    if (type === 'order') {
+      html += '<button class="btn btn-sm btn-primary" onclick="showToast(\'Opening order for edit...\',\'info\');closeVisitDetail();">Edit Order</button>';
+      html += '<button class="btn btn-sm btn-secondary" onclick="showToast(\'Order shared\',\'success\');closeVisitDetail();">Share</button>';
+    } else if (type === 'collection') {
+      html += '<button class="btn btn-sm btn-primary" onclick="showToast(\'Viewing receipt...\',\'info\');closeVisitDetail();">View Receipt</button>';
+      html += '<button class="btn btn-sm btn-secondary" onclick="showToast(\'Receipt shared\',\'success\');closeVisitDetail();">Share</button>';
+    } else {
+      html += '<button class="btn btn-sm btn-primary" onclick="closeVisitDetail();goTo(\'take-order.html\');">Take Order Now</button>';
+      html += '<button class="btn btn-sm btn-secondary" onclick="closeVisitDetail();">Close</button>';
+    }
+    html += '</div>';
+
+    var sheet = document.getElementById('visitDetailSheet');
+    sheet.innerHTML = '<div class="vd-handle"></div>' + html;
+    document.getElementById('visitDetailOverlay').classList.add('open');
+  }
+  function closeVisitDetail() {
+    document.getElementById('visitDetailOverlay').classList.remove('open');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Beat Plans — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Active Beat Plan Hero ── */
+    .bp-hero {
+      background: linear-gradient(135deg, #3066be 0%, #4a90e2 100%);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    .bp-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .bp-hero-label { font-size: 11px; opacity: .7; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+    .bp-hero-name { font-size: 18px; font-weight: 800; margin-top: 2px; }
+    .bp-hero-badge {
+      background: rgba(255,255,255,.2); padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+    }
+    .bp-hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+    .bp-hero-stat { text-align: center; }
+    .bp-hero-stat-val { font-size: 20px; font-weight: 800; }
+    .bp-hero-stat-lbl { font-size: 10px; opacity: .7; text-transform: uppercase; letter-spacing: .3px; }
+    .bp-hero-progress { margin-top: 4px; }
+    .bp-hero-progress-bar {
+      height: 6px; background: rgba(255,255,255,.2); border-radius: 3px; overflow: hidden;
+    }
+    .bp-hero-progress-fill {
+      height: 100%; background: #fff; border-radius: 3px; transition: width .3s;
+    }
+    .bp-hero-progress-row { display: flex; justify-content: space-between; margin-top: 6px; }
+    .bp-hero-progress-lbl { font-size: 11px; opacity: .8; }
+
+    /* ── Filter Tabs ── */
+    .bp-tabs { display: flex; gap: 0; margin-bottom: 14px; background: #f1f5f9; border-radius: 12px; padding: 3px; }
+    .bp-tab {
+      flex: 1; text-align: center; padding: 8px 4px; font-size: 12px; font-weight: 600;
+      border-radius: 10px; cursor: pointer; color: #64748b; transition: all .2s; border: none; background: transparent;
+    }
+    .bp-tab.active { background: #fff; color: #1a2540; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Beat Card ── */
+    .beat-card {
+      background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(48,102,190,.08); cursor: pointer; transition: transform .15s;
+    }
+    .beat-card:active { transform: scale(.98); }
+    .beat-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .beat-icon {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0;
+    }
+    .beat-icon.ic1 { background: #e8f0fe; color: #3066be; }
+    .beat-icon.ic2 { background: #e8f5ed; color: #28a745; }
+    .beat-icon.ic3 { background: #fef3cd; color: #d97706; }
+    .beat-icon.ic4 { background: #f3e8ff; color: #7c3aed; }
+    .beat-icon.ic5 { background: #e0f2fe; color: #0284c7; }
+    .beat-info { flex: 1; min-width: 0; }
+    .beat-name { font-size: 14px; font-weight: 700; color: #1a2540; }
+    .beat-day { font-size: 12px; color: #94a3b8; margin-top: 1px; }
+    .beat-badge {
+      padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700;
+    }
+    .beat-badge.active { background: #e8f5ed; color: #28a745; }
+    .beat-badge.upcoming { background: #e8f0fe; color: #3066be; }
+    .beat-badge.overdue { background: #fde8e8; color: #e05252; }
+
+    .beat-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+    .beat-metric { background: #f8fafc; border-radius: 8px; padding: 8px; text-align: center; }
+    .beat-metric-val { font-size: 14px; font-weight: 800; color: #1a2540; }
+    .beat-metric-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .3px; }
+
+    .beat-progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .beat-progress-label { font-size: 11px; color: #64748b; font-weight: 500; }
+    .beat-progress-val { font-size: 11px; font-weight: 700; }
+    .beat-progress-wrap { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+    .beat-progress-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+    .beat-progress-fill.green { background: #28a745; }
+    .beat-progress-fill.blue { background: #3066be; }
+    .beat-progress-fill.amber { background: #f59e0b; }
+    .beat-progress-fill.red { background: #e05252; }
+
+    .beat-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .beat-last-visit { font-size: 11px; color: #94a3b8; }
+    .beat-view-btn {
+      font-size: 11px; font-weight: 700; color: #3066be; cursor: pointer;
+      background: none; border: none; padding: 0;
+    }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200;
+      opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    .bs-overlay.show { opacity: 1; pointer-events: auto; }
+    .bs-sheet {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+      width: 390px; max-height: 85vh; background: #f8fafc; border-radius: 20px 20px 0 0;
+      z-index: 201; overflow-y: auto; transition: transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom: 24px;
+    }
+    .bs-sheet.show { transform: translateX(-50%) translateY(0); }
+    .bs-handle { width: 40px; height: 4px; background: #d1d5db; border-radius: 4px; margin: 12px auto; }
+
+    .bs-header {
+      background: linear-gradient(135deg, #3066be 0%, #4a90e2 100%);
+      padding: 20px; color: #fff; border-radius: 0 0 20px 20px; margin-bottom: 16px;
+    }
+    .bs-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .bs-close {
+      width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;
+    }
+    .bs-close svg { width: 18px; height: 18px; color: #fff; }
+    .bs-title { font-size: 18px; font-weight: 800; }
+    .bs-subtitle { font-size: 12px; opacity: .8; }
+
+    .bs-map-placeholder {
+      background: #e2e8f0; border-radius: 12px; height: 140px; margin: 0 16px 16px;
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px;
+    }
+    .bs-map-placeholder svg { color: #94a3b8; }
+    .bs-map-placeholder span { font-size: 12px; color: #94a3b8; font-weight: 500; }
+
+    .bs-shop-list { padding: 0 16px; }
+    .bs-shop-item {
+      background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .bs-shop-avatar {
+      width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .bs-shop-info { flex: 1; min-width: 0; }
+    .bs-shop-name { font-size: 13px; font-weight: 700; color: #1a2540; }
+    .bs-shop-addr { font-size: 11px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bs-shop-status { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; }
+
+    .bs-edit-btn {
+      display: block; width: calc(100% - 32px); margin: 16px auto 0;
+      background: var(--primary); color: #fff; border: none; border-radius: 12px;
+      padding: 14px; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center;
+    }
+    .bs-edit-btn:active { background: var(--primary-dark); }
+  </style>
+</head>
+<body>
+<p class="page-title">Adera Sales · Beat Plans</p>
+<div class="phone-frame">
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- DRAWER (Simplified) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div class="drawer-brand">Adera Sales</div>
+      <button class="drawer-close" onclick="closeDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">RS</div>
+      <div>
+        <div class="drawer-user-name">Rajesh Shrestha</div>
+        <div class="drawer-user-role">Sales Representative</div>
+      </div>
+    </div>
+    <nav class="drawer-nav">
+      <a class="drawer-item" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a class="drawer-item" href="parties.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Parties
+      </a>
+      <a class="drawer-item" href="orders.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Orders
+      </a>
+      <a class="drawer-item" href="collections.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Collections
+      </a>
+      <a class="drawer-item" href="attendance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Attendance
+      </a>
+      <a class="drawer-item" href="performance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Performance
+      </a>
+      <div style="height:1px;background:#e2e8f0;margin:8px 16px;"></div>
+      <a class="drawer-item" onclick="showToast('Logged out')" style="color:#e05252;cursor:pointer;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#e05252" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </nav>
+  </div>
+
+  <div class="screen-scroll">
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
+      </div>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="top-bar-title">Beat Plans</span>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" style="padding:16px;">
+
+      <!-- Active Beat Plan Hero Card -->
+      <div class="bp-hero">
+        <div class="bp-hero-top">
+          <div>
+            <div class="bp-hero-label">Active Beat Plan</div>
+            <div class="bp-hero-name">Kathmandu Valley Weekly</div>
+          </div>
+          <span class="bp-hero-badge">Weekly</span>
+        </div>
+        <div class="bp-hero-stats">
+          <div class="bp-hero-stat">
+            <div class="bp-hero-stat-val">42</div>
+            <div class="bp-hero-stat-lbl">Shops</div>
+          </div>
+          <div class="bp-hero-stat">
+            <div class="bp-hero-stat-val">5</div>
+            <div class="bp-hero-stat-lbl">Beats</div>
+          </div>
+          <div class="bp-hero-stat">
+            <div class="bp-hero-stat-val">78%</div>
+            <div class="bp-hero-stat-lbl">Coverage</div>
+          </div>
+        </div>
+        <div class="bp-hero-progress">
+          <div class="bp-hero-progress-bar">
+            <div class="bp-hero-progress-fill" style="width:78%;"></div>
+          </div>
+          <div class="bp-hero-progress-row">
+            <span class="bp-hero-progress-lbl">33 of 42 shops visited this week</span>
+            <span class="bp-hero-progress-lbl" style="font-weight:700;">78%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="bp-tabs">
+        <button class="bp-tab active">All Beats</button>
+        <button class="bp-tab">Today</button>
+        <button class="bp-tab">Pending</button>
+      </div>
+
+      <!-- Beat 1: New Road Beat -->
+      <div class="beat-card" onclick="openBeatSheet()">
+        <div class="beat-card-top">
+          <div class="beat-icon ic1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="beat-info">
+            <div class="beat-name">New Road Beat</div>
+            <div class="beat-day">Monday & Thursday</div>
+          </div>
+          <span class="beat-badge active">Active</span>
+        </div>
+        <div class="beat-metrics">
+          <div class="beat-metric">
+            <div class="beat-metric-val">12</div>
+            <div class="beat-metric-lbl">Shops</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">10</div>
+            <div class="beat-metric-lbl">Visited</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">2</div>
+            <div class="beat-metric-lbl">Pending</div>
+          </div>
+        </div>
+        <div class="beat-progress-row">
+          <span class="beat-progress-label">Coverage</span>
+          <span class="beat-progress-val" style="color:#28a745;">83%</span>
+        </div>
+        <div class="beat-progress-wrap">
+          <div class="beat-progress-fill green" style="width:83%;"></div>
+        </div>
+        <div class="beat-footer">
+          <span class="beat-last-visit">Last visit: Mar 6, 2026</span>
+          <button class="beat-view-btn">View Details</button>
+        </div>
+      </div>
+
+      <!-- Beat 2: Thamel Beat -->
+      <div class="beat-card" onclick="openBeatSheet()">
+        <div class="beat-card-top">
+          <div class="beat-icon ic2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="beat-info">
+            <div class="beat-name">Thamel Beat</div>
+            <div class="beat-day">Tuesday & Friday</div>
+          </div>
+          <span class="beat-badge active">Active</span>
+        </div>
+        <div class="beat-metrics">
+          <div class="beat-metric">
+            <div class="beat-metric-val">9</div>
+            <div class="beat-metric-lbl">Shops</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">9</div>
+            <div class="beat-metric-lbl">Visited</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">0</div>
+            <div class="beat-metric-lbl">Pending</div>
+          </div>
+        </div>
+        <div class="beat-progress-row">
+          <span class="beat-progress-label">Coverage</span>
+          <span class="beat-progress-val" style="color:#28a745;">100%</span>
+        </div>
+        <div class="beat-progress-wrap">
+          <div class="beat-progress-fill green" style="width:100%;"></div>
+        </div>
+        <div class="beat-footer">
+          <span class="beat-last-visit">Last visit: Mar 7, 2026</span>
+          <button class="beat-view-btn">View Details</button>
+        </div>
+      </div>
+
+      <!-- Beat 3: Patan Beat -->
+      <div class="beat-card" onclick="openBeatSheet()">
+        <div class="beat-card-top">
+          <div class="beat-icon ic3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="beat-info">
+            <div class="beat-name">Patan Beat</div>
+            <div class="beat-day">Wednesday & Saturday</div>
+          </div>
+          <span class="beat-badge upcoming">Upcoming</span>
+        </div>
+        <div class="beat-metrics">
+          <div class="beat-metric">
+            <div class="beat-metric-val">8</div>
+            <div class="beat-metric-lbl">Shops</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">5</div>
+            <div class="beat-metric-lbl">Visited</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">3</div>
+            <div class="beat-metric-lbl">Pending</div>
+          </div>
+        </div>
+        <div class="beat-progress-row">
+          <span class="beat-progress-label">Coverage</span>
+          <span class="beat-progress-val" style="color:#f59e0b;">63%</span>
+        </div>
+        <div class="beat-progress-wrap">
+          <div class="beat-progress-fill amber" style="width:63%;"></div>
+        </div>
+        <div class="beat-footer">
+          <span class="beat-last-visit">Last visit: Mar 5, 2026</span>
+          <button class="beat-view-btn">View Details</button>
+        </div>
+      </div>
+
+      <!-- Beat 4: Bhaktapur Beat -->
+      <div class="beat-card" onclick="openBeatSheet()">
+        <div class="beat-card-top">
+          <div class="beat-icon ic4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="beat-info">
+            <div class="beat-name">Bhaktapur Beat</div>
+            <div class="beat-day">Bi-weekly · Saturdays</div>
+          </div>
+          <span class="beat-badge overdue">Overdue</span>
+        </div>
+        <div class="beat-metrics">
+          <div class="beat-metric">
+            <div class="beat-metric-val">7</div>
+            <div class="beat-metric-lbl">Shops</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">3</div>
+            <div class="beat-metric-lbl">Visited</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">4</div>
+            <div class="beat-metric-lbl">Pending</div>
+          </div>
+        </div>
+        <div class="beat-progress-row">
+          <span class="beat-progress-label">Coverage</span>
+          <span class="beat-progress-val" style="color:#e05252;">43%</span>
+        </div>
+        <div class="beat-progress-wrap">
+          <div class="beat-progress-fill red" style="width:43%;"></div>
+        </div>
+        <div class="beat-footer">
+          <span class="beat-last-visit">Last visit: Feb 28, 2026</span>
+          <button class="beat-view-btn">View Details</button>
+        </div>
+      </div>
+
+      <!-- Beat 5: Balaju Beat -->
+      <div class="beat-card" onclick="openBeatSheet()">
+        <div class="beat-card-top">
+          <div class="beat-icon ic5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="beat-info">
+            <div class="beat-name">Balaju Beat</div>
+            <div class="beat-day">Monday & Wednesday</div>
+          </div>
+          <span class="beat-badge active">Active</span>
+        </div>
+        <div class="beat-metrics">
+          <div class="beat-metric">
+            <div class="beat-metric-val">6</div>
+            <div class="beat-metric-lbl">Shops</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">4</div>
+            <div class="beat-metric-lbl">Visited</div>
+          </div>
+          <div class="beat-metric">
+            <div class="beat-metric-val">2</div>
+            <div class="beat-metric-lbl">Pending</div>
+          </div>
+        </div>
+        <div class="beat-progress-row">
+          <span class="beat-progress-label">Coverage</span>
+          <span class="beat-progress-val" style="color:#3066be;">67%</span>
+        </div>
+        <div class="beat-progress-wrap">
+          <div class="beat-progress-fill blue" style="width:67%;"></div>
+        </div>
+        <div class="beat-footer">
+          <span class="beat-last-visit">Last visit: Mar 5, 2026</span>
+          <button class="beat-view-btn">View Details</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <a class="bottom-nav-item" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </a>
+      <a class="bottom-nav-item" href="parties.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </a>
+      <a class="bottom-nav-item bottom-nav-center" href="orders.html">
+        <div class="bottom-nav-fab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </a>
+      <a class="bottom-nav-item" href="performance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </a>
+      <a class="bottom-nav-item" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- BEAT DETAIL BOTTOM SHEET -->
+  <div class="bs-overlay" id="bsOverlay" onclick="closeBeatSheet()"></div>
+  <div class="bs-sheet" id="bsSheet">
+    <div class="bs-handle"></div>
+    <div class="bs-header">
+      <div class="bs-header-row">
+        <div>
+          <div class="bs-title">New Road Beat</div>
+          <div class="bs-subtitle">Monday & Thursday · 12 shops</div>
+        </div>
+        <button class="bs-close" onclick="closeBeatSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:8px;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;">83%</div>
+          <div style="font-size:10px;opacity:.7;">Coverage</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;">10/12</div>
+          <div style="font-size:10px;opacity:.7;">Visited</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;">4.2 km</div>
+          <div style="font-size:10px;opacity:.7;">Route</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Placeholder -->
+    <div class="bs-map-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Route Map — New Road Area</span>
+    </div>
+
+    <!-- Shop List in this Beat -->
+    <div style="padding:0 16px 8px;font-size:13px;font-weight:700;color:#1a2540;">Shops in this Beat</div>
+    <div class="bs-shop-list">
+      <div class="bs-shop-item">
+        <div class="bs-shop-avatar" style="background:#e8f5ed;color:#28a745;">RM</div>
+        <div class="bs-shop-info">
+          <div class="bs-shop-name">Ram Stores</div>
+          <div class="bs-shop-addr">New Road Gate, Kathmandu</div>
+        </div>
+        <span class="bs-shop-status" style="background:#e8f5ed;color:#28a745;">Visited</span>
+      </div>
+      <div class="bs-shop-item">
+        <div class="bs-shop-avatar" style="background:#e8f5ed;color:#28a745;">CB</div>
+        <div class="bs-shop-info">
+          <div class="bs-shop-name">City Bazaar</div>
+          <div class="bs-shop-addr">Bishal Bazaar, New Road</div>
+        </div>
+        <span class="bs-shop-status" style="background:#e8f5ed;color:#28a745;">Visited</span>
+      </div>
+      <div class="bs-shop-item">
+        <div class="bs-shop-avatar" style="background:#e8f5ed;color:#28a745;">ST</div>
+        <div class="bs-shop-info">
+          <div class="bs-shop-name">Shree Traders</div>
+          <div class="bs-shop-addr">Khichapokhari, Kathmandu</div>
+        </div>
+        <span class="bs-shop-status" style="background:#e8f5ed;color:#28a745;">Visited</span>
+      </div>
+      <div class="bs-shop-item">
+        <div class="bs-shop-avatar" style="background:#e8f0fe;color:#3066be;">NM</div>
+        <div class="bs-shop-info">
+          <div class="bs-shop-name">Nepal Mart</div>
+          <div class="bs-shop-addr">Dharmapath, New Road</div>
+        </div>
+        <span class="bs-shop-status" style="background:#e8f5ed;color:#28a745;">Visited</span>
+      </div>
+      <div class="bs-shop-item">
+        <div class="bs-shop-avatar" style="background:#fef3cd;color:#d97706;">ES</div>
+        <div class="bs-shop-info">
+          <div class="bs-shop-name">Everest Store</div>
+          <div class="bs-shop-addr">Bag Bazaar, Kathmandu</div>
+        </div>
+        <span class="bs-shop-status" style="background:#fef3cd;color:#d97706;">Pending</span>
+      </div>
+      <div class="bs-shop-item">
+        <div class="bs-shop-avatar" style="background:#fde8e8;color:#e05252;">BJ</div>
+        <div class="bs-shop-info">
+          <div class="bs-shop-name">Bijaya Shop</div>
+          <div class="bs-shop-addr">Juddha Sadak, New Road</div>
+        </div>
+        <span class="bs-shop-status" style="background:#fde8e8;color:#e05252;">Missed</span>
+      </div>
+    </div>
+
+    <button class="bs-edit-btn" onclick="closeBeatSheet(); showToast('Opening beat editor...');">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="margin-right:8px;vertical-align:middle;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit Beat Plan
+    </button>
+  </div>
+
+</div>
+<script src="../js/app.js"></script>
+<script>
+  function openBeatSheet() {
+    document.getElementById('bsOverlay').classList.add('show');
+    document.getElementById('bsSheet').classList.add('show');
+  }
+  function closeBeatSheet() {
+    document.getElementById('bsOverlay').classList.remove('show');
+    document.getElementById('bsSheet').classList.remove('show');
+  }
+</script>
+</body>
+</html>

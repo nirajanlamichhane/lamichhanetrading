@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Notes — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Search ── */
+    .n-search-area { background:var(--primary); padding:0 14px 16px; }
+    .n-search-wrap {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.15); border-radius:12px; padding:0 12px; height:42px;
+    }
+    .n-search-wrap svg { width:18px; height:18px; color:rgba(255,255,255,.7); flex-shrink:0; }
+    .n-search-wrap input { border:none; outline:none; width:100%; font-size:13px; background:transparent; color:#fff; }
+    .n-search-wrap input::placeholder { color:rgba(255,255,255,.6); }
+
+    /* ── Filter Chips ── */
+    .n-filter-row { display:flex; gap:6px; padding:12px 16px 4px; overflow-x:auto; }
+    .n-chip {
+      padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      white-space:nowrap; cursor:pointer; border:1.5px solid #e2e8f0; background:#fff; color:#64748b;
+      transition: all .2s;
+    }
+    .n-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+    /* ── Note Card ── */
+    .note-card {
+      background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); cursor:pointer; transition:transform .15s;
+      border-left:4px solid transparent;
+    }
+    .note-card:active { transform:scale(.98); }
+    .note-card.priority-high { border-left-color:#e05252; }
+    .note-card.priority-medium { border-left-color:#f59e0b; }
+    .note-card.priority-low { border-left-color:#28a745; }
+
+    .nc-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+    .nc-title { font-size:13px; font-weight:700; color:#1a2540; flex:1; margin-right:8px; }
+    .nc-badge {
+      padding:2px 8px; border-radius:12px; font-size:10px; font-weight:700; flex-shrink:0;
+    }
+    .nc-badge.high { background:#fde8e8; color:#e05252; }
+    .nc-badge.medium { background:#fef3cd; color:#d97706; }
+    .nc-badge.low { background:#e8f5ed; color:#28a745; }
+
+    .nc-preview {
+      font-size:12px; color:#64748b; line-height:1.5;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+      margin-bottom:10px;
+    }
+    .nc-footer { display:flex; align-items:center; justify-content:space-between; }
+    .nc-party {
+      display:flex; align-items:center; gap:5px;
+      background:#ebf4ff; color:#3066be; font-size:11px; font-weight:600;
+      padding:3px 10px; border-radius:20px;
+    }
+    .nc-party svg { width:12px; height:12px; }
+    .nc-meta { display:flex; align-items:center; gap:8px; }
+    .nc-date { font-size:11px; color:#a0aec0; }
+    .nc-time { font-size:11px; color:#a0aec0; }
+
+    /* ── Section Header ── */
+    .n-section { display:flex; justify-content:space-between; align-items:center; padding:12px 0 8px; }
+    .n-section-title { font-size:14px; font-weight:700; color:#1a2540; }
+    .n-section-count { font-size:12px; color:#94a3b8; }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .bs-overlay.show { opacity:1; pointer-events:auto; }
+    .bs-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:88vh; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding:0 0 32px;
+    }
+    .bs-sheet.show { transform:translateX(-50%) translateY(0); }
+    .bs-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+    .bs-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:4px 20px 16px; border-bottom:1px solid #f1f5f9;
+    }
+    .bs-title { font-size:16px; font-weight:800; color:#1a2540; }
+    .bs-close {
+      width:32px; height:32px; border-radius:50%; background:#f1f5f9;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .bs-close svg { width:18px; height:18px; color:#64748b; }
+    .bs-body { padding:16px 20px; }
+
+    .bs-label { font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:.3px; }
+    .bs-input {
+      width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
+      font-size:13px; background:#f8fafc; color:#1a2540; margin-bottom:14px;
+      font-family:'Segoe UI',system-ui,sans-serif; outline:none; box-sizing:border-box;
+    }
+    .bs-input:focus { border-color:var(--primary); background:#fff; }
+    .bs-textarea {
+      width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
+      font-size:13px; background:#f8fafc; color:#1a2540; margin-bottom:14px;
+      font-family:'Segoe UI',system-ui,sans-serif; outline:none; resize:vertical;
+      min-height:100px; box-sizing:border-box;
+    }
+    .bs-textarea:focus { border-color:var(--primary); background:#fff; }
+
+    .bs-priority-row { display:flex; gap:8px; margin-bottom:14px; }
+    .bs-pri-btn {
+      flex:1; padding:10px 8px; border-radius:10px; font-size:12px; font-weight:700;
+      border:1.5px solid #e2e8f0; background:#fff; cursor:pointer; text-align:center;
+      transition:all .2s;
+    }
+    .bs-pri-btn.sel-high { background:#fde8e8; border-color:#e05252; color:#e05252; }
+    .bs-pri-btn.sel-medium { background:#fef3cd; border-color:#f59e0b; color:#d97706; }
+    .bs-pri-btn.sel-low { background:#e8f5ed; border-color:#28a745; color:#28a745; }
+
+    .bs-select {
+      width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
+      font-size:13px; background:#f8fafc; color:#1a2540; margin-bottom:18px;
+      font-family:'Segoe UI',system-ui,sans-serif; outline:none; appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center;
+    }
+    .bs-select:focus { border-color:var(--primary); background:#fff; }
+
+    .bs-save-btn {
+      width:100%; padding:14px; border:none; border-radius:12px;
+      background:var(--primary); color:#fff; font-size:14px; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .bs-save-btn:active { opacity:.85; }
+
+    /* ── Swipe-to-Action ── */
+    .swipe-container { position:relative; overflow:hidden; border-radius:14px; margin-bottom:12px; }
+    .swipe-actions { position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center; width:80px; font-size:12px; font-weight:700; flex-direction:column; gap:4px; cursor:pointer; }
+    .swipe-actions.left { left:0; background:#e05252; color:#fff; border-radius:14px 0 0 14px; }
+    .swipe-actions.right { right:0; background:#28a745; color:#fff; border-radius:0 14px 14px 0; }
+    .swipe-actions svg { width:20px; height:20px; }
+    .swipe-content { position:relative; z-index:1; background:#fff; transition:transform .3s ease; }
+    .swipe-content .note-card { margin-bottom:0; border-radius:0; }
+    .swipe-container .note-card { margin-bottom:0; }
+    .swipe-fade-out { transition:opacity .35s ease, max-height .35s ease; opacity:0; max-height:0 !important; overflow:hidden; margin-bottom:0 !important; padding:0 !important; }
+    .note-card.pinned { background:#fffde7; }
+    .note-card.pinned .nc-title::before { content:'📌 '; }
+  </style>
+</head>
+<body>
+<p class="page-title">Adera Sales · Notes</p>
+<div class="phone-frame">
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- DRAWER -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div class="drawer-brand">Adera Sales</div>
+      <button class="drawer-close" onclick="closeDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">RS</div>
+      <div>
+        <div class="drawer-user-name">Rajesh Shrestha</div>
+        <div class="drawer-user-role">Sales Representative</div>
+      </div>
+    </div>
+    <nav class="drawer-nav">
+      <a class="drawer-item" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dashboard
+      </a>
+      <a class="drawer-item" href="parties.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Parties
+      </a>
+      <a class="drawer-item" href="orders.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Orders
+      </a>
+      <a class="drawer-item" href="collections.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Collections
+      </a>
+      <a class="drawer-item" href="attendance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Attendance
+      </a>
+      <a class="drawer-item" href="performance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Performance
+      </a>
+      <a class="drawer-item active" href="notes.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Notes
+      </a>
+      <div style="border-top:1px solid rgba(255,255,255,.1); margin:8px 16px;"></div>
+      <a class="drawer-item" onclick="showToast('Logged out'); closeDrawer();" style="cursor:pointer;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </nav>
+  </div>
+
+  <div class="screen-scroll">
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
+      </div>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="top-bar-title">Field Notes</span>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Pull to Refresh -->
+    <div class="ptr-indicator" id="ptr" style="height:0;opacity:0;overflow:hidden;transition:all .3s ease;display:flex;align-items:center;justify-content:center">
+      <div class="ptr-spinner"></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="n-search-area">
+      <div class="n-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search notes by title, party, keyword..." />
+      </div>
+    </div>
+
+    <!-- FILTER CHIPS -->
+    <div class="n-filter-row">
+      <div class="n-chip active">All</div>
+      <div class="n-chip">High Priority</div>
+      <div class="n-chip">Medium</div>
+      <div class="n-chip">Low</div>
+      <div class="n-chip">This Week</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" style="padding:8px 16px 16px;">
+      <div class="n-section">
+        <span class="n-section-title">My Notes</span>
+        <span class="n-section-count">10 notes</span>
+      </div>
+
+      <!-- Note 1 -->
+      <div class="note-card priority-high" onclick="openNoteDetail()">
+        <div class="nc-top">
+          <div class="nc-title">Ram Stores - Price Negotiation</div>
+          <span class="nc-badge high">High</span>
+        </div>
+        <div class="nc-preview">Discussed bulk discount for Soap 500g and Shampoo 200ml. Owner agreed to increase order volume if 5% discount is applied on orders above Rs 20,000. Need manager approval for special pricing.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Ram Stores
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">10:30 AM</span>
+            <span class="nc-date">Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 2 -->
+      <div class="note-card priority-high">
+        <div class="nc-top">
+          <div class="nc-title">Follow-up: Shree Traders Payment Overdue</div>
+          <span class="nc-badge high">High</span>
+        </div>
+        <div class="nc-preview">Outstanding balance of Rs 15,500 is 12 days overdue. Owner promised payment by end of week. Must follow up on Friday and collect cheque or UPI transfer. Escalate to area manager if not resolved.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Shree Traders
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">2:15 PM</span>
+            <span class="nc-date">Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 3 -->
+      <div class="note-card priority-medium">
+        <div class="nc-top">
+          <div class="nc-title">Himalaya Shop - New SKUs Requested</div>
+          <span class="nc-badge medium">Medium</span>
+        </div>
+        <div class="nc-preview">Shop owner wants to stock 3 new SKUs: Body Lotion 300ml, Face Wash 100ml, and Conditioner 150ml. Requested product brochure and pricing list. Send catalog by tomorrow morning.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Himalaya Shop
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">9:45 AM</span>
+            <span class="nc-date">Yesterday</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 4 -->
+      <div class="note-card priority-high">
+        <div class="nc-top">
+          <div class="nc-title">Price Complaint - City Bazaar</div>
+          <span class="nc-badge high">High</span>
+        </div>
+        <div class="nc-preview">Owner complained about MRP increase on Detergent 1kg (Rs 180 to Rs 210). Says competitor brand is cheaper by Rs 25. Threatening to switch brands. Urgent: discuss with regional head for price match or scheme.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            City Bazaar
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">4:00 PM</span>
+            <span class="nc-date">Yesterday</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 5 -->
+      <div class="note-card priority-medium">
+        <div class="nc-top">
+          <div class="nc-title">Stock Issue at Nepal Mart</div>
+          <span class="nc-badge medium">Medium</span>
+        </div>
+        <div class="nc-preview">Shampoo 200ml and Face Wash 100ml out of stock for 5 days. Customers complaining. Warehouse confirmed next batch arriving Thursday. Place priority restock order for 10 cartons each.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Nepal Mart
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">11:20 AM</span>
+            <span class="nc-date">Mar 6</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 6 -->
+      <div class="note-card priority-low">
+        <div class="nc-top">
+          <div class="nc-title">Product Demo at Lakshmi General Store</div>
+          <span class="nc-badge low">Low</span>
+        </div>
+        <div class="nc-preview">Conducted demo for new Detergent 1kg and Face Wash range. Manager interested, wants to trial 2 cartons each. Schedule delivery for next Monday. Good potential for regular orders.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Lakshmi General
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">3:30 PM</span>
+            <span class="nc-date">Mar 5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 7 -->
+      <div class="note-card priority-medium">
+        <div class="nc-top">
+          <div class="nc-title">Scheme Feedback - Ganesh Provision</div>
+          <span class="nc-badge medium">Medium</span>
+        </div>
+        <div class="nc-preview">Current buy 10 get 1 free scheme not attractive enough. Owner suggests buy 8 get 1 to compete with local distributor offer. Adjacent shops also expressing same concern. Consolidate feedback for weekly report.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Ganesh Provision
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">1:00 PM</span>
+            <span class="nc-date">Mar 4</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 8 -->
+      <div class="note-card priority-low">
+        <div class="nc-top">
+          <div class="nc-title">Visit Recap - Sunrise Supermart</div>
+          <span class="nc-badge low">Low</span>
+        </div>
+        <div class="nc-preview">Routine visit completed. All shelves stocked properly. Placed reorder for 5 cartons Soap 500g and 3 cartons Conditioner 150ml. Payment of Rs 12,000 collected via UPI. Next visit scheduled for March 12.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Sunrise Supermart
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">5:00 PM</span>
+            <span class="nc-date">Mar 3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 9 -->
+      <div class="note-card priority-high">
+        <div class="nc-top">
+          <div class="nc-title">Damaged Goods - Pokhara Traders</div>
+          <span class="nc-badge high">High</span>
+        </div>
+        <div class="nc-preview">6 units of Body Lotion 300ml found damaged on delivery (leaking caps). Owner refusing to accept shipment. Initiated return request RET-2026-012. Need replacement within 48 hours to retain relationship.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Pokhara Traders
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">10:00 AM</span>
+            <span class="nc-date">Mar 2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note 10 -->
+      <div class="note-card priority-low">
+        <div class="nc-top">
+          <div class="nc-title">New Lead - Bhaktapur Cosmetics</div>
+          <span class="nc-badge low">Low</span>
+        </div>
+        <div class="nc-preview">Met shop owner Suresh during beat route. Currently buying from competitor. Interested in our Shampoo and Face Wash line. Shared catalog and pricing. Schedule follow-up visit next week with samples.</div>
+        <div class="nc-footer">
+          <span class="nc-party">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Bhaktapur Cosmetics
+          </span>
+          <div class="nc-meta">
+            <span class="nc-time">2:45 PM</span>
+            <span class="nc-date">Mar 1</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <a class="bottom-nav-item" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </a>
+      <a class="bottom-nav-item" href="parties.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </a>
+      <a class="bottom-nav-item bottom-nav-center" href="orders.html">
+        <div class="bottom-nav-fab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </a>
+      <a class="bottom-nav-item" href="performance.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </a>
+      <a class="bottom-nav-item" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openAddNote()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  </button>
+
+  <!-- ADD NOTE BOTTOM SHEET -->
+  <div class="bs-overlay" id="addNoteOverlay" onclick="closeAddNote()"></div>
+  <div class="bs-sheet" id="addNoteSheet">
+    <div class="bs-handle"></div>
+    <div class="bs-header">
+      <div class="bs-title">Add New Note</div>
+      <button class="bs-close" onclick="closeAddNote()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="bs-body">
+      <div class="bs-label">Title</div>
+      <input class="bs-input" id="noteTitle" type="text" placeholder="e.g. Visit recap, Follow-up reminder..." />
+
+      <div class="bs-label">Note</div>
+      <textarea class="bs-textarea" id="noteBody" placeholder="Write your field note here..."></textarea>
+
+      <div class="bs-label">Priority</div>
+      <div class="bs-priority-row">
+        <button class="bs-pri-btn sel-high" onclick="selectPriority(this,'high')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          High
+        </button>
+        <button class="bs-pri-btn" onclick="selectPriority(this,'medium')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Medium
+        </button>
+        <button class="bs-pri-btn" onclick="selectPriority(this,'low')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><polyline points="6 9 12 15 18 9"/></svg>
+          Low
+        </button>
+      </div>
+
+      <div class="bs-label">Link to Party</div>
+      <select class="bs-select">
+        <option value="">Select a party...</option>
+        <option value="ram">Ram Stores</option>
+        <option value="himalaya">Himalaya Shop</option>
+        <option value="shree">Shree Traders</option>
+        <option value="nepal">Nepal Mart</option>
+        <option value="city">City Bazaar</option>
+        <option value="lakshmi">Lakshmi General Store</option>
+        <option value="ganesh">Ganesh Provision</option>
+        <option value="sunrise">Sunrise Supermart</option>
+        <option value="pokhara">Pokhara Traders</option>
+        <option value="bhaktapur">Bhaktapur Cosmetics</option>
+      </select>
+
+      <button class="bs-save-btn" onclick="submitNote()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Note
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+function submitNote() {
+  var valid = validateForm([
+    { el: '#noteTitle', required: true, minLength: 3, message: 'Enter a title (min 3 characters)' },
+    { el: '#noteBody', required: true, minLength: 5, message: 'Write a note (min 5 characters)' }
+  ]);
+  if (!valid) return;
+  showToast('Note saved successfully', 'success');
+  closeAddNote();
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteBody').value = '';
+}
+
+function openAddNote() {
+  document.getElementById('addNoteOverlay').classList.add('show');
+  document.getElementById('addNoteSheet').classList.add('show');
+}
+function closeAddNote() {
+  document.getElementById('addNoteOverlay').classList.remove('show');
+  document.getElementById('addNoteSheet').classList.remove('show');
+}
+function selectPriority(btn, level) {
+  document.querySelectorAll('.bs-pri-btn').forEach(b => {
+    b.className = 'bs-pri-btn';
+  });
+  btn.classList.add('sel-' + level);
+}
+function openNoteDetail() {
+  // Could open a detail view — placeholder for now
+}
+
+// ── Search & Filter Chip Logic ──
+(function() {
+  var searchInput = document.querySelector('.n-search-wrap input');
+  var chips = document.querySelectorAll('.n-chip');
+  var currentFilter = 'all';
+  var sectionCount = document.querySelector('.n-section-count');
+
+  // Map chip labels to priority classes
+  var chipMap = {
+    'all': null,
+    'high priority': 'priority-high',
+    'medium': 'priority-medium',
+    'low': 'priority-low',
+    'this week': 'this-week'
+  };
+
+  function isThisWeek(card) {
+    var dateEl = card.querySelector('.nc-date');
+    if (!dateEl) return false;
+    var text = dateEl.textContent.trim().toLowerCase();
+    return text === 'today' || text === 'yesterday';
+  }
+
+  function applyFilters() {
+    var query = searchInput.value.toLowerCase().trim();
+    var cards = document.querySelectorAll('.note-card');
+    var visibleCount = 0;
+
+    cards.forEach(function(card) {
+      var matchesSearch = true;
+      var matchesFilter = true;
+
+      // Check search
+      if (query) {
+        var title = card.querySelector('.nc-title') ? card.querySelector('.nc-title').textContent.toLowerCase() : '';
+        var preview = card.querySelector('.nc-preview') ? card.querySelector('.nc-preview').textContent.toLowerCase() : '';
+        var party = card.querySelector('.nc-party') ? card.querySelector('.nc-party').textContent.toLowerCase() : '';
+        matchesSearch = title.indexOf(query) !== -1 || preview.indexOf(query) !== -1 || party.indexOf(query) !== -1;
+      }
+
+      // Check chip filter
+      if (currentFilter !== 'all') {
+        if (currentFilter === 'this-week') {
+          matchesFilter = isThisWeek(card);
+        } else if (currentFilter) {
+          matchesFilter = card.classList.contains(currentFilter);
+        }
+      }
+
+      var show = matchesSearch && matchesFilter;
+      // Hide the swipe-container parent if it exists, otherwise the card itself
+      var target = card.closest('.swipe-container') || card;
+      target.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+    });
+
+    // Update count
+    if (sectionCount) {
+      sectionCount.textContent = visibleCount + ' note' + (visibleCount !== 1 ? 's' : '');
+    }
+  }
+
+  // Listen to search input
+  searchInput.addEventListener('input', applyFilters);
+
+  // Chip click handlers
+  chips.forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      chips.forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      var label = chip.textContent.trim().toLowerCase();
+      currentFilter = chipMap[label] || 'all';
+      applyFilters();
+    });
+  });
+})();
+
+(function(){
+  const scroll = document.querySelector('.screen-scroll');
+  let startY = 0, pulling = false;
+  const ptr = document.getElementById('ptr');
+
+  scroll.addEventListener('touchstart', function(e){
+    if(scroll.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; }
+  });
+
+  scroll.addEventListener('touchmove', function(e){
+    if(!pulling) return;
+    const dy = e.touches[0].clientY - startY;
+    if(dy > 0 && dy < 120) {
+      ptr.style.height = Math.min(dy * 0.5, 50) + 'px';
+      ptr.style.opacity = Math.min(dy / 80, 1);
+    }
+  });
+
+  scroll.addEventListener('touchend', function(){
+    if(!pulling) return;
+    pulling = false;
+    const h = parseInt(ptr.style.height) || 0;
+    if(h > 30) {
+      ptr.style.height = '50px';
+      ptr.style.opacity = '1';
+      simulateRefresh(function(){
+        ptr.style.height = '0';
+        ptr.style.opacity = '0';
+      });
+    } else {
+      ptr.style.height = '0';
+      ptr.style.opacity = '0';
+    }
+  });
+})();
+
+// ── Swipe-to-Action: Wrap note cards and add touch handling ──
+(function() {
+  var deleteIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+  var pinIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l-4 7H4l4 6-2 7 6-4 6 4-2-7 4-6h-4L12 2z"/></svg>';
+
+  // Wrap each note-card in swipe container
+  var cards = document.querySelectorAll('.content .note-card');
+  cards.forEach(function(card) {
+    var container = document.createElement('div');
+    container.className = 'swipe-container';
+
+    var leftAction = document.createElement('div');
+    leftAction.className = 'swipe-actions left';
+    leftAction.innerHTML = deleteIcon + 'Delete';
+
+    var rightAction = document.createElement('div');
+    rightAction.className = 'swipe-actions right';
+    rightAction.innerHTML = pinIcon + 'Pin';
+
+    var content = document.createElement('div');
+    content.className = 'swipe-content';
+
+    card.parentNode.insertBefore(container, card);
+    content.appendChild(card);
+    container.appendChild(leftAction);
+    container.appendChild(rightAction);
+    container.appendChild(content);
+
+    card.style.marginBottom = '0';
+  });
+
+  // Touch event handling
+  var THRESHOLD = 80;
+  var activeSwipe = null;
+
+  document.querySelectorAll('.swipe-content').forEach(function(el) {
+    var startX = 0, currentX = 0, isDragging = false;
+
+    el.addEventListener('touchstart', function(e) {
+      if (activeSwipe && activeSwipe !== el) {
+        activeSwipe.style.transition = 'transform .3s ease';
+        activeSwipe.style.transform = 'translateX(0)';
+        activeSwipe = null;
+      }
+      startX = e.touches[0].clientX;
+      currentX = 0;
+      isDragging = true;
+      el.style.transition = 'none';
+    }, { passive: true });
+
+    el.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX - startX;
+      var clamped = Math.max(-100, Math.min(100, currentX));
+      el.style.transform = 'translateX(' + clamped + 'px)';
+    }, { passive: true });
+
+    el.addEventListener('touchend', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      el.style.transition = 'transform .3s ease';
+
+      if (currentX < -THRESHOLD) {
+        el.style.transform = 'translateX(-80px)';
+        activeSwipe = el;
+      } else if (currentX > THRESHOLD) {
+        el.style.transform = 'translateX(80px)';
+        activeSwipe = el;
+      } else {
+        el.style.transform = 'translateX(0)';
+        if (activeSwipe === el) activeSwipe = null;
+      }
+    });
+  });
+
+  // Action button handlers via delegation
+  document.addEventListener('click', function(e) {
+    var actionBtn = e.target.closest('.swipe-actions');
+    if (!actionBtn) return;
+    var container = actionBtn.closest('.swipe-container');
+    if (!container) return;
+
+    e.stopPropagation();
+
+    if (actionBtn.classList.contains('left')) {
+      // Delete action
+      container.style.transition = 'opacity .35s ease, max-height .35s ease';
+      container.style.opacity = '0';
+      container.style.maxHeight = container.offsetHeight + 'px';
+      setTimeout(function() {
+        container.style.maxHeight = '0';
+        container.style.marginBottom = '0';
+        container.style.overflow = 'hidden';
+      }, 10);
+      setTimeout(function() {
+        container.remove();
+        var remaining = document.querySelectorAll('.swipe-container').length;
+        var countEl = document.querySelector('.n-section-count');
+        if (countEl) countEl.textContent = remaining + ' note' + (remaining !== 1 ? 's' : '');
+      }, 400);
+      showToast('Note deleted', 'success');
+    } else if (actionBtn.classList.contains('right')) {
+      // Pin/unpin action
+      var card = container.querySelector('.note-card');
+      var swipeContent = container.querySelector('.swipe-content');
+      if (card) {
+        card.classList.toggle('pinned');
+        var isPinned = card.classList.contains('pinned');
+        showToast(isPinned ? 'Note pinned' : 'Note unpinned', 'success');
+      }
+      if (swipeContent) {
+        swipeContent.style.transition = 'transform .3s ease';
+        swipeContent.style.transform = 'translateX(0)';
+      }
+      activeSwipe = null;
+    }
+  });
+
+  // Tap anywhere else to close open swipe
+  document.addEventListener('touchstart', function(e) {
+    if (activeSwipe && !e.target.closest('.swipe-container')) {
+      activeSwipe.style.transition = 'transform .3s ease';
+      activeSwipe.style.transform = 'translateX(0)';
+      activeSwipe = null;
+    }
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

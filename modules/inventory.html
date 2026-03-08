@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Inventory — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Search ── */
+    .inv-search-area { background:var(--primary); padding:0 14px 14px; }
+    .inv-search-row { display:flex; gap:8px; }
+    .inv-search-wrap {
+      flex:1; display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.15); border-radius:12px; padding:0 12px; height:42px;
+    }
+    .inv-search-wrap svg { width:18px; height:18px; color:rgba(255,255,255,.7); flex-shrink:0; }
+    .inv-search-wrap input { border:none; outline:none; width:100%; font-size:13px; background:transparent; color:#fff; }
+    .inv-search-wrap input::placeholder { color:rgba(255,255,255,.6); }
+    .inv-view-btn {
+      width:42px; height:42px; border-radius:12px; background:rgba(255,255,255,.15);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none; flex-shrink:0;
+    }
+    .inv-view-btn svg { width:18px; height:18px; color:rgba(255,255,255,.8); }
+
+    /* ── Stats ── */
+    .inv-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+    .inv-stat {
+      background:#fff; border-radius:12px; padding:10px 6px; text-align:center;
+      box-shadow:0 1px 4px rgba(48,102,190,.08);
+    }
+    .inv-stat-val { font-size:16px; font-weight:800; }
+    .inv-stat-lbl { font-size:10px; color:#64748b; margin-top:2px; text-transform:uppercase; letter-spacing:.3px; }
+
+    /* ── Tabs ── */
+    .inv-tabs {
+      display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px;
+      overflow-x:auto; scrollbar-width:none;
+    }
+    .inv-tabs::-webkit-scrollbar { display:none; }
+    .inv-tab {
+      flex-shrink:0; text-align:center; padding:8px 12px; font-size:12px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition:all .2s; white-space:nowrap;
+    }
+    .inv-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Category Chips ── */
+    .inv-chips { display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; scrollbar-width:none; }
+    .inv-chips::-webkit-scrollbar { display:none; }
+    .inv-chip {
+      flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      background:#fff; color:#64748b; border:1.5px solid #e2e8f0; cursor:pointer; transition:all .2s;
+    }
+    .inv-chip.active { background:#3066be; color:#fff; border-color:#3066be; }
+
+    /* ── Stock Card ── */
+    .stk-card {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:10px;
+      box-shadow:0 1px 4px rgba(48,102,190,.06); cursor:pointer; transition:transform .15s;
+    }
+    .stk-card:active { transform:scale(.98); }
+    .stk-top { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .stk-icon {
+      width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+      font-size:18px; font-weight:800; flex-shrink:0;
+    }
+    .stk-icon.ic-blue { background:rgba(48,102,190,.1); color:#3066be; }
+    .stk-icon.ic-green { background:rgba(40,167,69,.1); color:#28a745; }
+    .stk-icon.ic-orange { background:rgba(245,158,11,.1); color:#f59e0b; }
+    .stk-icon.ic-red { background:rgba(224,82,82,.1); color:#e05252; }
+    .stk-icon.ic-purple { background:rgba(128,90,213,.1); color:#805ad5; }
+    .stk-icon.ic-teal { background:rgba(45,160,150,.1); color:#2da096; }
+    .stk-info { flex:1; min-width:0; }
+    .stk-name { font-size:14px; font-weight:700; color:#1a2540; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .stk-sku { font-size:11px; color:#94a3b8; margin-top:1px; }
+    .stk-badge {
+      padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700; flex-shrink:0;
+    }
+    .stk-badge.ok { background:rgba(40,167,69,.1); color:#28a745; }
+    .stk-badge.low { background:rgba(245,158,11,.1); color:#d97706; }
+    .stk-badge.out { background:rgba(224,82,82,.1); color:#e05252; }
+    .stk-badge.excess { background:rgba(48,102,190,.1); color:#3066be; }
+
+    .stk-metrics { display:flex; gap:0; }
+    .stk-metric { flex:1; text-align:center; padding:6px 0; border-right:1px solid #f1f5f9; }
+    .stk-metric:last-child { border-right:none; }
+    .stk-m-val { font-size:14px; font-weight:800; color:#1a2540; }
+    .stk-m-lbl { font-size:10px; color:#94a3b8; margin-top:1px; }
+    .stk-m-val.danger { color:#e05252; }
+    .stk-m-val.warning { color:#d97706; }
+
+    .stk-footer { display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid #f1f5f9; }
+    .stk-cat { font-size:11px; color:#94a3b8; }
+    .stk-actions { display:flex; gap:6px; }
+    .stk-act-btn {
+      width:30px; height:30px; border-radius:8px; border:1.5px solid #e2e8f0;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff;
+    }
+    .stk-act-btn svg { width:14px; height:14px; color:#64748b; }
+    .stk-act-btn:active { background:#f1f5f9; }
+
+    /* ── Stock Detail Sheet ── */
+    .sd-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .sd-overlay.show { opacity:1; pointer-events:auto; }
+    .sd-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:88vh; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:201; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom:24px; scrollbar-width:none;
+    }
+    .sd-sheet::-webkit-scrollbar { display:none; }
+    .sd-sheet.show { transform:translateX(-50%) translateY(0); }
+    .sd-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+
+    .sd-header {
+      background:linear-gradient(135deg,#3066be 0%,#4a90e2 100%);
+      padding:20px; margin:0 0 16px; border-radius:0 0 20px 20px; color:#fff;
+    }
+    .sd-header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+    .sd-close {
+      width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.2);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .sd-close svg { width:18px; height:18px; color:#fff; }
+    .sd-prod-name { font-size:20px; font-weight:800; }
+    .sd-prod-sku { font-size:12px; opacity:.7; margin-top:2px; }
+    .sd-prod-cat { font-size:12px; opacity:.8; margin-top:4px; }
+
+    .sd-stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:0 16px 16px; }
+    .sd-stat-card {
+      background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,.05);
+    }
+    .sd-sc-label { font-size:11px; color:#94a3b8; margin-bottom:4px; }
+    .sd-sc-value { font-size:18px; font-weight:800; color:#1a2540; }
+    .sd-sc-sub { font-size:11px; color:#64748b; margin-top:2px; }
+
+    .sd-section { padding:0 16px 16px; }
+    .sd-section-title { font-size:13px; font-weight:700; color:#1a2540; margin-bottom:10px; }
+
+    .sd-movement {
+      background:#fff; border-radius:10px; padding:12px; margin-bottom:8px;
+      display:flex; justify-content:space-between; align-items:center;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .sd-mv-type { font-size:13px; font-weight:700; color:#1a2540; }
+    .sd-mv-date { font-size:11px; color:#94a3b8; }
+    .sd-mv-qty { font-size:14px; font-weight:800; }
+    .sd-mv-qty.in { color:#28a745; }
+    .sd-mv-qty.out { color:#e05252; }
+
+    .sd-bottom-actions { display:flex; gap:8px; padding:0 16px; }
+    .sd-btn {
+      flex:1; padding:12px; border-radius:12px; font-size:13px; font-weight:700;
+      text-align:center; cursor:pointer; border:none;
+    }
+    .sd-btn-primary { background:#3066be; color:#fff; }
+    .sd-btn-outline { background:#fff; color:#3066be; border:1.5px solid #3066be; }
+
+    /* ── Adjust Stock Sheet ── */
+    .adj-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:300;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .adj-overlay.show { opacity:1; pointer-events:auto; }
+    .adj-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:301; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding:0 0 32px;
+    }
+    .adj-sheet.show { transform:translateX(-50%) translateY(0); }
+    .adj-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+    .adj-header {
+      background:linear-gradient(135deg,#28a745 0%,#34c759 100%);
+      padding:16px 20px; margin:0 0 20px; border-radius:0 0 20px 20px; color:#fff;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .adj-title { font-size:16px; font-weight:800; }
+    .adj-prod-name { font-size:12px; opacity:.8; margin-top:2px; }
+    .adj-close {
+      width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.2);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .adj-close svg { width:18px; height:18px; color:#fff; }
+    .adj-form { padding:0 16px; }
+    .adj-field { margin-bottom:14px; }
+    .adj-label { font-size:12px; font-weight:600; color:#475569; margin-bottom:5px; display:block; }
+    .adj-input {
+      width:100%; height:42px; border:1.5px solid #e2e8f0; border-radius:10px;
+      padding:0 12px; font-size:13px; color:#1a2540; background:#fff; outline:none;
+    }
+    .adj-input:focus { border-color:#3066be; }
+    .adj-select {
+      width:100%; height:42px; border:1.5px solid #e2e8f0; border-radius:10px;
+      padding:0 12px; font-size:13px; color:#1a2540; background:#fff; outline:none;
+      appearance:none; cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center;
+    }
+    .adj-row { display:flex; gap:10px; }
+    .adj-row .adj-field { flex:1; }
+    .adj-qty-control {
+      display:flex; align-items:center; gap:0; border:1.5px solid #e2e8f0; border-radius:10px; overflow:hidden; height:48px;
+    }
+    .adj-qty-btn {
+      width:48px; height:100%; border:none; background:#f8fafc; font-size:20px; font-weight:700;
+      color:#3066be; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    }
+    .adj-qty-btn:active { background:#e2e8f0; }
+    .adj-qty-input {
+      flex:1; text-align:center; border:none; outline:none; font-size:18px; font-weight:800;
+      color:#1a2540; background:#fff;
+    }
+    .adj-submit {
+      width:100%; height:48px; border:none; border-radius:14px; font-size:14px; font-weight:700;
+      color:#fff; background:linear-gradient(135deg,#3066be,#4a90e2); cursor:pointer;
+      box-shadow:0 4px 14px rgba(48,102,190,.3); margin-top:8px;
+    }
+    .adj-submit:active { transform:scale(.97); }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Inventory</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <span class="drawer-item-label">Inventory</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('salesforce.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg></div>
+      <span class="drawer-item-label">Sales Force</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('reports.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Reports</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('config.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+      <span class="drawer-item-label">Configuration</span>
+    </div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Inventory</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="inv-search-area">
+      <div class="inv-search-row">
+        <div class="inv-search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="invSearch" placeholder="Search products, SKUs...">
+        </div>
+        <button class="inv-view-btn" onclick="showToast('Filter options','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Stats -->
+      <div class="inv-stats">
+        <div class="inv-stat">
+          <div class="inv-stat-val" style="color:#3066be;">142</div>
+          <div class="inv-stat-lbl">SKUs</div>
+        </div>
+        <div class="inv-stat">
+          <div class="inv-stat-val" style="color:#28a745;">₹8.4L</div>
+          <div class="inv-stat-lbl">Value</div>
+        </div>
+        <div class="inv-stat">
+          <div class="inv-stat-val" style="color:#d97706;">12</div>
+          <div class="inv-stat-lbl">Low Stock</div>
+        </div>
+        <div class="inv-stat">
+          <div class="inv-stat-val" style="color:#e05252;">3</div>
+          <div class="inv-stat-lbl">Out</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="inv-tabs">
+        <div class="inv-tab active" onclick="switchInvTab(this,'all')">All</div>
+        <div class="inv-tab" onclick="switchInvTab(this,'ok')">In Stock</div>
+        <div class="inv-tab" onclick="switchInvTab(this,'low')">Low Stock</div>
+        <div class="inv-tab" onclick="switchInvTab(this,'out')">Out of Stock</div>
+      </div>
+
+      <!-- Category Chips -->
+      <div class="inv-chips">
+        <div class="inv-chip active" onclick="switchInvCat(this,'all')">All</div>
+        <div class="inv-chip" onclick="switchInvCat(this,'fmcg')">FMCG</div>
+        <div class="inv-chip" onclick="switchInvCat(this,'dairy')">Dairy</div>
+        <div class="inv-chip" onclick="switchInvCat(this,'snacks')">Snacks</div>
+        <div class="inv-chip" onclick="switchInvCat(this,'homecare')">Home Care</div>
+        <div class="inv-chip" onclick="switchInvCat(this,'cosmetics')">Cosmetics</div>
+        <div class="inv-chip" onclick="switchInvCat(this,'beverages')">Beverages</div>
+      </div>
+
+      <!-- Stock Cards -->
+      <div id="stkList"></div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('take-order.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>Order</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Stock</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- FAB -->
+  <button class="fab" onclick="showToast('Scan barcode','info')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+  </button>
+
+  <!-- ═══ Stock Detail Sheet ═══ -->
+  <div class="sd-overlay" id="sdOverlay" onclick="closeStockDetail()"></div>
+  <div class="sd-sheet" id="sdSheet">
+    <div class="sd-handle"></div>
+    <div class="sd-header" id="sdHeader"></div>
+    <div class="sd-stats-grid" id="sdStats"></div>
+    <div class="sd-section" id="sdMovements"></div>
+    <div class="sd-bottom-actions" id="sdActions"></div>
+  </div>
+
+  <!-- ═══ Adjust Stock Sheet ═══ -->
+  <div class="adj-overlay" id="adjOverlay" onclick="closeAdjust()"></div>
+  <div class="adj-sheet" id="adjSheet">
+    <div class="adj-handle"></div>
+    <div class="adj-header">
+      <div>
+        <div class="adj-title">Adjust Stock</div>
+        <div class="adj-prod-name" id="adjProdName"></div>
+      </div>
+      <button class="adj-close" onclick="closeAdjust()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="adj-form">
+      <div class="adj-field">
+        <label class="adj-label">Adjustment Type</label>
+        <select class="adj-select" id="adjType">
+          <option>Stock In (Received)</option>
+          <option>Stock Out (Dispatched)</option>
+          <option>Damaged / Expired</option>
+          <option>Return from Party</option>
+          <option>Opening Balance</option>
+        </select>
+      </div>
+      <div class="adj-field">
+        <label class="adj-label">Quantity</label>
+        <div class="adj-qty-control">
+          <button class="adj-qty-btn" onclick="adjQty(-1)">-</button>
+          <input class="adj-qty-input" type="number" id="adjQtyInput" value="1" min="1">
+          <button class="adj-qty-btn" onclick="adjQty(1)">+</button>
+        </div>
+      </div>
+      <div class="adj-row">
+        <div class="adj-field">
+          <label class="adj-label">Batch No.</label>
+          <input class="adj-input" type="text" id="adjBatch" placeholder="Optional">
+        </div>
+        <div class="adj-field">
+          <label class="adj-label">Expiry Date</label>
+          <input class="adj-input" type="date" id="adjExpiry">
+        </div>
+      </div>
+      <div class="adj-field">
+        <label class="adj-label">Remarks</label>
+        <input class="adj-input" type="text" id="adjRemarks" placeholder="Optional note">
+      </div>
+      <button class="adj-submit" onclick="submitAdjust()">Confirm Adjustment</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── Stock Data ──
+  var stockItems = [
+    { id:'surf', name:'Surf Excel Easy Wash 1kg', sku:'SKU-HUL-0012', cat:'fmcg', icon:'S', iconClass:'ic-blue', qty:48, minQty:10, price:185, mrp:199, status:'ok',
+      movements:[{type:'In',date:'Today',qty:'+24',ref:'GR/2025/1847'},{type:'Out',date:'Yesterday',qty:'-12',ref:'ORD-0147'},{type:'Out',date:'Mar 5',qty:'-8',ref:'ORD-0139'}]},
+    { id:'amul', name:'Amul Gold Milk 500ml', sku:'SKU-AML-0034', cat:'dairy', icon:'A', iconClass:'ic-orange', qty:120, minQty:30, price:28, mrp:30, status:'ok',
+      movements:[{type:'In',date:'Today',qty:'+60',ref:'GR/2025/1848'},{type:'Out',date:'Today',qty:'-35',ref:'Route R-KTM'}]},
+    { id:'lays', name:'Lays Classic Salted 52g', sku:'SKU-PEP-0056', cat:'snacks', icon:'L', iconClass:'ic-orange', qty:8, minQty:20, price:18, mrp:20, status:'low',
+      movements:[{type:'Out',date:'Today',qty:'-15',ref:'ORD-0145'},{type:'Out',date:'Yesterday',qty:'-22',ref:'Route R-BU'}]},
+    { id:'vim', name:'Vim Dishwash Bar 300g', sku:'SKU-HUL-0089', cat:'homecare', icon:'V', iconClass:'ic-green', qty:0, minQty:15, price:32, mrp:35, status:'out',
+      movements:[{type:'Out',date:'Mar 5',qty:'-15',ref:'ORD-0140'},{type:'Return',date:'Mar 3',qty:'+3',ref:'RET-012'}]},
+    { id:'dove', name:'Dove Beauty Bar 100g', sku:'SKU-HUL-0045', cat:'cosmetics', icon:'D', iconClass:'ic-purple', qty:65, minQty:15, price:55, mrp:62, status:'ok',
+      movements:[{type:'In',date:'Mar 4',qty:'+30',ref:'GR/2025/1840'},{type:'Out',date:'Mar 3',qty:'-8',ref:'ORD-0136'}]},
+    { id:'parle', name:'Parle-G Gold 100g', sku:'SKU-PAR-0011', cat:'snacks', icon:'P', iconClass:'ic-orange', qty:5, minQty:25, price:22, mrp:25, status:'low',
+      movements:[{type:'Out',date:'Today',qty:'-18',ref:'ORD-0146'},{type:'Out',date:'Yesterday',qty:'-12',ref:'Route R-PAT'}]},
+    { id:'coke', name:'Coca-Cola 750ml PET', sku:'SKU-CCL-0022', cat:'beverages', icon:'C', iconClass:'ic-red', qty:36, minQty:12, price:38, mrp:40, status:'ok',
+      movements:[{type:'In',date:'Mar 6',qty:'+48',ref:'GR/2025/1845'},{type:'Out',date:'Mar 6',qty:'-14',ref:'Route R-KTM'}]},
+    { id:'dettol', name:'Dettol Handwash 200ml', sku:'SKU-RCK-0015', cat:'homecare', icon:'D', iconClass:'ic-green', qty:0, minQty:10, price:89, mrp:99, status:'out',
+      movements:[{type:'Out',date:'Mar 4',qty:'-10',ref:'ORD-0138'},{type:'Dmg',date:'Mar 2',qty:'-3',ref:'DMG-005'}]},
+    { id:'maggi', name:'Maggi 2-Min Noodles 70g', sku:'SKU-NST-0008', cat:'fmcg', icon:'M', iconClass:'ic-red', qty:180, minQty:40, price:12, mrp:14, status:'ok',
+      movements:[{type:'In',date:'Today',qty:'+100',ref:'GR/2025/1847'},{type:'Out',date:'Yesterday',qty:'-45',ref:'Route R-BU'}]},
+    { id:'nivea', name:'Nivea Body Lotion 200ml', sku:'SKU-NIV-0019', cat:'cosmetics', icon:'N', iconClass:'ic-blue', qty:3, minQty:10, price:165, mrp:189, status:'low',
+      movements:[{type:'Out',date:'Mar 5',qty:'-7',ref:'ORD-0141'},{type:'In',date:'Mar 1',qty:'+10',ref:'GR/2025/1835'}]},
+    { id:'frooti', name:'Frooti Mango 200ml Pack', sku:'SKU-PGI-0027', cat:'beverages', icon:'F', iconClass:'ic-teal', qty:0, minQty:20, price:10, mrp:10, status:'out',
+      movements:[{type:'Out',date:'Mar 6',qty:'-24',ref:'Route R-KTM'},{type:'Out',date:'Mar 4',qty:'-18',ref:'ORD-0137'}]},
+    { id:'tide', name:'Tide Plus Detergent 1kg', sku:'SKU-PG-0033', cat:'homecare', icon:'T', iconClass:'ic-blue', qty:42, minQty:12, price:145, mrp:159, status:'ok',
+      movements:[{type:'In',date:'Mar 6',qty:'+24',ref:'GR/2025/1846'},{type:'Out',date:'Mar 5',qty:'-6',ref:'ORD-0142'}]}
+  ];
+
+  var currentTab = 'all';
+  var currentCat = 'all';
+
+  function renderStock() {
+    var query = document.getElementById('invSearch').value.toLowerCase().trim();
+    var list = document.getElementById('stkList');
+    var html = '';
+
+    stockItems.forEach(function(item) {
+      // Filter by tab
+      if (currentTab !== 'all' && item.status !== currentTab) return;
+      // Filter by category
+      if (currentCat !== 'all' && item.cat !== currentCat) return;
+      // Filter by search
+      if (query && item.name.toLowerCase().indexOf(query) === -1 && item.sku.toLowerCase().indexOf(query) === -1) return;
+
+      var badgeClass = item.status === 'ok' ? 'ok' : item.status === 'low' ? 'low' : 'out';
+      var badgeText = item.status === 'ok' ? 'In Stock' : item.status === 'low' ? 'Low Stock' : 'Out';
+      var qtyClass = item.qty === 0 ? 'danger' : item.qty <= item.minQty ? 'warning' : '';
+      var stockVal = '₹' + ((item.qty * item.price)/1000).toFixed(1) + 'K';
+      if (item.qty * item.price < 1000) stockVal = '₹' + (item.qty * item.price);
+
+      html += '<div class="stk-card" onclick="showStockDetail(\'' + item.id + '\')">' +
+        '<div class="stk-top">' +
+          '<div class="stk-icon ' + item.iconClass + '">' + item.icon + '</div>' +
+          '<div class="stk-info"><div class="stk-name">' + item.name + '</div><div class="stk-sku">' + item.sku + '</div></div>' +
+          '<span class="stk-badge ' + badgeClass + '">' + badgeText + '</span>' +
+        '</div>' +
+        '<div class="stk-metrics">' +
+          '<div class="stk-metric"><div class="stk-m-val ' + qtyClass + '">' + item.qty + '</div><div class="stk-m-lbl">Qty</div></div>' +
+          '<div class="stk-metric"><div class="stk-m-val">' + item.minQty + '</div><div class="stk-m-lbl">Min</div></div>' +
+          '<div class="stk-metric"><div class="stk-m-val">₹' + item.price + '</div><div class="stk-m-lbl">Price</div></div>' +
+          '<div class="stk-metric"><div class="stk-m-val">' + stockVal + '</div><div class="stk-m-lbl">Value</div></div>' +
+        '</div>' +
+        '<div class="stk-footer">' +
+          '<div class="stk-cat">' + item.cat.charAt(0).toUpperCase() + item.cat.slice(1) + '</div>' +
+          '<div class="stk-actions">' +
+            '<button class="stk-act-btn" onclick="event.stopPropagation(); openAdjust(\'' + item.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>' +
+            '<button class="stk-act-btn" onclick="event.stopPropagation(); showStockDetail(\'' + item.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    });
+
+    if (!html) html = '<div style="text-align:center;padding:40px 0;color:#94a3b8;font-size:13px;">No products found</div>';
+    list.innerHTML = html;
+  }
+
+  // Search
+  document.getElementById('invSearch').addEventListener('input', renderStock);
+
+  // Tabs
+  function switchInvTab(el, tab) {
+    document.querySelectorAll('.inv-tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    currentTab = tab;
+    renderStock();
+  }
+
+  // Category chips
+  function switchInvCat(el, cat) {
+    document.querySelectorAll('.inv-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+    currentCat = cat;
+    renderStock();
+  }
+
+  // ── Stock Detail ──
+  function showStockDetail(id) {
+    var item = stockItems.find(function(i) { return i.id === id; });
+    if (!item) return;
+
+    document.getElementById('sdHeader').innerHTML =
+      '<div class="sd-header-top"><div></div><button class="sd-close" onclick="closeStockDetail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>' +
+      '<div class="sd-prod-name">' + item.name + '</div>' +
+      '<div class="sd-prod-sku">' + item.sku + '</div>' +
+      '<div class="sd-prod-cat">' + item.cat.charAt(0).toUpperCase() + item.cat.slice(1) + ' · MRP ₹' + item.mrp + '</div>';
+
+    var stockVal = item.qty * item.price;
+    var statusColor = item.status === 'out' ? '#e05252' : item.status === 'low' ? '#d97706' : '#28a745';
+    document.getElementById('sdStats').innerHTML =
+      '<div class="sd-stat-card"><div class="sd-sc-label">Current Stock</div><div class="sd-sc-value" style="color:' + statusColor + ';">' + item.qty + ' units</div><div class="sd-sc-sub">Min: ' + item.minQty + ' units</div></div>' +
+      '<div class="sd-stat-card"><div class="sd-sc-label">Stock Value</div><div class="sd-sc-value">₹' + stockVal.toLocaleString() + '</div><div class="sd-sc-sub">@ ₹' + item.price + '/unit</div></div>' +
+      '<div class="sd-stat-card"><div class="sd-sc-label">MRP</div><div class="sd-sc-value">₹' + item.mrp + '</div><div class="sd-sc-sub">Margin: ₹' + (item.mrp - item.price) + '</div></div>' +
+      '<div class="sd-stat-card"><div class="sd-sc-label">Status</div><div class="sd-sc-value" style="font-size:14px;color:' + statusColor + ';">' + (item.status === 'ok' ? 'In Stock' : item.status === 'low' ? 'Low Stock' : 'Out of Stock') + '</div><div class="sd-sc-sub">' + (item.qty <= item.minQty && item.qty > 0 ? 'Reorder needed' : item.qty === 0 ? 'Urgent reorder' : 'Healthy') + '</div></div>';
+
+    var movHtml = '<div class="sd-section-title">Recent Movements</div>';
+    item.movements.forEach(function(m) {
+      var qtyClass = m.qty.indexOf('+') === 0 ? 'in' : 'out';
+      movHtml += '<div class="sd-movement"><div><div class="sd-mv-type">' + m.type + ' — ' + m.ref + '</div><div class="sd-mv-date">' + m.date + '</div></div><div class="sd-mv-qty ' + qtyClass + '">' + m.qty + '</div></div>';
+    });
+    document.getElementById('sdMovements').innerHTML = movHtml;
+
+    document.getElementById('sdActions').innerHTML =
+      '<button class="sd-btn sd-btn-primary" onclick="closeStockDetail(); openAdjust(\'' + id + '\');">Adjust Stock</button>' +
+      '<button class="sd-btn sd-btn-outline" onclick="showToast(\'Reorder placed\',\'success\')">Reorder</button>';
+
+    document.getElementById('sdOverlay').classList.add('show');
+    document.getElementById('sdSheet').classList.add('show');
+  }
+
+  function closeStockDetail() {
+    document.getElementById('sdOverlay').classList.remove('show');
+    document.getElementById('sdSheet').classList.remove('show');
+  }
+
+  // ── Adjust Stock ──
+  var adjustingItemId = null;
+
+  function openAdjust(id) {
+    var item = stockItems.find(function(i) { return i.id === id; });
+    if (!item) return;
+    adjustingItemId = id;
+    document.getElementById('adjProdName').textContent = item.name + ' (Qty: ' + item.qty + ')';
+    document.getElementById('adjQtyInput').value = 1;
+    document.getElementById('adjType').selectedIndex = 0;
+    document.getElementById('adjBatch').value = '';
+    document.getElementById('adjRemarks').value = '';
+    document.getElementById('adjOverlay').classList.add('show');
+    document.getElementById('adjSheet').classList.add('show');
+  }
+
+  function closeAdjust() {
+    document.getElementById('adjOverlay').classList.remove('show');
+    document.getElementById('adjSheet').classList.remove('show');
+  }
+
+  function adjQty(delta) {
+    var input = document.getElementById('adjQtyInput');
+    var val = parseInt(input.value) || 0;
+    val += delta;
+    if (val < 1) val = 1;
+    input.value = val;
+  }
+
+  function submitAdjust() {
+    var qty = parseInt(document.getElementById('adjQtyInput').value) || 0;
+    var type = document.getElementById('adjType').value;
+    if (qty < 1) { showToast('Enter valid quantity','error'); return; }
+
+    var item = stockItems.find(function(i) { return i.id === adjustingItemId; });
+    if (item) {
+      if (type.indexOf('In') !== -1 || type.indexOf('Return') !== -1 || type.indexOf('Opening') !== -1) {
+        item.qty += qty;
+      } else {
+        item.qty = Math.max(0, item.qty - qty);
+      }
+      // Update status
+      if (item.qty === 0) item.status = 'out';
+      else if (item.qty <= item.minQty) item.status = 'low';
+      else item.status = 'ok';
+    }
+
+    showToast('Stock adjusted: ' + type + ' (' + qty + ')', 'success');
+    closeAdjust();
+    renderStock();
+  }
+
+  // Initial render
+  renderStock();
+</script>
+</body>
+</html>

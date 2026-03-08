@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Notifications — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Stats Strip ── */
+    .notif-stats {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;
+    }
+    .n-stat {
+      background:#fff; border-radius:12px; padding:10px 8px; text-align:center;
+      box-shadow:0 1px 4px rgba(48,102,190,.08);
+    }
+    .n-stat-val { font-size:18px; font-weight:800; color:#1a2540; }
+    .n-stat-lbl { font-size:10px; color:#64748b; margin-top:2px; text-transform:uppercase; letter-spacing:.3px; }
+    .n-stat.blue .n-stat-val { color:#3066be; }
+    .n-stat.amber .n-stat-val { color:#f59e0b; }
+    .n-stat.purple .n-stat-val { color:#7c3aed; }
+
+    /* ── Filter Tabs ── */
+    .notif-tabs {
+      display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px;
+    }
+    .notif-tab {
+      flex:1; text-align:center; padding:8px 4px; font-size:12px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition:all .2s;
+    }
+    .notif-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Section Header ── */
+    .notif-section {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:8px; margin-top:6px;
+    }
+    .notif-section-title { font-size:13px; font-weight:700; color:#1a2540; text-transform:uppercase; letter-spacing:.4px; }
+    .notif-section-count {
+      font-size:11px; color:#94a3b8; background:#f1f5f9; padding:2px 8px; border-radius:10px; font-weight:600;
+    }
+
+    /* ── Notification Card ── */
+    .notif-card {
+      background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:8px;
+      box-shadow:0 2px 8px rgba(48,102,190,.06); cursor:pointer;
+      display:flex; align-items:flex-start; gap:12px; transition:transform .15s; position:relative;
+    }
+    .notif-card:active { transform:scale(.98); }
+    .notif-card.unread { background:#f8faff; border-left:3px solid #3066be; }
+
+    .notif-icon {
+      width:40px; height:40px; border-radius:12px; display:flex; align-items:center;
+      justify-content:center; flex-shrink:0;
+    }
+    .notif-icon svg { width:18px; height:18px; }
+    .notif-icon.ic-blue { background:#e8f0fe; color:#3066be; }
+    .notif-icon.ic-green { background:#e8f5ed; color:#28a745; }
+    .notif-icon.ic-orange { background:#fef3cd; color:#d97706; }
+    .notif-icon.ic-red { background:#fde8e8; color:#e05252; }
+    .notif-icon.ic-purple { background:#f3e8ff; color:#7c3aed; }
+    .notif-icon.ic-teal { background:#d1fae5; color:#0d9488; }
+    .notif-icon.ic-indigo { background:#e0e7ff; color:#4f46e5; }
+    .notif-icon.ic-grey { background:#f1f5f9; color:#64748b; }
+
+    .notif-body { flex:1; min-width:0; }
+    .notif-title { font-size:13px; font-weight:700; color:#1a2540; margin-bottom:2px; }
+    .notif-desc { font-size:12px; color:#64748b; line-height:1.4; margin-bottom:4px;
+      overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+    .notif-time { font-size:11px; color:#94a3b8; }
+
+    .notif-right { display:flex; align-items:center; gap:6px; flex-shrink:0; padding-top:8px; }
+    .notif-dot { width:8px; height:8px; border-radius:50%; background:#3066be; flex-shrink:0; }
+    .notif-chevron { color:#cbd5e1; }
+    .notif-chevron svg { width:16px; height:16px; }
+
+    /* ── Detail Bottom Sheet ── */
+    .nd-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .nd-overlay.show { opacity:1; pointer-events:auto; }
+    .nd-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:85vh; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:201; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom:24px;
+    }
+    .nd-sheet.show { transform:translateX(-50%) translateY(0); }
+    .nd-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:12px auto; }
+    .nd-header { padding:0 20px 16px; border-bottom:1px solid #e2e8f0; }
+    .nd-header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .nd-title { font-size:17px; font-weight:800; color:#1a2540; }
+    .nd-close {
+      width:32px; height:32px; border-radius:50%; background:#f1f5f9;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:none;
+    }
+    .nd-close svg { width:18px; height:18px; color:#64748b; }
+    .nd-desc { font-size:13px; color:#475569; line-height:1.5; margin-bottom:12px; }
+    .nd-timestamp { font-size:11px; color:#94a3b8; display:flex; align-items:center; gap:4px; }
+    .nd-timestamp svg { width:14px; height:14px; }
+
+    .nd-details {
+      padding:16px 20px; display:flex; flex-direction:column; gap:10px;
+    }
+    .nd-detail-row {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#fff; border-radius:10px; padding:10px 14px;
+    }
+    .nd-detail-label { font-size:12px; color:#94a3b8; }
+    .nd-detail-value { font-size:13px; font-weight:700; color:#1a2540; }
+
+    .nd-actions {
+      padding:12px 20px; display:flex; gap:8px;
+    }
+    .nd-btn {
+      flex:1; padding:12px; border:none; border-radius:12px; font-size:13px;
+      font-weight:700; cursor:pointer; text-align:center; transition:all .2s;
+    }
+    .nd-btn:active { transform:scale(.97); }
+    .nd-btn.primary { background:#3066be; color:#fff; }
+    .nd-btn.secondary { background:#f1f5f9; color:#475569; }
+    .nd-btn.outline { background:#fff; color:#e05252; border:1.5px solid #fde8e8; }
+
+    /* ── Settings Bottom Sheet ── */
+    .ns-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .ns-overlay.show { opacity:1; pointer-events:auto; }
+    .ns-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; max-height:85vh; background:#f8fafc; border-radius:20px 20px 0 0;
+      z-index:201; overflow-y:auto; transition:transform .35s cubic-bezier(.4,0,.2,1);
+      padding-bottom:24px;
+    }
+    .ns-sheet.show { transform:translateX(-50%) translateY(0); }
+
+    .ns-title { font-size:17px; font-weight:800; color:#1a2540; padding:0 20px 16px; }
+    .ns-group { padding:0 20px; }
+    .ns-item {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 0; border-bottom:1px solid #f1f5f9;
+    }
+    .ns-item:last-child { border-bottom:none; }
+    .ns-item-left { display:flex; align-items:center; gap:10px; }
+    .ns-item-icon {
+      width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    }
+    .ns-item-icon svg { width:16px; height:16px; }
+    .ns-item-label { font-size:13px; font-weight:600; color:#1a2540; }
+    .ns-item-sub { font-size:11px; color:#94a3b8; }
+
+    /* Toggle switch */
+    .toggle {
+      width:44px; height:24px; border-radius:12px; background:#e2e8f0;
+      position:relative; cursor:pointer; transition:background .2s; flex-shrink:0;
+    }
+    .toggle.on { background:#3066be; }
+    .toggle::after {
+      content:''; position:absolute; top:2px; left:2px; width:20px; height:20px;
+      border-radius:50%; background:#fff; transition:transform .2s;
+      box-shadow:0 1px 3px rgba(0,0,0,.15);
+    }
+    .toggle.on::after { transform:translateX(20px); }
+
+    .ns-quiet {
+      background:#fff; border-radius:12px; padding:14px; margin:12px 20px;
+      box-shadow:0 1px 4px rgba(48,102,190,.06);
+    }
+    .ns-quiet-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .ns-quiet-label { font-size:13px; font-weight:700; color:#1a2540; }
+    .ns-quiet-time { font-size:12px; color:#94a3b8; }
+
+    .ns-save {
+      margin:16px 20px 0; padding:14px; border:none; border-radius:14px;
+      background:#3066be; color:#fff; font-size:14px; font-weight:700;
+      cursor:pointer; width:calc(100% - 40px); transition:all .2s;
+    }
+    .ns-save:active { transform:scale(.97); }
+
+    /* ── Mark All Read button ── */
+    .mark-all-btn {
+      background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px;
+      font-size:11px; font-weight:600; color:#3066be; padding:4px 8px; border-radius:8px;
+    }
+    .mark-all-btn:active { background:#e8f0fe; }
+    .mark-all-btn svg { width:16px; height:16px; }
+
+    .top-bar-actions { display:flex; align-items:center; gap:4px; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Notifications</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collections</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+      <span class="drawer-item-label">Notifications</span>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Notifications</div>
+      <div class="top-bar-actions">
+        <button class="mark-all-btn" onclick="markAllRead()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          All Read
+        </button>
+        <button class="icon-btn" onclick="openSettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Stats Strip -->
+      <div class="notif-stats">
+        <div class="n-stat blue">
+          <div class="n-stat-val">8</div>
+          <div class="n-stat-lbl">Unread</div>
+        </div>
+        <div class="n-stat amber">
+          <div class="n-stat-val">12</div>
+          <div class="n-stat-lbl">Today</div>
+        </div>
+        <div class="n-stat purple">
+          <div class="n-stat-val">47</div>
+          <div class="n-stat-lbl">This Week</div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="notif-tabs" id="notifTabs">
+        <div class="notif-tab active" onclick="switchNotifTab(this,'all')">All</div>
+        <div class="notif-tab" onclick="switchNotifTab(this,'orders')">Orders</div>
+        <div class="notif-tab" onclick="switchNotifTab(this,'approvals')">Approvals</div>
+        <div class="notif-tab" onclick="switchNotifTab(this,'system')">System</div>
+      </div>
+
+      <!-- ═══ TODAY ═══ -->
+      <div class="notif-section">
+        <div class="notif-section-title">Today</div>
+        <div class="notif-section-count">8 notifications</div>
+      </div>
+
+      <!-- 1. Order Confirmed -->
+      <div class="notif-card unread" data-type="orders" onclick="openNotifDetail(0)">
+        <div class="notif-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Order Confirmed</div>
+          <div class="notif-desc">Order #ORD-2847 confirmed by Sharma Traders</div>
+          <div class="notif-time">2 min ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-dot"></div>
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 2. Payment Received -->
+      <div class="notif-card unread" data-type="orders" onclick="openNotifDetail(1)">
+        <div class="notif-icon ic-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Payment Received</div>
+          <div class="notif-desc">₹12,500 collected from City Bazaar via UPI</div>
+          <div class="notif-time">15 min ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-dot"></div>
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 3. Approval Required -->
+      <div class="notif-card unread" data-type="approvals" onclick="openNotifDetail(2)">
+        <div class="notif-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Approval Required</div>
+          <div class="notif-desc">Discount request from Nepal Kirana needs review</div>
+          <div class="notif-time">32 min ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-dot"></div>
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 4. Route Updated -->
+      <div class="notif-card unread" data-type="system" onclick="openNotifDetail(3)">
+        <div class="notif-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Route Updated</div>
+          <div class="notif-desc">Today's route has been optimized. 2 new stops added</div>
+          <div class="notif-time">1 hr ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-dot"></div>
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 5. Target Alert -->
+      <div class="notif-card unread" data-type="system" onclick="openNotifDetail(4)">
+        <div class="notif-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Target Alert</div>
+          <div class="notif-desc">You've reached 73% of monthly target!</div>
+          <div class="notif-time">2 hrs ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-dot"></div>
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 6. Stock Alert -->
+      <div class="notif-card unread" data-type="system" onclick="openNotifDetail(5)">
+        <div class="notif-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Stock Alert</div>
+          <div class="notif-desc">Face Wash 100ml is out of stock at warehouse</div>
+          <div class="notif-time">3 hrs ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-dot"></div>
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 7. Visit Reminder (read) -->
+      <div class="notif-card" data-type="system" onclick="openNotifDetail(6)">
+        <div class="notif-icon ic-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Visit Reminder</div>
+          <div class="notif-desc">Scheduled visit to Patan Traders at 2:00 PM</div>
+          <div class="notif-time">4 hrs ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 8. New Party (read) -->
+      <div class="notif-card" data-type="system" onclick="openNotifDetail(7)">
+        <div class="notif-icon ic-indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">New Party</div>
+          <div class="notif-desc">Balaju Enterprises added to your territory</div>
+          <div class="notif-time">5 hrs ago</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- ═══ YESTERDAY ═══ -->
+      <div class="notif-section" style="margin-top:14px;">
+        <div class="notif-section-title">Yesterday</div>
+        <div class="notif-section-count">4 notifications</div>
+      </div>
+
+      <!-- 9. Order Delivered -->
+      <div class="notif-card" data-type="orders" onclick="openNotifDetail(8)">
+        <div class="notif-icon ic-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Order Delivered</div>
+          <div class="notif-desc">Order #ORD-2842 delivered to Green Valley Store</div>
+          <div class="notif-time">Yesterday, 4:30 PM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 10. Leave Approved -->
+      <div class="notif-card" data-type="approvals" onclick="openNotifDetail(9)">
+        <div class="notif-icon ic-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Leave Approved</div>
+          <div class="notif-desc">Your CL for Mar 15 has been approved</div>
+          <div class="notif-time">Yesterday, 2:15 PM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 11. EOD Reminder -->
+      <div class="notif-card" data-type="system" onclick="openNotifDetail(10)">
+        <div class="notif-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">EOD Reminder</div>
+          <div class="notif-desc">Don't forget to submit your EOD report</div>
+          <div class="notif-time">Yesterday, 5:45 PM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 12. Collection Due -->
+      <div class="notif-card" data-type="orders" onclick="openNotifDetail(11)">
+        <div class="notif-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Collection Due</div>
+          <div class="notif-desc">₹35,000 pending from Kathmandu Mart (45 days)</div>
+          <div class="notif-time">Yesterday, 10:00 AM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- ═══ EARLIER ═══ -->
+      <div class="notif-section" style="margin-top:14px;">
+        <div class="notif-section-title">Earlier</div>
+        <div class="notif-section-count">3 notifications</div>
+      </div>
+
+      <!-- 13. Performance Review -->
+      <div class="notif-card" data-type="system" onclick="openNotifDetail(12)">
+        <div class="notif-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Performance Review</div>
+          <div class="notif-desc">Weekly performance report is ready</div>
+          <div class="notif-time">Mar 5, 6:00 PM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 14. System Update -->
+      <div class="notif-card" data-type="system" onclick="openNotifDetail(13)">
+        <div class="notif-icon ic-grey">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">System Update</div>
+          <div class="notif-desc">App updated to v1.0.1 with bug fixes</div>
+          <div class="notif-time">Mar 4, 9:00 AM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 15. Welcome -->
+      <div class="notif-card" data-type="system" onclick="openNotifDetail(14)">
+        <div class="notif-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">Welcome</div>
+          <div class="notif-desc">Welcome to Adera Sales! Set up your profile</div>
+          <div class="notif-time">Mar 1, 8:00 AM</div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center" onclick="showToast('Create new order','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/profile.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Notification Detail Bottom Sheet ═══ -->
+  <div class="nd-overlay" id="ndOverlay" onclick="closeNotifDetail()"></div>
+  <div class="nd-sheet" id="ndSheet">
+    <div class="nd-handle"></div>
+    <div class="nd-header">
+      <div class="nd-header-top">
+        <div class="nd-title" id="ndTitle">Order Confirmed</div>
+        <button class="nd-close" onclick="closeNotifDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="nd-desc" id="ndDesc">Order #ORD-2847 has been confirmed by Sharma Traders. The order contains 12 items with a total value of ₹18,750.</div>
+      <div class="nd-timestamp" id="ndTime">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Today at 9:39 AM</span>
+      </div>
+    </div>
+    <div class="nd-details" id="ndDetails">
+      <div class="nd-detail-row">
+        <div class="nd-detail-label">Order Number</div>
+        <div class="nd-detail-value">#ORD-2847</div>
+      </div>
+      <div class="nd-detail-row">
+        <div class="nd-detail-label">Amount</div>
+        <div class="nd-detail-value">₹18,750</div>
+      </div>
+      <div class="nd-detail-row">
+        <div class="nd-detail-label">Party Name</div>
+        <div class="nd-detail-value">Sharma Traders</div>
+      </div>
+    </div>
+    <div class="nd-actions" id="ndActions">
+      <button class="nd-btn primary" onclick="closeNotifDetail(); showToast('Opening order details...','info')">View Order</button>
+      <button class="nd-btn secondary" onclick="closeNotifDetail(); showToast('Marked as read','success')">Mark Read</button>
+      <button class="nd-btn outline" onclick="closeNotifDetail(); showToast('Notification dismissed','info')">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- ═══ Settings Bottom Sheet ═══ -->
+  <div class="ns-overlay" id="nsOverlay" onclick="closeSettings()"></div>
+  <div class="ns-sheet" id="nsSheet">
+    <div class="nd-handle"></div>
+    <div style="padding:0 20px 12px; display:flex; justify-content:space-between; align-items:center;">
+      <div class="ns-title" style="padding:0;">Notification Settings</div>
+      <button class="nd-close" onclick="closeSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="ns-group">
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#e8f0fe; color:#3066be;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">Order Updates</div>
+            <div class="ns-item-sub">Confirmed, dispatched, delivered</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#e8f5ed; color:#28a745;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">Payment Alerts</div>
+            <div class="ns-item-sub">Collections and payment received</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#fef3cd; color:#d97706;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">Approval Requests</div>
+            <div class="ns-item-sub">Discounts, returns, credit notes</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#fde8e8; color:#e05252;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">Stock Alerts</div>
+            <div class="ns-item-sub">Out of stock, low stock warnings</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#d1fae5; color:#0d9488;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">Visit Reminders</div>
+            <div class="ns-item-sub">Scheduled visits and route updates</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#f3e8ff; color:#7c3aed;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">Target Updates</div>
+            <div class="ns-item-sub">Achievement milestones and alerts</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="ns-item">
+        <div class="ns-item-left">
+          <div class="ns-item-icon" style="background:#f1f5f9; color:#64748b;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+          <div>
+            <div class="ns-item-label">System Notifications</div>
+            <div class="ns-item-sub">Updates, maintenance, announcements</div>
+          </div>
+        </div>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+
+    <!-- Quiet Hours -->
+    <div class="ns-quiet">
+      <div class="ns-quiet-top">
+        <div class="ns-quiet-label">Quiet Hours</div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="ns-quiet-time">10:00 PM - 7:00 AM</div>
+    </div>
+
+    <button class="ns-save" onclick="closeSettings(); showToast('Settings saved successfully','success')">Save Settings</button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── Notification data ──
+  const notifData = [
+    { title:'Order Confirmed', desc:'Order #ORD-2847 has been confirmed by Sharma Traders. The order contains 12 items with a total value of ₹18,750.', time:'Today at 9:39 AM', details:[{l:'Order Number',v:'#ORD-2847'},{l:'Amount',v:'₹18,750'},{l:'Party Name',v:'Sharma Traders'}], actions:['View Order','Mark Read','Dismiss'] },
+    { title:'Payment Received', desc:'₹12,500 has been collected from City Bazaar via UPI. Receipt #RCT-4521 generated automatically.', time:'Today at 9:26 AM', details:[{l:'Amount',v:'₹12,500'},{l:'Party',v:'City Bazaar'},{l:'Mode',v:'UPI'},{l:'Receipt',v:'#RCT-4521'}], actions:['View Collection','Mark Read','Dismiss'] },
+    { title:'Approval Required', desc:'Discount request of 15% from Nepal Kirana for bulk order of ₹45,000 needs your review and approval.', time:'Today at 9:09 AM', details:[{l:'Party',v:'Nepal Kirana'},{l:'Discount',v:'15%'},{l:'Order Value',v:'₹45,000'}], actions:['Review','Mark Read','Dismiss'] },
+    { title:'Route Updated', desc:'Today\'s route has been optimized by the system. 2 new stops have been added - Balaju Market and New Road Store.', time:'Today at 8:41 AM', details:[{l:'New Stops',v:'2 added'},{l:'Total Stops',v:'14'},{l:'Est. Distance',v:'28 km'}], actions:['View Route','Mark Read','Dismiss'] },
+    { title:'Target Alert', desc:'Great progress! You\'ve reached 73% of your monthly sales target of ₹5,00,000. Keep pushing for the remaining ₹1,35,000.', time:'Today at 7:41 AM', details:[{l:'Target',v:'₹5,00,000'},{l:'Achieved',v:'₹3,65,000'},{l:'Remaining',v:'₹1,35,000'}], actions:['View Target','Mark Read','Dismiss'] },
+    { title:'Stock Alert', desc:'Face Wash 100ml (SKU: FW-100) is currently out of stock at the main warehouse. Expected restock date: Mar 12.', time:'Today at 6:41 AM', details:[{l:'Product',v:'Face Wash 100ml'},{l:'SKU',v:'FW-100'},{l:'Restock Date',v:'Mar 12'}], actions:['View Stock','Mark Read','Dismiss'] },
+    { title:'Visit Reminder', desc:'You have a scheduled visit to Patan Traders at 2:00 PM today. Don\'t forget to carry the latest price list.', time:'Today at 5:41 AM', details:[{l:'Party',v:'Patan Traders'},{l:'Time',v:'2:00 PM'},{l:'Type',v:'Scheduled Visit'}], actions:['View Visit','Reschedule','Dismiss'] },
+    { title:'New Party', desc:'Balaju Enterprises has been added to your territory by your Area Sales Manager. Contact person: Ram Shrestha.', time:'Today at 4:41 AM', details:[{l:'Party',v:'Balaju Enterprises'},{l:'Contact',v:'Ram Shrestha'},{l:'Added By',v:'ASM - Sunil K.'}], actions:['View Party','Mark Read','Dismiss'] },
+    { title:'Order Delivered', desc:'Order #ORD-2842 has been successfully delivered to Green Valley Store. All 8 items verified.', time:'Yesterday at 4:30 PM', details:[{l:'Order',v:'#ORD-2842'},{l:'Party',v:'Green Valley Store'},{l:'Items',v:'8 verified'}], actions:['View Order','Dismiss'] },
+    { title:'Leave Approved', desc:'Your Casual Leave application for March 15, 2026 has been approved by your manager.', time:'Yesterday at 2:15 PM', details:[{l:'Leave Type',v:'Casual Leave'},{l:'Date',v:'Mar 15, 2026'},{l:'Approved By',v:'Manager'}], actions:['View Leave','Dismiss'] },
+    { title:'EOD Reminder', desc:'It\'s almost end of day. Please submit your End of Day report including visit summaries and collection details.', time:'Yesterday at 5:45 PM', details:[{l:'Visits Done',v:'11/14'},{l:'Collections',v:'₹48,500'},{l:'Orders',v:'6'}], actions:['Submit EOD','Dismiss'] },
+    { title:'Collection Due', desc:'₹35,000 is pending from Kathmandu Mart for 45 days. This exceeds the credit period of 30 days.', time:'Yesterday at 10:00 AM', details:[{l:'Party',v:'Kathmandu Mart'},{l:'Amount',v:'₹35,000'},{l:'Overdue',v:'15 days'}], actions:['View Outstanding','Call Party','Dismiss'] },
+    { title:'Performance Review', desc:'Your weekly performance report for Feb 24 - Mar 2 is now available. Overall rating: Above Average.', time:'Mar 5 at 6:00 PM', details:[{l:'Period',v:'Feb 24 - Mar 2'},{l:'Rating',v:'Above Average'},{l:'Rank',v:'#3 of 12'}], actions:['View Report','Dismiss'] },
+    { title:'System Update', desc:'Adera Sales has been updated to version 1.0.1. This update includes bug fixes and performance improvements.', time:'Mar 4 at 9:00 AM', details:[{l:'Version',v:'1.0.1'},{l:'Type',v:'Bug Fixes'},{l:'Size',v:'12 MB'}], actions:['View Changelog','Dismiss'] },
+    { title:'Welcome', desc:'Welcome to Adera Sales! Complete your profile setup to get started. Add your photo, territory details and preferences.', time:'Mar 1 at 8:00 AM', details:[{l:'Profile',v:'60% Complete'},{l:'Territory',v:'Kathmandu Valley'},{l:'Team',v:'Sales Team A'}], actions:['Setup Profile','Dismiss'] }
+  ];
+
+  // ── Tab switching ──
+  function switchNotifTab(el, type) {
+    document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.notif-card').forEach(card => {
+      if (type === 'all') {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = card.dataset.type === type ? 'flex' : 'none';
+      }
+    });
+    // Show/hide section headers based on visible cards
+    document.querySelectorAll('.notif-section').forEach(sec => {
+      let next = sec.nextElementSibling;
+      let hasVisible = false;
+      while (next && !next.classList.contains('notif-section')) {
+        if (next.classList.contains('notif-card') && next.style.display !== 'none') hasVisible = true;
+        next = next.nextElementSibling;
+      }
+      sec.style.display = hasVisible ? 'flex' : 'none';
+    });
+  }
+
+  // ── Notification Detail ──
+  function openNotifDetail(idx) {
+    const n = notifData[idx];
+    document.getElementById('ndTitle').textContent = n.title;
+    document.getElementById('ndDesc').textContent = n.desc;
+    document.getElementById('ndTime').querySelector('span').textContent = n.time;
+    // Details
+    const detailsEl = document.getElementById('ndDetails');
+    detailsEl.innerHTML = n.details.map(d =>
+      '<div class="nd-detail-row"><div class="nd-detail-label">'+d.l+'</div><div class="nd-detail-value">'+d.v+'</div></div>'
+    ).join('');
+    // Actions
+    const actionsEl = document.getElementById('ndActions');
+    actionsEl.innerHTML = n.actions.map((a, i) => {
+      const cls = i === 0 ? 'primary' : (a === 'Dismiss' ? 'outline' : 'secondary');
+      return '<button class="nd-btn '+cls+'" onclick="closeNotifDetail(); showToast(\''+a+'\',\''+(i===0?'info':'success')+'\')">'+a+'</button>';
+    }).join('');
+    document.getElementById('ndOverlay').classList.add('show');
+    document.getElementById('ndSheet').classList.add('show');
+  }
+  function closeNotifDetail() {
+    document.getElementById('ndOverlay').classList.remove('show');
+    document.getElementById('ndSheet').classList.remove('show');
+  }
+
+  // ── Settings ──
+  function openSettings() {
+    document.getElementById('nsOverlay').classList.add('show');
+    document.getElementById('nsSheet').classList.add('show');
+  }
+  function closeSettings() {
+    document.getElementById('nsOverlay').classList.remove('show');
+    document.getElementById('nsSheet').classList.remove('show');
+  }
+
+  // ── Mark All Read ──
+  function markAllRead() {
+    document.querySelectorAll('.notif-card.unread').forEach(card => {
+      card.classList.remove('unread');
+      const dot = card.querySelector('.notif-dot');
+      if (dot) dot.remove();
+    });
+    document.querySelector('.n-stat.blue .n-stat-val').textContent = '0';
+    showToast('All notifications marked as read', 'success');
+  }
+</script>
+
+</body>
+</html>

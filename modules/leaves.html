@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Leaves — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Leave Balance Cards ── */
+    .leave-balances { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; }
+    .leave-bal {
+      background:#fff; border-radius:14px; padding:14px 10px; text-align:center;
+      box-shadow:0 2px 10px rgba(48,102,190,.07); position:relative; overflow:hidden;
+    }
+    .leave-bal::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    }
+    .leave-bal.casual::before { background:var(--primary); }
+    .leave-bal.sick::before { background:var(--warning); }
+    .leave-bal.earned::before { background:var(--success); }
+    .leave-bal-icon {
+      width:36px; height:36px; border-radius:10px; display:flex; align-items:center;
+      justify-content:center; margin:0 auto 8px;
+    }
+    .leave-bal-icon svg { width:18px; height:18px; }
+    .leave-bal.casual .leave-bal-icon { background:#e8f0fe; color:var(--primary); }
+    .leave-bal.sick .leave-bal-icon { background:#fef3cd; color:var(--warning); }
+    .leave-bal.earned .leave-bal-icon { background:#e8f5ed; color:var(--success); }
+    .leave-bal-count { font-size:22px; font-weight:800; color:#1a2540; }
+    .leave-bal-count span { font-size:13px; font-weight:500; color:#94a3b8; }
+    .leave-bal-label { font-size:11px; color:#94a3b8; margin-top:2px; }
+    .leave-bal-bar { height:4px; border-radius:2px; background:#f1f5f9; margin-top:8px; }
+    .leave-bal-bar-fill { height:100%; border-radius:2px; }
+    .leave-bal.casual .leave-bal-bar-fill { background:var(--primary); }
+    .leave-bal.sick .leave-bal-bar-fill { background:var(--warning); }
+    .leave-bal.earned .leave-bal-bar-fill { background:var(--success); }
+
+    /* ── Tabs ── */
+    .leave-tabs { display:flex; gap:0; background:#f1f5f9; border-radius:12px; padding:3px; margin-bottom:16px; }
+    .leave-tab {
+      flex:1; padding:9px 6px; text-align:center; font-size:13px; font-weight:600;
+      color:#64748b; border-radius:10px; cursor:pointer; border:none; background:none;
+      transition:all .2s;
+    }
+    .leave-tab.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Tab Panels ── */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* ── Leave Entry ── */
+    .leave-entry {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:10px;
+      box-shadow:0 1px 4px rgba(0,0,0,.04); border-left:3px solid transparent;
+    }
+    .leave-entry.approved { border-left-color:var(--success); }
+    .leave-entry.pending { border-left-color:var(--warning); }
+    .leave-entry.rejected { border-left-color:var(--danger); }
+    .leave-entry-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+    .leave-entry-type { font-size:14px; font-weight:700; color:#1a2540; }
+    .leave-entry-dates { font-size:12px; color:#64748b; margin-top:2px; }
+    .leave-entry-bottom { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+    .leave-entry-approver { font-size:11px; color:#94a3b8; display:flex; align-items:center; gap:4px; }
+    .leave-entry-approver svg { width:12px; height:12px; }
+    .leave-entry-days { font-size:11px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:6px; }
+
+    /* ── Apply Form ── */
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .form-card {
+      background:#fff; border-radius:14px; padding:16px; margin-bottom:14px;
+      box-shadow:0 2px 10px rgba(48,102,190,.07);
+    }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .bs-overlay.show { opacity:1; pointer-events:auto; }
+    .bs-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+      max-height:85vh; overflow-y:auto;
+    }
+    .bs-sheet.show { transform:translateX(-50%) translateY(0); }
+    .bs-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:0 auto 16px; }
+    .bs-title { font-size:18px; font-weight:800; color:#1a2540; margin-bottom:4px; }
+    .bs-sub { font-size:13px; color:#94a3b8; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Leaves</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer (Simplified) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><span class="drawer-item-label">Parties</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
+    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span class="drawer-item-label">Leave</span></div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
+    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Leave Management</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Leave Balance Cards -->
+      <div class="leave-balances">
+        <div class="leave-bal casual">
+          <div class="leave-bal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div class="leave-bal-count">8<span>/12</span></div>
+          <div class="leave-bal-label">Casual Leave</div>
+          <div class="leave-bal-bar"><div class="leave-bal-bar-fill" style="width:67%;"></div></div>
+        </div>
+        <div class="leave-bal sick">
+          <div class="leave-bal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="leave-bal-count">5<span>/6</span></div>
+          <div class="leave-bal-label">Sick Leave</div>
+          <div class="leave-bal-bar"><div class="leave-bal-bar-fill" style="width:83%;"></div></div>
+        </div>
+        <div class="leave-bal earned">
+          <div class="leave-bal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="leave-bal-count">10<span>/15</span></div>
+          <div class="leave-bal-label">Earned Leave</div>
+          <div class="leave-bal-bar"><div class="leave-bal-bar-fill" style="width:67%;"></div></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="leave-tabs">
+        <button class="leave-tab active" onclick="switchTab('upcoming')">Upcoming</button>
+        <button class="leave-tab" onclick="switchTab('history')">History</button>
+        <button class="leave-tab" onclick="switchTab('apply')">Apply</button>
+      </div>
+
+      <!-- ═══ UPCOMING TAB ═══ -->
+      <div class="tab-panel active" id="tab-upcoming">
+
+        <div class="leave-entry pending">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Casual Leave</div>
+              <div class="leave-entry-dates">Mar 15 – Mar 16, 2026</div>
+            </div>
+            <span class="badge badge-warning">Pending</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Rajesh Kumar
+            </div>
+            <div class="leave-entry-days">2 days</div>
+          </div>
+        </div>
+
+        <div class="leave-entry approved">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Earned Leave</div>
+              <div class="leave-entry-dates">Mar 25 – Mar 28, 2026</div>
+            </div>
+            <span class="badge badge-success">Approved</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Priya Sharma
+            </div>
+            <div class="leave-entry-days">4 days</div>
+          </div>
+        </div>
+
+        <div class="leave-entry pending">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Sick Leave</div>
+              <div class="leave-entry-dates">Apr 2, 2026</div>
+            </div>
+            <span class="badge badge-warning">Pending</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Rajesh Kumar
+            </div>
+            <div class="leave-entry-days">1 day</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ HISTORY TAB ═══ -->
+      <div class="tab-panel" id="tab-history">
+
+        <div class="leave-entry approved">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Casual Leave</div>
+              <div class="leave-entry-dates">Feb 20 – Feb 21, 2026</div>
+            </div>
+            <span class="badge badge-success">Approved</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Rajesh Kumar
+            </div>
+            <div class="leave-entry-days">2 days</div>
+          </div>
+        </div>
+
+        <div class="leave-entry approved">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Sick Leave</div>
+              <div class="leave-entry-dates">Feb 10, 2026</div>
+            </div>
+            <span class="badge badge-success">Approved</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Priya Sharma
+            </div>
+            <div class="leave-entry-days">1 day</div>
+          </div>
+        </div>
+
+        <div class="leave-entry rejected">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Earned Leave</div>
+              <div class="leave-entry-dates">Jan 28 – Feb 1, 2026</div>
+            </div>
+            <span class="badge badge-danger">Rejected</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Amit Patel
+            </div>
+            <div class="leave-entry-days">5 days</div>
+          </div>
+        </div>
+
+        <div class="leave-entry approved">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Casual Leave</div>
+              <div class="leave-entry-dates">Jan 14, 2026</div>
+            </div>
+            <span class="badge badge-success">Approved</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Rajesh Kumar
+            </div>
+            <div class="leave-entry-days">1 day</div>
+          </div>
+        </div>
+
+        <div class="leave-entry approved">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Earned Leave</div>
+              <div class="leave-entry-dates">Dec 24 – Dec 26, 2025</div>
+            </div>
+            <span class="badge badge-success">Approved</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Priya Sharma
+            </div>
+            <div class="leave-entry-days">3 days</div>
+          </div>
+        </div>
+
+        <div class="leave-entry rejected">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Casual Leave</div>
+              <div class="leave-entry-dates">Dec 15, 2025</div>
+            </div>
+            <span class="badge badge-danger">Rejected</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Amit Patel
+            </div>
+            <div class="leave-entry-days">1 day</div>
+          </div>
+        </div>
+
+        <div class="leave-entry approved">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Sick Leave</div>
+              <div class="leave-entry-dates">Nov 28 – Nov 29, 2025</div>
+            </div>
+            <span class="badge badge-success">Approved</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Rajesh Kumar
+            </div>
+            <div class="leave-entry-days">2 days</div>
+          </div>
+        </div>
+
+        <div class="leave-entry pending">
+          <div class="leave-entry-top">
+            <div>
+              <div class="leave-entry-type">Earned Leave</div>
+              <div class="leave-entry-dates">Nov 10 – Nov 12, 2025</div>
+            </div>
+            <span class="badge badge-warning">Pending</span>
+          </div>
+          <div class="leave-entry-bottom">
+            <div class="leave-entry-approver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Approver: Priya Sharma
+            </div>
+            <div class="leave-entry-days">3 days</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ APPLY TAB ═══ -->
+      <div class="tab-panel" id="tab-apply">
+        <div class="form-card">
+          <div class="form-group">
+            <label class="form-label">Leave Type</label>
+            <select class="form-control" id="leaveType">
+              <option value="" disabled selected>Select leave type</option>
+              <option>Casual Leave</option>
+              <option>Sick Leave</option>
+              <option>Earned Leave</option>
+              <option>Emergency Leave</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">From Date</label>
+              <input type="date" class="form-control" id="fromDate" value="2026-03-20" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">To Date</label>
+              <input type="date" class="form-control" id="toDate" value="2026-03-21" />
+            </div>
+          </div>
+
+          <div style="margin:8px 0 12px;padding:8px 12px;background:#e8f0fe;border-radius:8px;font-size:12px;color:var(--primary);display:flex;align-items:center;gap:6px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Duration: <strong id="durationHint">2 days</strong>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reason</label>
+            <textarea class="form-control" id="leaveReason" rows="3" placeholder="Describe the reason for leave..."></textarea>
+          </div>
+
+          <button class="btn btn-primary btn-block" onclick="submitLeaveTab()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Submit Request
+          </button>
+        </div>
+      </div>
+
+      <!-- FAB: Apply Leave -->
+      <button onclick="openApplySheet()" style="position:fixed;bottom:80px;right:calc(50% - 175px);width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(48,102,190,.35);display:flex;align-items:center;justify-content:center;z-index:50;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:22px;height:22px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('../modules/orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Apply Leave Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="applyOverlay" onclick="closeApplySheet()"></div>
+  <div class="bs-sheet" id="applySheet">
+    <div class="bs-handle"></div>
+    <div class="bs-title">Apply for Leave</div>
+    <div class="bs-sub">Fill in the details and submit your leave request</div>
+
+    <div class="form-group">
+      <label class="form-label">Leave Type</label>
+      <select class="form-control" id="bsLeaveType">
+        <option value="" disabled selected>Select leave type</option>
+        <option>Casual Leave</option>
+        <option>Sick Leave</option>
+        <option>Earned Leave</option>
+        <option>Emergency Leave</option>
+      </select>
+    </div>
+
+    <div class="form-row" style="margin-bottom:12px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">From Date</label>
+        <input type="date" class="form-control" id="bsFromDate" value="2026-03-20" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">To Date</label>
+        <input type="date" class="form-control" id="bsToDate" value="2026-03-21" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Reason</label>
+      <textarea class="form-control" id="bsLeaveReason" rows="3" placeholder="Describe the reason for leave..."></textarea>
+    </div>
+
+    <button class="btn btn-primary btn-block" onclick="submitLeaveSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Submit Request
+    </button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // Tab switching
+  function switchTab(tabName) {
+    document.querySelectorAll('.leave-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+  }
+
+  // Duration calculator
+  function updateDuration() {
+    const from = document.getElementById('fromDate').value;
+    const to = document.getElementById('toDate').value;
+    if (from && to) {
+      const diff = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
+      const hint = document.getElementById('durationHint');
+      if (hint && diff > 0) hint.textContent = diff + (diff === 1 ? ' day' : ' days');
+    }
+  }
+  document.getElementById('fromDate').addEventListener('change', updateDuration);
+  document.getElementById('toDate').addEventListener('change', updateDuration);
+
+  // Leave form validation (tab)
+  function submitLeaveTab() {
+    var valid = validateForm([
+      { el: '#leaveType', required: true, message: 'Select a leave type' },
+      { el: '#fromDate', required: true, message: 'From date is required' },
+      { el: '#toDate', required: true, message: 'To date is required' },
+      { el: '#toDate', custom: function() {
+        var f = document.getElementById('fromDate').value;
+        var t = document.getElementById('toDate').value;
+        return f && t && new Date(t) >= new Date(f);
+      }, message: 'To date must be on or after from date' },
+      { el: '#leaveReason', required: true, minLength: 5, message: 'Provide a reason (min 5 characters)' }
+    ]);
+    if (!valid) return;
+    showToast('Leave request submitted successfully', 'success');
+  }
+
+  // Leave form validation (bottom sheet)
+  function submitLeaveSheet() {
+    var valid = validateForm([
+      { el: '#bsLeaveType', required: true, message: 'Select a leave type' },
+      { el: '#bsFromDate', required: true, message: 'From date is required' },
+      { el: '#bsToDate', required: true, message: 'To date is required' },
+      { el: '#bsToDate', custom: function() {
+        var f = document.getElementById('bsFromDate').value;
+        var t = document.getElementById('bsToDate').value;
+        return f && t && new Date(t) >= new Date(f);
+      }, message: 'To date must be on or after from date' },
+      { el: '#bsLeaveReason', required: true, minLength: 5, message: 'Provide a reason (min 5 characters)' }
+    ]);
+    if (!valid) return;
+    closeApplySheet();
+    showToast('Leave request submitted successfully', 'success');
+  }
+
+  // Apply Leave Bottom Sheet
+  function openApplySheet() {
+    document.getElementById('applyOverlay').classList.add('show');
+    document.getElementById('applySheet').classList.add('show');
+  }
+  function closeApplySheet() {
+    document.getElementById('applyOverlay').classList.remove('show');
+    document.getElementById('applySheet').classList.remove('show');
+  }
+</script>
+</body>
+</html>

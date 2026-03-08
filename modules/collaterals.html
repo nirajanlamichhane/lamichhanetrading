@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Collaterals — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Stats Row ── */
+    .col-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; }
+    .col-stat {
+      background:#fff; border-radius:14px; padding:14px 10px; text-align:center;
+      box-shadow:0 2px 10px rgba(48,102,190,.07);
+    }
+    .col-stat-val { font-size:22px; font-weight:800; }
+    .col-stat-val.blue { color:var(--primary); }
+    .col-stat-val.green { color:var(--success); }
+    .col-stat-val.amber { color:var(--warning); }
+    .col-stat-lbl { font-size:11px; color:#94a3b8; margin-top:2px; }
+
+    /* ── Category Chips ── */
+    .cat-chips {
+      display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .cat-chips::-webkit-scrollbar { display:none; }
+    .cat-chip {
+      padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600;
+      white-space:nowrap; cursor:pointer; border:1.5px solid #e2e8f0;
+      background:#fff; color:#64748b; transition:all .2s;
+    }
+    .cat-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+    /* ── Collateral Card ── */
+    .col-card {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:12px;
+      box-shadow:0 2px 8px rgba(48,102,190,.06); display:flex; gap:14px; align-items:flex-start;
+    }
+    .col-card-img {
+      width:72px; height:72px; border-radius:12px; background:#f1f5f9; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .col-card-img svg { width:28px; height:28px; color:#94a3b8; }
+    .col-card-img.brochure { background:#e8f0fe; }
+    .col-card-img.brochure svg { color:var(--primary); }
+    .col-card-img.poster { background:#f3e8ff; }
+    .col-card-img.poster svg { color:#7c3aed; }
+    .col-card-img.standee { background:#fef3cd; }
+    .col-card-img.standee svg { color:var(--warning); }
+    .col-card-img.sample { background:#e8f5ed; }
+    .col-card-img.sample svg { color:var(--success); }
+    .col-card-body { flex:1; min-width:0; }
+    .col-card-title { font-size:14px; font-weight:700; color:#1a2540; margin-bottom:4px; }
+    .col-card-cat {
+      display:inline-block; font-size:10px; font-weight:700; padding:2px 8px;
+      border-radius:6px; margin-bottom:8px; text-transform:uppercase; letter-spacing:.3px;
+    }
+    .col-card-cat.brochure { background:#e8f0fe; color:var(--primary); }
+    .col-card-cat.poster { background:#f3e8ff; color:#7c3aed; }
+    .col-card-cat.standee { background:#fef3cd; color:#b45309; }
+    .col-card-cat.sample { background:#e8f5ed; color:#16a34a; }
+    .col-card-row { display:flex; gap:16px; }
+    .col-card-metric { font-size:11px; color:#94a3b8; }
+    .col-card-metric strong { color:#1a2540; font-weight:700; }
+    .col-card-actions { display:flex; gap:6px; margin-top:10px; }
+    .col-card-actions button { flex:1; }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .bs-overlay.show { opacity:1; pointer-events:auto; }
+    .bs-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+      max-height:85vh; overflow-y:auto;
+    }
+    .bs-sheet.show { transform:translateX(-50%) translateY(0); }
+    .bs-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:0 auto 16px; }
+    .bs-title { font-size:18px; font-weight:800; color:#1a2540; margin-bottom:4px; }
+    .bs-sub { font-size:13px; color:#94a3b8; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Collaterals</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer (Simplified) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><span class="drawer-item-label">Parties</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
+    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><span class="drawer-item-label">Collaterals</span></div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
+    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Marketing Collaterals</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Stats Row -->
+      <div class="col-stats">
+        <div class="col-stat">
+          <div class="col-stat-val blue">142</div>
+          <div class="col-stat-lbl">Total Items</div>
+        </div>
+        <div class="col-stat">
+          <div class="col-stat-val green">87</div>
+          <div class="col-stat-lbl">Distributed</div>
+        </div>
+        <div class="col-stat">
+          <div class="col-stat-val amber">55</div>
+          <div class="col-stat-lbl">In Stock</div>
+        </div>
+      </div>
+
+      <!-- Category Filter Chips -->
+      <div class="cat-chips">
+        <div class="cat-chip active" onclick="filterCat(this)">All</div>
+        <div class="cat-chip" onclick="filterCat(this)">Brochures</div>
+        <div class="cat-chip" onclick="filterCat(this)">Posters</div>
+        <div class="cat-chip" onclick="filterCat(this)">Standees</div>
+        <div class="cat-chip" onclick="filterCat(this)">Samples</div>
+      </div>
+
+      <!-- Section Header -->
+      <div class="section-header">
+        <span class="section-title">All Collaterals</span>
+        <span class="section-action" style="font-size:12px;color:var(--primary);cursor:pointer;">8 items</span>
+      </div>
+
+      <!-- Card 1: Product Catalogue Brochure -->
+      <div class="col-card" data-cat="brochures">
+        <div class="col-card-img brochure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Product Catalogue 2026</div>
+          <div class="col-card-cat brochure">Brochure</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>24</strong></div>
+            <div class="col-card-metric">Distributed: <strong>18</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Product Catalogue 2026')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Premium Range Brochure -->
+      <div class="col-card" data-cat="brochures">
+        <div class="col-card-img brochure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Premium Range Brochure</div>
+          <div class="col-card-cat brochure">Brochure</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>12</strong></div>
+            <div class="col-card-metric">Distributed: <strong>30</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Premium Range Brochure')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Summer Sale Poster -->
+      <div class="col-card" data-cat="posters">
+        <div class="col-card-img poster">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Summer Sale A3 Poster</div>
+          <div class="col-card-cat poster">Poster</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>8</strong></div>
+            <div class="col-card-metric">Distributed: <strong>12</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Summer Sale A3 Poster')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: New Launch Poster -->
+      <div class="col-card" data-cat="posters">
+        <div class="col-card-img poster">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">New Launch Shop Poster</div>
+          <div class="col-card-cat poster">Poster</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>15</strong></div>
+            <div class="col-card-metric">Distributed: <strong>5</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('New Launch Shop Poster')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Counter Display Standee -->
+      <div class="col-card" data-cat="standees">
+        <div class="col-card-img standee">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Counter Display Standee</div>
+          <div class="col-card-cat standee">Standee</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>4</strong></div>
+            <div class="col-card-metric">Distributed: <strong>6</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Counter Display Standee')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 6: Floor Display Standee -->
+      <div class="col-card" data-cat="standees">
+        <div class="col-card-img standee">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Floor Standing Standee</div>
+          <div class="col-card-cat standee">Standee</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>2</strong></div>
+            <div class="col-card-metric">Distributed: <strong>8</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Floor Standing Standee')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 7: Product Sample Pack A -->
+      <div class="col-card" data-cat="samples">
+        <div class="col-card-img sample">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Product Sample Pack — A</div>
+          <div class="col-card-cat sample">Sample</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>6</strong></div>
+            <div class="col-card-metric">Distributed: <strong>14</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Product Sample Pack — A')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 8: Premium Sample Kit -->
+      <div class="col-card" data-cat="samples">
+        <div class="col-card-img sample">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div class="col-card-body">
+          <div class="col-card-title">Premium Sample Kit</div>
+          <div class="col-card-cat sample">Sample</div>
+          <div class="col-card-row">
+            <div class="col-card-metric">In Hand: <strong>3</strong></div>
+            <div class="col-card-metric">Distributed: <strong>7</strong></div>
+          </div>
+          <div class="col-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="openDistSheet('Premium Sample Kit')">Log Distribution</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Requesting restock...','info')">Restock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAB: Log Distribution -->
+      <button onclick="openDistSheet('')" style="position:fixed;bottom:80px;right:calc(50% - 175px);width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(48,102,190,.35);display:flex;align-items:center;justify-content:center;z-index:50;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:22px;height:22px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('../modules/orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Distribution Log Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="distOverlay" onclick="closeDistSheet()"></div>
+  <div class="bs-sheet" id="distSheet">
+    <div class="bs-handle"></div>
+    <div class="bs-title">Log Distribution</div>
+    <div class="bs-sub" id="distSheetSub">Record collateral distribution to a party</div>
+
+    <div class="form-group">
+      <label class="form-label">Collateral Item</label>
+      <select class="form-control" id="distItem">
+        <option value="" disabled selected>Select item</option>
+        <option>Product Catalogue 2026</option>
+        <option>Premium Range Brochure</option>
+        <option>Summer Sale A3 Poster</option>
+        <option>New Launch Shop Poster</option>
+        <option>Counter Display Standee</option>
+        <option>Floor Standing Standee</option>
+        <option>Product Sample Pack — A</option>
+        <option>Premium Sample Kit</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Select Party</label>
+      <select class="form-control">
+        <option value="" disabled selected>Select party</option>
+        <option>Ram Stores — Kathmandu</option>
+        <option>Shree Traders — Patan</option>
+        <option>Nepal Mart — Bhaktapur</option>
+        <option>Ganesh Provision — Lalitpur</option>
+        <option>Himalayan Retail — Pokhara</option>
+        <option>Siddhartha Distributors — Chitwan</option>
+      </select>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" placeholder="e.g. 5" min="1" value="2" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" value="2026-03-08" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-control" rows="2" placeholder="Any remarks about this distribution..."></textarea>
+    </div>
+
+    <button class="btn btn-primary btn-block" onclick="closeDistSheet(); showToast('Distribution logged successfully','success')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>
+      Submit Distribution
+    </button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // Category filter
+  function filterCat(el) {
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    const cat = el.textContent.trim().toLowerCase();
+    document.querySelectorAll('.col-card').forEach(card => {
+      if (cat === 'all') {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = card.dataset.cat === cat ? 'flex' : 'none';
+      }
+    });
+  }
+
+  // Distribution Bottom Sheet
+  function openDistSheet(itemName) {
+    if (itemName) {
+      const sel = document.getElementById('distItem');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].text === itemName) { sel.selectedIndex = i; break; }
+      }
+    }
+    document.getElementById('distOverlay').classList.add('show');
+    document.getElementById('distSheet').classList.add('show');
+  }
+  function closeDistSheet() {
+    document.getElementById('distOverlay').classList.remove('show');
+    document.getElementById('distSheet').classList.remove('show');
+  }
+</script>
+</body>
+</html>

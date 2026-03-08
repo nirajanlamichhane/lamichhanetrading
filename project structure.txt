@@ -1,0 +1,43 @@
+/
+  index.html              <- Home screen grid (1 page)
+  sw.js                   <- Service Worker
+  modules/                <- 32 module pages
+    login.html
+    profile.html
+    notifications.html
+    route.html
+    take-order.html
+    cart.html
+    orders.html
+    parties.html
+    collections.html
+    attendance.html
+    performance.html
+    notes.html
+    returns.html
+    expenses.html
+    activities.html
+    leaves.html
+    collaterals.html
+    eod.html
+    tour.html
+    beatplans.html
+    stock.html
+    visits.html
+    approvals.html
+    remarks.html
+    odometer.html
+    outstanding.html
+    custom.html
+    inventory.html
+    salesforce.html
+    config.html
+    support.html
+    reports.html
+  css/
+    style.css
+  js/
+    app.js
+  docs/
+    implementation.md
+    PENDING-TODOS.md

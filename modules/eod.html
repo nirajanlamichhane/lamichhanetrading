@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>EOD Report — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Hero Card ── */
+    .eod-hero {
+      background:linear-gradient(135deg,#3066be 0%,#2251a3 100%);
+      border-radius:16px; padding:20px; color:#fff; margin-bottom:14px;
+    }
+    .eod-hero-top { display:flex; justify-content:space-between; align-items:flex-start; }
+    .eod-hero-date { font-size:18px; font-weight:800; }
+    .eod-hero-day { font-size:12px; opacity:.8; margin-top:2px; }
+    .eod-hero-badge {
+      background:rgba(255,255,255,.2); border-radius:20px; padding:4px 12px;
+      font-size:11px; font-weight:600;
+    }
+    .eod-hero-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+    .eod-hero-stat {
+      background:rgba(255,255,255,.15); border-radius:12px; padding:12px; text-align:center;
+    }
+    .eod-hero-val { font-size:20px; font-weight:800; }
+    .eod-hero-lbl { font-size:10px; opacity:.75; margin-top:2px; text-transform:uppercase; letter-spacing:.5px; }
+
+    /* ── Highlights ── */
+    .highlight-strip { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px; }
+    .highlight-chip {
+      flex-shrink:0; display:flex; align-items:center; gap:6px;
+      background:#fff; border-radius:12px; padding:10px 14px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); font-size:12px; font-weight:600; color:#1a2540;
+    }
+    .highlight-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .highlight-dot.green { background:#28a745; }
+    .highlight-dot.blue { background:#3066be; }
+    .highlight-dot.amber { background:#f59e0b; }
+    .highlight-dot.red { background:#e05252; }
+
+    /* ── Section Card ── */
+    .eod-section {
+      background:#fff; border-radius:14px; padding:16px; margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08);
+    }
+    .eod-section-title {
+      font-size:14px; font-weight:700; color:#1a2540; margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .eod-section-icon {
+      width:28px; height:28px; border-radius:8px; display:flex; align-items:center;
+      justify-content:center; flex-shrink:0;
+    }
+    .eod-section-icon svg { width:14px; height:14px; }
+    .eod-section-icon.blue { background:#e8f0fe; color:#3066be; }
+    .eod-section-icon.green { background:#e8f5ed; color:#28a745; }
+    .eod-section-icon.amber { background:#fef3cd; color:#d97706; }
+    .eod-section-icon.purple { background:#f3e8ff; color:#7c3aed; }
+    .eod-section-icon.teal { background:#d1fae5; color:#047857; }
+
+    /* ── Order/Collection Row ── */
+    .eod-row {
+      display:flex; align-items:center; gap:12px; padding:10px 0;
+      border-bottom:1px solid #f1f5f9;
+    }
+    .eod-row:last-child { border-bottom:none; }
+    .eod-row-avatar {
+      width:36px; height:36px; border-radius:10px; display:flex; align-items:center;
+      justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;
+    }
+    .eod-row-info { flex:1; }
+    .eod-row-name { font-size:13px; font-weight:600; color:#1a2540; }
+    .eod-row-sub { font-size:11px; color:#94a3b8; margin-top:1px; }
+    .eod-row-amt { font-size:14px; font-weight:700; text-align:right; }
+    .eod-row-badge {
+      font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px; margin-top:2px; display:inline-block;
+    }
+
+    /* ── Visit Summary Items ── */
+    .visit-stat-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+    .visit-stat-row:last-child { border-bottom:none; }
+    .visit-stat-label { font-size:13px; color:#64748b; display:flex; align-items:center; gap:6px; }
+    .visit-stat-val { font-size:14px; font-weight:700; color:#1a2540; }
+
+    /* ── Route Stats ── */
+    .route-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .route-stat {
+      background:#f8fafc; border-radius:12px; padding:14px; text-align:center;
+    }
+    .route-stat-val { font-size:20px; font-weight:800; color:#1a2540; }
+    .route-stat-lbl { font-size:11px; color:#94a3b8; margin-top:2px; }
+    .route-stat-unit { font-size:12px; color:#64748b; font-weight:600; }
+
+    /* ── Submit Button ── */
+    .eod-submit {
+      width:100%; padding:16px; background:linear-gradient(135deg,#28a745 0%,#20903a 100%);
+      color:#fff; border:none; border-radius:14px; font-size:15px; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow:0 4px 14px rgba(40,167,69,.3); margin-bottom:24px;
+    }
+    .eod-submit svg { width:20px; height:20px; }
+
+    /* ── Timeline ── */
+    .timeline { position:relative; padding-left:20px; }
+    .timeline::before {
+      content:''; position:absolute; left:8px; top:4px; bottom:4px;
+      width:2px; background:#e2e8f0; border-radius:1px;
+    }
+    .tl-item { position:relative; padding-bottom:16px; }
+    .tl-item:last-child { padding-bottom:0; }
+    .tl-dot {
+      position:absolute; left:-16px; top:4px; width:12px; height:12px;
+      border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 2px #e2e8f0;
+    }
+    .tl-dot.green { background:#28a745; box-shadow:0 0 0 2px #28a745; }
+    .tl-dot.blue { background:#3066be; box-shadow:0 0 0 2px #3066be; }
+    .tl-dot.amber { background:#f59e0b; box-shadow:0 0 0 2px #f59e0b; }
+    .tl-dot.red { background:#e05252; box-shadow:0 0 0 2px #e05252; }
+    .tl-dot.gray { background:#94a3b8; box-shadow:0 0 0 2px #94a3b8; }
+    .tl-time { font-size:10px; font-weight:600; color:#94a3b8; }
+    .tl-title { font-size:13px; font-weight:600; color:#1a2540; margin-top:2px; }
+    .tl-desc { font-size:11px; color:#94a3b8; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · EOD Report</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer (Simplified) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">EM</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">Target: ₹2,00,000</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('parties.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <span class="drawer-item-label">Parties</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('orders.html')">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <span class="drawer-item-label">Orders</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('collections.html')">
+      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span class="drawer-item-label">Collections</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('attendance.html')">
+      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="drawer-item-label">Attendance</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('performance.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Performance</span>
+    </div>
+    <div class="drawer-item active" onclick="closeDrawer()">
+      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <span class="drawer-item-label">EOD Report</span>
+    </div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item">
+      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <span class="drawer-item-label">Logout</span>
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">5:45</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="8" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">EOD Report</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- ===================== HERO SUMMARY CARD ===================== -->
+      <div class="eod-hero">
+        <div class="eod-hero-top">
+          <div>
+            <div class="eod-hero-date">March 8, 2026</div>
+            <div class="eod-hero-day">Sunday · Kathmandu Central Beat</div>
+          </div>
+          <div class="eod-hero-badge">Draft</div>
+        </div>
+        <div class="eod-hero-grid">
+          <div class="eod-hero-stat">
+            <div class="eod-hero-val">8</div>
+            <div class="eod-hero-lbl">Total Orders</div>
+          </div>
+          <div class="eod-hero-stat">
+            <div class="eod-hero-val">₹72,450</div>
+            <div class="eod-hero-lbl">Total Revenue</div>
+          </div>
+          <div class="eod-hero-stat">
+            <div class="eod-hero-val">₹34,200</div>
+            <div class="eod-hero-lbl">Collection</div>
+          </div>
+          <div class="eod-hero-stat">
+            <div class="eod-hero-val">12</div>
+            <div class="eod-hero-lbl">Shops Visited</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== TODAY'S HIGHLIGHTS ===================== -->
+      <div class="highlight-strip">
+        <div class="highlight-chip">
+          <div class="highlight-dot green"></div>
+          67% Strike Rate
+        </div>
+        <div class="highlight-chip">
+          <div class="highlight-dot blue"></div>
+          Avg Order ₹9,056
+        </div>
+        <div class="highlight-chip">
+          <div class="highlight-dot amber"></div>
+          3 New Parties
+        </div>
+        <div class="highlight-chip">
+          <div class="highlight-dot red"></div>
+          ₹4,800 Returns
+        </div>
+      </div>
+
+      <!-- ===================== ORDERS SUMMARY ===================== -->
+      <div class="eod-section">
+        <div class="eod-section-title">
+          <div class="eod-section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+          Orders Summary (8)
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f0fe;color:#3066be;">RS</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Ram Stores</div>
+            <div class="eod-row-sub">ORD-2641 · 9:45 AM · 14 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹12,400</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#fef3cd;color:#d97706;">KM</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Krishna Medical</div>
+            <div class="eod-row-sub">ORD-2642 · 10:20 AM · 8 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹8,750</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f5ed;color:#28a745;">SP</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Shanti Provision</div>
+            <div class="eod-row-sub">ORD-2643 · 11:05 AM · 22 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹18,200</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#f3e8ff;color:#7c3aed;">NE</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">New Era Cosmetics</div>
+            <div class="eod-row-sub">ORD-2644 · 11:50 AM · 6 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹5,600</div>
+            <div class="eod-row-badge" style="background:#fef3cd;color:#d97706;">Pending</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#fde8e8;color:#e05252;">CB</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">City Bazaar</div>
+            <div class="eod-row-sub">ORD-2645 · 1:30 PM · 11 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹9,300</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#d1fae5;color:#047857;">GS</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Global Suppliers</div>
+            <div class="eod-row-sub">ORD-2646 · 2:15 PM · 9 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹7,200</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f0fe;color:#3066be;">PD</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Patel Distributors</div>
+            <div class="eod-row-sub">ORD-2647 · 3:10 PM · 5 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹4,500</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#fef3cd;color:#d97706;">MT</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Meera Traders</div>
+            <div class="eod-row-sub">ORD-2648 · 4:25 PM · 7 items</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#1a2540;">₹6,500</div>
+            <div class="eod-row-badge" style="background:#e8f5ed;color:#28a745;">Confirmed</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding-top:8px;">
+          <div style="font-size:12px;font-weight:700;color:#3066be;">Total: ₹72,450 from 8 orders</div>
+        </div>
+      </div>
+
+      <!-- ===================== COLLECTIONS SUMMARY ===================== -->
+      <div class="eod-section">
+        <div class="eod-section-title">
+          <div class="eod-section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          Collections Summary (5)
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f5ed;color:#28a745;">RS</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Ram Stores</div>
+            <div class="eod-row-sub">Cash · Against INV-1892</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#28a745;">₹8,500</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f5ed;color:#28a745;">SP</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Shanti Provision</div>
+            <div class="eod-row-sub">Cheque · Against INV-1865</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#28a745;">₹12,000</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f5ed;color:#28a745;">CB</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">City Bazaar</div>
+            <div class="eod-row-sub">UPI · Against INV-1901</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#28a745;">₹6,000</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f5ed;color:#28a745;">GS</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Global Suppliers</div>
+            <div class="eod-row-sub">Cash · Against INV-1878</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#28a745;">₹4,200</div>
+          </div>
+        </div>
+
+        <div class="eod-row">
+          <div class="eod-row-avatar" style="background:#e8f5ed;color:#28a745;">MT</div>
+          <div class="eod-row-info">
+            <div class="eod-row-name">Meera Traders</div>
+            <div class="eod-row-sub">Cash · Against INV-1910</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="eod-row-amt" style="color:#28a745;">₹3,500</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:2px solid #e8f5ed;">
+          <div style="font-size:12px;color:#64748b;">Cash: ₹16,200 | Cheque: ₹12,000 | UPI: ₹6,000</div>
+        </div>
+        <div style="text-align:center;padding-top:6px;">
+          <div style="font-size:12px;font-weight:700;color:#28a745;">Total Collected: ₹34,200</div>
+        </div>
+      </div>
+
+      <!-- ===================== VISITS SUMMARY ===================== -->
+      <div class="eod-section">
+        <div class="eod-section-title">
+          <div class="eod-section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          Visits Summary
+        </div>
+
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#28a745;">●</span> Total Shops Visited
+          </div>
+          <div class="visit-stat-val">12</div>
+        </div>
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#3066be;">●</span> Productive Calls (Orders)
+          </div>
+          <div class="visit-stat-val" style="color:#28a745;">8</div>
+        </div>
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#f59e0b;">●</span> Non-Productive Calls
+          </div>
+          <div class="visit-stat-val" style="color:#f59e0b;">3</div>
+        </div>
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#e05252;">●</span> Shops Closed / Not Available
+          </div>
+          <div class="visit-stat-val" style="color:#e05252;">1</div>
+        </div>
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#7c3aed;">●</span> New Parties Added
+          </div>
+          <div class="visit-stat-val" style="color:#7c3aed;">3</div>
+        </div>
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#047857;">●</span> Collections Made
+          </div>
+          <div class="visit-stat-val" style="color:#047857;">5</div>
+        </div>
+        <div class="visit-stat-row">
+          <div class="visit-stat-label">
+            <span style="color:#3066be;">●</span> Strike Rate
+          </div>
+          <div class="visit-stat-val" style="color:#3066be;">67%</div>
+        </div>
+
+        <!-- Mini bar visualization -->
+        <div style="margin-top:10px;background:#f1f5f9;border-radius:8px;height:8px;overflow:hidden;display:flex;">
+          <div style="width:67%;background:#28a745;border-radius:8px 0 0 8px;"></div>
+          <div style="width:25%;background:#f59e0b;"></div>
+          <div style="width:8%;background:#e05252;border-radius:0 8px 8px 0;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:4px;">
+          <span>Productive 67%</span>
+          <span>Non-Productive 25%</span>
+          <span>Closed 8%</span>
+        </div>
+      </div>
+
+      <!-- ===================== ROUTE STATS ===================== -->
+      <div class="eod-section">
+        <div class="eod-section-title">
+          <div class="eod-section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+          Route Stats
+        </div>
+
+        <div class="route-grid">
+          <div class="route-stat">
+            <div class="route-stat-val">38.5</div>
+            <div class="route-stat-unit">km</div>
+            <div class="route-stat-lbl">Distance Traveled</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-val">8h 30m</div>
+            <div class="route-stat-unit">&nbsp;</div>
+            <div class="route-stat-lbl">Time in Field</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-val">42</div>
+            <div class="route-stat-unit">min</div>
+            <div class="route-stat-lbl">Avg Time / Visit</div>
+          </div>
+          <div class="route-stat">
+            <div class="route-stat-val">3.2</div>
+            <div class="route-stat-unit">km</div>
+            <div class="route-stat-lbl">Avg Distance / Visit</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;justify-content:space-between;padding:10px 12px;background:#f0f4fb;border-radius:10px;">
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:#94a3b8;">Check-In</div>
+            <div style="font-size:13px;font-weight:700;color:#28a745;">9:15 AM</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:#94a3b8;">First Visit</div>
+            <div style="font-size:13px;font-weight:700;color:#3066be;">9:45 AM</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:#94a3b8;">Last Visit</div>
+            <div style="font-size:13px;font-weight:700;color:#f59e0b;">4:50 PM</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:#94a3b8;">Check-Out</div>
+            <div style="font-size:13px;font-weight:700;color:#e05252;">5:45 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== ACTIVITY TIMELINE ===================== -->
+      <div class="eod-section">
+        <div class="eod-section-title">
+          <div class="eod-section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          Activity Timeline
+        </div>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot green"></div>
+            <div class="tl-time">9:15 AM</div>
+            <div class="tl-title">Check-In</div>
+            <div class="tl-desc">Day started · New Road, Kathmandu</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">9:45 AM</div>
+            <div class="tl-title">Ram Stores — Order ₹12,400</div>
+            <div class="tl-desc">14 items · Cash collection ₹8,500</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">10:20 AM</div>
+            <div class="tl-title">Krishna Medical — Order ₹8,750</div>
+            <div class="tl-desc">8 items · New party added</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">11:05 AM</div>
+            <div class="tl-title">Shanti Provision — Order ₹18,200</div>
+            <div class="tl-desc">22 items · Cheque collection ₹12,000</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot amber"></div>
+            <div class="tl-time">11:50 AM</div>
+            <div class="tl-title">New Era Cosmetics — Order ₹5,600</div>
+            <div class="tl-desc">6 items · Payment pending</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot gray"></div>
+            <div class="tl-time">12:15 PM</div>
+            <div class="tl-title">Lunch Break</div>
+            <div class="tl-desc">Resumed at 1:15 PM</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">1:30 PM</div>
+            <div class="tl-title">City Bazaar — Order ₹9,300</div>
+            <div class="tl-desc">11 items · UPI collection ₹6,000</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">2:15 PM</div>
+            <div class="tl-title">Global Suppliers — Order ₹7,200</div>
+            <div class="tl-desc">9 items · Cash collection ₹4,200</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot amber"></div>
+            <div class="tl-time">2:55 PM</div>
+            <div class="tl-title">Sharma General — No Order</div>
+            <div class="tl-desc">Owner not available · Will revisit Monday</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">3:10 PM</div>
+            <div class="tl-title">Patel Distributors — Order ₹4,500</div>
+            <div class="tl-desc">5 items · New party added</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">4:25 PM</div>
+            <div class="tl-title">Meera Traders — Order ₹6,500</div>
+            <div class="tl-desc">7 items · Cash collection ₹3,500</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot red"></div>
+            <div class="tl-time">5:45 PM</div>
+            <div class="tl-title">Check-Out</div>
+            <div class="tl-desc">Day ended · 38.5 km covered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== DAY REMARKS ===================== -->
+      <div class="eod-section">
+        <div class="eod-section-title">
+          <div class="eod-section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          Day Remarks
+        </div>
+        <textarea style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;font-size:13px;font-family:inherit;resize:none;color:#1a2540;box-sizing:border-box;" rows="3" placeholder="Add any final remarks for today...">Good productive day. Covered all planned shops in the Kathmandu Central beat. 3 new parties added - Krishna Medical, Patel Distributors, and Lucky Store. City Bazaar requested product samples for next visit.</textarea>
+      </div>
+
+      <!-- ===================== SUBMIT BUTTON ===================== -->
+      <button class="eod-submit" onclick="showToast('EOD Report submitted successfully!')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Submit EOD Report
+      </button>
+
+      <div style="height:80px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+</body>
+</html>

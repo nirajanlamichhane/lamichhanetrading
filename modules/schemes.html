@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Schemes & Offers — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Stats Strip ── */
+    .scheme-stats {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;
+    }
+    .sc-stat {
+      background:#fff; border-radius:12px; padding:10px 8px; text-align:center;
+      box-shadow:0 1px 4px rgba(48,102,190,.08);
+    }
+    .sc-stat-val { font-size:17px; font-weight:800; color:#1a2540; }
+    .sc-stat-lbl { font-size:10px; color:#64748b; margin-top:2px; text-transform:uppercase; letter-spacing:.3px; }
+    .sc-stat.blue .sc-stat-val { color:#3066be; }
+    .sc-stat.green .sc-stat-val { color:#28a745; }
+    .sc-stat.amber .sc-stat-val { color:#f59e0b; }
+    .sc-stat.purple .sc-stat-val { color:#7c3aed; }
+
+    /* ── Filter Tabs ── */
+    .scheme-tabs { display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px; }
+    .scheme-tab {
+      flex:1; text-align:center; padding:8px 4px; font-size:11px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition: all .2s;
+    }
+    .scheme-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Scheme Card ── */
+    .scheme-card {
+      background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); cursor:pointer;
+      border-left:4px solid transparent; transition: transform .15s;
+    }
+    .scheme-card:active { transform:scale(.98); }
+    .scheme-card.active-scheme { border-left-color:#28a745; }
+    .scheme-card.expiring { border-left-color:#f59e0b; }
+    .scheme-card.expired { border-left-color:#e05252; }
+
+    .sc-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+    .sc-name { font-size:14px; font-weight:700; color:#1a2540; flex:1; margin-right:8px; }
+    .sc-type-badge {
+      padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.3px; flex-shrink:0;
+    }
+    .sc-type-badge.product { background:#e8f0fe; color:#3066be; }
+    .sc-type-badge.value { background:#f3e8ff; color:#7c3aed; }
+    .sc-type-badge.quantity { background:#e8f5ed; color:#28a745; }
+    .sc-type-badge.combo { background:#fff3e8; color:#d97706; }
+
+    .sc-category { font-size:11px; color:#94a3b8; margin-bottom:8px; }
+    .sc-details { margin-bottom:8px; }
+    .sc-detail-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+    .sc-detail-row svg { width:14px; height:14px; color:#94a3b8; flex-shrink:0; }
+    .sc-detail-row span { font-size:12px; color:#64748b; }
+    .sc-detail-row .sc-highlight { color:#1a2540; font-weight:600; }
+
+    .sc-progress { margin-bottom:10px; }
+    .sc-progress-label { display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-bottom:4px; }
+    .sc-progress-bar { background:#e8f0fa; border-radius:20px; height:6px; overflow:hidden; }
+    .sc-progress-fill { height:100%; border-radius:20px; transition:width .5s ease; }
+    .sc-progress-fill.green { background:linear-gradient(90deg,#28a745,#4ade80); }
+    .sc-progress-fill.amber { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .sc-progress-fill.red { background:linear-gradient(90deg,#e05252,#f87171); }
+
+    .sc-apply-btn {
+      width:100%; padding:8px 14px; border-radius:10px; border:none; cursor:pointer;
+      font-size:12px; font-weight:700; font-family:var(--font);
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      color:#fff; box-shadow:0 2px 8px rgba(48,102,190,.25);
+      transition:transform .15s;
+    }
+    .sc-apply-btn:active { transform:scale(.97); }
+    .sc-apply-btn.disabled {
+      background:#e2e8f0; color:#94a3b8; box-shadow:none; cursor:not-allowed;
+    }
+
+    /* ── Section Title ── */
+    .sc-section-title {
+      font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;
+      letter-spacing:.8px; margin:18px 0 10px; display:flex; align-items:center; gap:8px;
+    }
+    .sc-section-title::after {
+      content:''; flex:1; height:1px; background:#e2e8f0;
+    }
+
+    /* ── Target Scheme Card ── */
+    .target-scheme-card {
+      background:#fff; border-radius:14px; padding:16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08);
+    }
+    .tsc-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .tsc-ring { position:relative; width:56px; height:56px; flex-shrink:0; }
+    .tsc-ring svg { width:56px; height:56px; transform:rotate(-90deg); }
+    .tsc-ring-track { fill:none; stroke:#e8f0fa; stroke-width:5; }
+    .tsc-ring-fill { fill:none; stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset .8s ease; }
+    .tsc-ring-fill.green { stroke:#28a745; }
+    .tsc-ring-fill.amber { stroke:#f59e0b; }
+    .tsc-ring-fill.blue { stroke:#3066be; }
+    .tsc-ring-center {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+    .tsc-ring-pct { font-size:14px; font-weight:800; color:#1a2540; line-height:1; }
+    .tsc-info { flex:1; }
+    .tsc-name { font-size:14px; font-weight:700; color:#1a2540; }
+    .tsc-reward { font-size:12px; color:#28a745; font-weight:600; margin-top:2px; }
+    .tsc-days { font-size:11px; color:#94a3b8; margin-top:2px; }
+    .tsc-progress { margin-top:8px; }
+    .tsc-progress-row { display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-bottom:4px; }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position:absolute; inset:0; background:rgba(26,39,68,.55);
+      z-index:400; opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .bs-overlay.open { opacity:1; pointer-events:all; }
+    .bs-sheet {
+      position:absolute; bottom:0; left:0; right:0;
+      background:var(--bg); border-radius:24px 24px 0 0;
+      z-index:410; transform:translateY(100%);
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+      max-height:85%; overflow-y:auto; scrollbar-width:none;
+    }
+    .bs-sheet::-webkit-scrollbar { display:none; }
+    .bs-sheet.open { transform:translateY(0); }
+    .bs-handle { width:40px; height:4px; background:#ccd5e0; border-radius:4px; margin:10px auto 0; }
+
+    .bs-header {
+      background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 60%,var(--primary-light) 100%);
+      border-radius:24px 24px 0 0; padding:20px 20px 24px; position:relative;
+    }
+    .bs-header .bs-handle { background:rgba(255,255,255,.35); margin-bottom:14px; }
+    .bs-close {
+      position:absolute; top:14px; right:14px;
+      width:32px; height:32px; border-radius:50%;
+      background:rgba(255,255,255,.15); border:none; color:#fff; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .bs-close:hover { background:rgba(255,255,255,.3); }
+    .bs-close svg { width:16px; height:16px; }
+    .bs-title { color:#fff; font-size:18px; font-weight:800; }
+    .bs-subtitle { color:rgba(255,255,255,.75); font-size:12px; margin-top:2px; }
+
+    .bs-body { padding:20px 16px 32px; }
+
+    .bs-info-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid #e8f0fa;
+    }
+    .bs-info-label { font-size:12px; color:#64748b; }
+    .bs-info-value { font-size:13px; font-weight:600; color:#1a2540; }
+
+    .bs-products-title {
+      font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;
+      letter-spacing:.8px; margin:16px 0 8px;
+    }
+    .bs-product-item {
+      display:flex; align-items:center; gap:10px; padding:8px 0;
+      border-bottom:1px solid #f0f4fb;
+    }
+    .bs-product-dot { width:8px; height:8px; border-radius:50%; background:#3066be; flex-shrink:0; }
+    .bs-product-name { font-size:13px; color:#1a2540; font-weight:500; flex:1; }
+    .bs-product-sku { font-size:11px; color:#94a3b8; }
+
+    .bs-benefit-card {
+      background:linear-gradient(135deg,#e6f4ea,#d4edda);
+      border-radius:12px; padding:14px; margin:16px 0;
+      border-left:4px solid #28a745;
+    }
+    .bs-benefit-title { font-size:12px; font-weight:700; color:#28a745; margin-bottom:6px; text-transform:uppercase; letter-spacing:.3px; }
+    .bs-benefit-text { font-size:13px; color:#1a2540; font-weight:500; line-height:1.5; }
+
+    .bs-tc {
+      font-size:11px; color:#94a3b8; line-height:1.5; margin:12px 0 20px;
+      padding:10px; background:#f8fafd; border-radius:10px;
+    }
+    .bs-tc-title { font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase; }
+  </style>
+</head>
+<body>
+
+<div class="page-title">Adera Sales</div>
+
+<div class="phone-frame">
+
+  <!-- Drawer (auto-injected) -->
+  <div id="drawer" data-inject="schemes"></div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Schemes & Offers</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Stats Strip -->
+      <div class="scheme-stats">
+        <div class="sc-stat green">
+          <div class="sc-stat-val">12</div>
+          <div class="sc-stat-lbl">Active</div>
+        </div>
+        <div class="sc-stat amber">
+          <div class="sc-stat-val">3</div>
+          <div class="sc-stat-lbl">Expiring</div>
+        </div>
+        <div class="sc-stat blue">
+          <div class="sc-stat-val">5</div>
+          <div class="sc-stat-lbl">Target</div>
+        </div>
+        <div class="sc-stat purple">
+          <div class="sc-stat-val">2.4L</div>
+          <div class="sc-stat-lbl">Value</div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="scheme-tabs">
+        <div class="scheme-tab active" data-filter="all" onclick="filterSchemes(this)">All</div>
+        <div class="scheme-tab" data-filter="product" onclick="filterSchemes(this)">Product</div>
+        <div class="scheme-tab" data-filter="value" onclick="filterSchemes(this)">Value</div>
+        <div class="scheme-tab" data-filter="quantity" onclick="filterSchemes(this)">Quantity</div>
+        <div class="scheme-tab" data-filter="combo" onclick="filterSchemes(this)">Combo</div>
+      </div>
+
+      <!-- Active Schemes Section -->
+      <div class="sc-section-title">Active Schemes</div>
+
+      <div id="schemesList">
+
+        <!-- Scheme 1: Buy 10 Get 1 Free -->
+        <div class="scheme-card active-scheme fade-in" data-type="quantity" onclick="openSchemeDetail(0)">
+          <div class="sc-top">
+            <div class="sc-name">Buy 10 Get 1 Free</div>
+            <div class="sc-type-badge quantity">Quantity</div>
+          </div>
+          <div class="sc-category">Dairy Products</div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 1 - Mar 31, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">10 units</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Get <span class="sc-highlight">1 free unit</span> per 10 purchased</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>Used 45 of 100 units</span>
+              <span>45%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill green" style="width:45%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('Buy 10 Get 1 Free')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 2: 15% Margin Boost -->
+        <div class="scheme-card active-scheme fade-in" data-type="value" onclick="openSchemeDetail(1)">
+          <div class="sc-top">
+            <div class="sc-name">15% Margin Boost</div>
+            <div class="sc-type-badge value">Value</div>
+          </div>
+          <div class="sc-category">Premium Range</div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 1 - Apr 15, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">&#8377;8,000</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Extra <span class="sc-highlight">15% margin</span> on premium SKUs</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>&#8377;1.2L of &#8377;3L target</span>
+              <span>40%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill green" style="width:40%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('15% Margin Boost')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 3: Festive Combo Pack -->
+        <div class="scheme-card active-scheme fade-in" data-type="combo" onclick="openSchemeDetail(2)">
+          <div class="sc-top">
+            <div class="sc-name">Festive Combo Pack</div>
+            <div class="sc-type-badge combo">Combo</div>
+          </div>
+          <div class="sc-category">Festival Special</div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 5 - Mar 25, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">&#8377;15,000</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Get <span class="sc-highlight">festive gift hamper</span> + 5% extra discount</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>18 of 50 combos sold</span>
+              <span>36%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill green" style="width:36%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('Festive Combo Pack')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 4: Rs 500 Flat Off (Expiring) -->
+        <div class="scheme-card expiring fade-in" data-type="value" onclick="openSchemeDetail(3)">
+          <div class="sc-top">
+            <div class="sc-name">&#8377;500 Flat Off</div>
+            <div class="sc-type-badge value">Value</div>
+          </div>
+          <div class="sc-category">Orders above &#8377;10K &bull; <span style="color:#d97706;font-weight:700;">Expires in 2 days</span></div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 1 - Mar 10, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">&#8377;10,000</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Flat <span class="sc-highlight">&#8377;500 off</span> on every qualifying order</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>Used 8 of 15 times</span>
+              <span>53%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill amber" style="width:53%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('Rs 500 Flat Off')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 5: Free Display Stand -->
+        <div class="scheme-card active-scheme fade-in" data-type="quantity" onclick="openSchemeDetail(4)">
+          <div class="sc-top">
+            <div class="sc-name">Free Display Stand</div>
+            <div class="sc-type-badge quantity">Quantity</div>
+          </div>
+          <div class="sc-category">Min 50 cases</div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 1 - Mar 31, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">50 cases</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Free <span class="sc-highlight">branded display stand</span> worth &#8377;3,500</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>32 of 50 cases ordered</span>
+              <span>64%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill green" style="width:64%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('Free Display Stand')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 6: Early Bird Bonus -->
+        <div class="scheme-card active-scheme fade-in" data-type="value" onclick="openSchemeDetail(5)">
+          <div class="sc-top">
+            <div class="sc-name">Early Bird Bonus</div>
+            <div class="sc-type-badge value">Value</div>
+          </div>
+          <div class="sc-category">Before 10 AM orders</div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 1 - Mar 31, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">&#8377;5,000</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Extra <span class="sc-highlight">&#8377;200 cashback</span> on orders before 10 AM</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>&#8377;18K of &#8377;50K target</span>
+              <span>36%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill green" style="width:36%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('Early Bird Bonus')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 7: Category Push (Expiring) -->
+        <div class="scheme-card expiring fade-in" data-type="product" onclick="openSchemeDetail(6)">
+          <div class="sc-top">
+            <div class="sc-name">Category Push</div>
+            <div class="sc-type-badge product">Product</div>
+          </div>
+          <div class="sc-category">New Launches &bull; <span style="color:#d97706;font-weight:700;">Expires in 5 days</span></div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Mar 1 - Mar 13, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">20 units (new SKUs)</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Get <span class="sc-highlight">10% trade discount</span> on new launch products</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>14 of 20 new SKUs placed</span>
+              <span>70%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill amber" style="width:70%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn" onclick="event.stopPropagation(); applyScheme('Category Push')">Apply to Order</button>
+        </div>
+
+        <!-- Scheme 8: Loyalty Reward (Expired) -->
+        <div class="scheme-card expired fade-in" data-type="value" onclick="openSchemeDetail(7)">
+          <div class="sc-top">
+            <div class="sc-name">Loyalty Reward</div>
+            <div class="sc-type-badge value">Value</div>
+          </div>
+          <div class="sc-category">Quarterly target linked &bull; <span style="color:#e05252;font-weight:700;">Expired</span></div>
+          <div class="sc-details">
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Jan 1 - Feb 28, 2026</span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Min Order: <span class="sc-highlight">&#8377;2,00,000 (quarterly)</span></span>
+            </div>
+            <div class="sc-detail-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 000 4h4v-4h-4z"/></svg>
+              <span>Earn <span class="sc-highlight">&#8377;5,000 reward</span> on achieving quarterly target</span>
+            </div>
+          </div>
+          <div class="sc-progress">
+            <div class="sc-progress-label">
+              <span>&#8377;1.65L of &#8377;2L achieved</span>
+              <span>82%</span>
+            </div>
+            <div class="sc-progress-bar">
+              <div class="sc-progress-fill red" style="width:82%"></div>
+            </div>
+          </div>
+          <button class="sc-apply-btn disabled" onclick="event.stopPropagation(); showToast('This scheme has expired','error')">Expired</button>
+        </div>
+
+      </div><!-- /schemesList -->
+
+      <!-- My Target Schemes Section -->
+      <div class="sc-section-title">My Target Schemes</div>
+
+      <!-- Target Scheme 1 -->
+      <div class="target-scheme-card fade-in">
+        <div class="tsc-top">
+          <div class="tsc-ring">
+            <svg viewBox="0 0 36 36">
+              <circle class="tsc-ring-track" cx="18" cy="18" r="15.5"/>
+              <circle class="tsc-ring-fill green" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="24.35"/>
+            </svg>
+            <div class="tsc-ring-center">
+              <span class="tsc-ring-pct">75%</span>
+            </div>
+          </div>
+          <div class="tsc-info">
+            <div class="tsc-name">Monthly Sales Target</div>
+            <div class="tsc-reward">Reward: &#8377;8,000</div>
+            <div class="tsc-days">23 days remaining</div>
+          </div>
+        </div>
+        <div class="tsc-progress">
+          <div class="tsc-progress-row">
+            <span>Achieved: &#8377;6.75L</span>
+            <span>Target: &#8377;9L</span>
+          </div>
+          <div class="sc-progress-bar">
+            <div class="sc-progress-fill green" style="width:75%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Scheme 2 -->
+      <div class="target-scheme-card fade-in">
+        <div class="tsc-top">
+          <div class="tsc-ring">
+            <svg viewBox="0 0 36 36">
+              <circle class="tsc-ring-track" cx="18" cy="18" r="15.5"/>
+              <circle class="tsc-ring-fill amber" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="53.57"/>
+            </svg>
+            <div class="tsc-ring-center">
+              <span class="tsc-ring-pct">45%</span>
+            </div>
+          </div>
+          <div class="tsc-info">
+            <div class="tsc-name">New Outlet Activation</div>
+            <div class="tsc-reward">Reward: &#8377;5,000</div>
+            <div class="tsc-days">23 days remaining</div>
+          </div>
+        </div>
+        <div class="tsc-progress">
+          <div class="tsc-progress-row">
+            <span>Activated: 9 outlets</span>
+            <span>Target: 20 outlets</span>
+          </div>
+          <div class="sc-progress-bar">
+            <div class="sc-progress-fill amber" style="width:45%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Scheme 3 -->
+      <div class="target-scheme-card fade-in">
+        <div class="tsc-top">
+          <div class="tsc-ring">
+            <svg viewBox="0 0 36 36">
+              <circle class="tsc-ring-track" cx="18" cy="18" r="15.5"/>
+              <circle class="tsc-ring-fill blue" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="38.96"/>
+            </svg>
+            <div class="tsc-ring-center">
+              <span class="tsc-ring-pct">60%</span>
+            </div>
+          </div>
+          <div class="tsc-info">
+            <div class="tsc-name">Premium Category Push</div>
+            <div class="tsc-reward">Reward: &#8377;3,500</div>
+            <div class="tsc-days">15 days remaining</div>
+          </div>
+        </div>
+        <div class="tsc-progress">
+          <div class="tsc-progress-row">
+            <span>Sold: 30 cases</span>
+            <span>Target: 50 cases</span>
+          </div>
+          <div class="sc-progress-bar">
+            <div class="sc-progress-fill green" style="width:60%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav (auto-injected) -->
+    <div class="bottom-nav" data-inject="schemes"></div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Scheme Detail Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="bsOverlay" onclick="closeSchemeDetail()"></div>
+  <div class="bs-sheet" id="bsSheet">
+    <div class="bs-header">
+      <div class="bs-handle"></div>
+      <button class="bs-close" onclick="closeSchemeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="bs-title" id="bsTitle">Scheme Details</div>
+      <div class="bs-subtitle" id="bsSubtitle">View full details</div>
+    </div>
+    <div class="bs-body">
+      <!-- Info Rows -->
+      <div id="bsInfoRows"></div>
+
+      <!-- Eligible Products -->
+      <div class="bs-products-title">Eligible Products</div>
+      <div id="bsProducts"></div>
+
+      <!-- Benefits -->
+      <div id="bsBenefit"></div>
+
+      <!-- Usage Stats -->
+      <div style="margin:16px 0 12px;">
+        <div class="sc-progress-label" id="bsUsageLabel"></div>
+        <div class="sc-progress-bar">
+          <div class="sc-progress-fill green" id="bsUsageFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- T&C -->
+      <div id="bsTC"></div>
+
+      <!-- Apply Button -->
+      <button class="sc-apply-btn" id="bsApplyBtn" style="margin-top:16px;padding:13px 20px;font-size:14px;" onclick="applyFromSheet()">Apply to Current Order</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── Scheme Data ──
+  var schemes = [
+    {
+      name: 'Buy 10 Get 1 Free', type: 'Quantity', status: 'Active',
+      category: 'Dairy Products', validity: 'Mar 1 - Mar 31, 2026',
+      minOrder: '10 units', benefit: 'Get 1 free unit for every 10 units purchased in a single order.',
+      used: 45, total: 100, unit: 'units', pct: 45,
+      products: [
+        { name: 'Farm Fresh Full Cream Milk 500ml', sku: 'SKU-1021' },
+        { name: 'Natural Curd 400g', sku: 'SKU-1034' },
+        { name: 'Butter Spread 200g', sku: 'SKU-1047' },
+        { name: 'Paneer Block 250g', sku: 'SKU-1055' }
+      ],
+      tc: '1. Applicable on single order only.\n2. Cannot be combined with other quantity schemes.\n3. Free units shipped within 48 hours.\n4. Valid for registered retailers only.'
+    },
+    {
+      name: '15% Margin Boost', type: 'Value', status: 'Active',
+      category: 'Premium Range', validity: 'Mar 1 - Apr 15, 2026',
+      minOrder: '\u20B98,000', benefit: 'Additional 15% margin on all premium range SKUs. Extra margin credited to retailer account within 7 days.',
+      used: 1.2, total: 3, unit: 'L', pct: 40, valueUnit: true,
+      products: [
+        { name: 'Premium Dark Chocolate 100g', sku: 'SKU-2010' },
+        { name: 'Organic Honey 500g', sku: 'SKU-2015' },
+        { name: 'Imported Olive Oil 1L', sku: 'SKU-2023' }
+      ],
+      tc: '1. Margin boost applied post-delivery.\n2. Minimum order value \u20B98,000 per transaction.\n3. Maximum 5 redemptions per retailer per month.\n4. Subject to stock availability.'
+    },
+    {
+      name: 'Festive Combo Pack', type: 'Combo', status: 'Active',
+      category: 'Festival Special', validity: 'Mar 5 - Mar 25, 2026',
+      minOrder: '\u20B915,000', benefit: 'Free festive gift hamper worth \u20B91,200 plus 5% additional discount on entire order value.',
+      used: 18, total: 50, unit: 'combos', pct: 36,
+      products: [
+        { name: 'Festival Gift Box (Assorted)', sku: 'SKU-3001' },
+        { name: 'Premium Sweets Pack 1kg', sku: 'SKU-3005' },
+        { name: 'Dry Fruits Combo 500g', sku: 'SKU-3009' },
+        { name: 'Special Namkeen Box 750g', sku: 'SKU-3012' }
+      ],
+      tc: '1. One hamper per qualifying order.\n2. Combo must include items from at least 2 categories.\n3. Gift hamper subject to availability.\n4. Offer valid till stocks last.'
+    },
+    {
+      name: '\u20B9500 Flat Off', type: 'Value', status: 'Expiring',
+      category: 'Orders above \u20B910K', validity: 'Mar 1 - Mar 10, 2026',
+      minOrder: '\u20B910,000', benefit: 'Flat \u20B9500 discount on every order above \u20B910,000. Discount applied at checkout.',
+      used: 8, total: 15, unit: 'times', pct: 53,
+      products: [
+        { name: 'All FMCG Categories', sku: 'All SKUs' },
+        { name: 'Beverages Range', sku: 'BEV-*' },
+        { name: 'Snacks & Confectionery', sku: 'SNK-*' }
+      ],
+      tc: '1. One discount per order.\n2. Cannot be clubbed with other value offers.\n3. Maximum 15 redemptions per salesperson.\n4. Valid for orders placed via app only.'
+    },
+    {
+      name: 'Free Display Stand', type: 'Quantity', status: 'Active',
+      category: 'Min 50 cases', validity: 'Mar 1 - Mar 31, 2026',
+      minOrder: '50 cases', benefit: 'Free branded display stand worth \u20B93,500 for retailers ordering 50+ cases in a single order.',
+      used: 32, total: 50, unit: 'cases', pct: 64,
+      products: [
+        { name: 'Energy Drink 250ml (Case/24)', sku: 'SKU-4010' },
+        { name: 'Fruit Juice 200ml (Case/30)', sku: 'SKU-4015' },
+        { name: 'Mineral Water 1L (Case/12)', sku: 'SKU-4020' }
+      ],
+      tc: '1. One display stand per retailer per quarter.\n2. Cases must be from beverage category.\n3. Stand delivery within 10 working days.\n4. Installation support provided by company.'
+    },
+    {
+      name: 'Early Bird Bonus', type: 'Value', status: 'Active',
+      category: 'Before 10 AM orders', validity: 'Mar 1 - Mar 31, 2026',
+      minOrder: '\u20B95,000', benefit: 'Extra \u20B9200 cashback credited to retailer wallet for orders placed before 10:00 AM.',
+      used: 18000, total: 50000, unit: '', pct: 36, valueUnit: true, usedLabel: '\u20B918K of \u20B950K target',
+      products: [
+        { name: 'Morning Fresh Bread (All Variants)', sku: 'BRD-*' },
+        { name: 'Dairy Products (All)', sku: 'DRY-*' },
+        { name: 'Breakfast Cereals Range', sku: 'CER-*' }
+      ],
+      tc: '1. Order must be placed before 10:00 AM IST.\n2. Minimum order \u20B95,000.\n3. Cashback credited within 24 hours.\n4. Maximum \u20B9200 cashback per day per retailer.'
+    },
+    {
+      name: 'Category Push', type: 'Product', status: 'Expiring',
+      category: 'New Launches', validity: 'Mar 1 - Mar 13, 2026',
+      minOrder: '20 units (new SKUs)', benefit: '10% trade discount on all newly launched products. Helps retailers stock up new items at reduced cost.',
+      used: 14, total: 20, unit: 'new SKUs placed', pct: 70,
+      products: [
+        { name: 'New Mango Lassi 200ml', sku: 'SKU-5001' },
+        { name: 'Protein Bar Choco 60g', sku: 'SKU-5005' },
+        { name: 'Herbal Green Tea 100g', sku: 'SKU-5009' },
+        { name: 'Oat Milk 1L', sku: 'SKU-5012' }
+      ],
+      tc: '1. Applicable on new launches only (marked with NEW tag).\n2. Minimum 20 units across new SKUs.\n3. Trade discount applied at invoice level.\n4. Scheme subject to extension based on response.'
+    },
+    {
+      name: 'Loyalty Reward', type: 'Value', status: 'Expired',
+      category: 'Quarterly target linked', validity: 'Jan 1 - Feb 28, 2026',
+      minOrder: '\u20B92,00,000 (quarterly)', benefit: 'Earn \u20B95,000 cash reward on achieving quarterly sales target of \u20B92,00,000.',
+      used: 165000, total: 200000, unit: '', pct: 82, valueUnit: true, usedLabel: '\u20B91.65L of \u20B92L achieved',
+      products: [
+        { name: 'All Products (Full Catalogue)', sku: 'ALL-*' },
+        { name: 'Excluding Returns & Cancellations', sku: '-' },
+        { name: 'Net Delivered Value Only', sku: '-' }
+      ],
+      tc: '1. Target period: Jan 1 - Feb 28, 2026.\n2. Only delivered orders count toward target.\n3. Returns and cancellations deducted.\n4. Reward disbursed within 15 days of period end.'
+    }
+  ];
+
+  // ── Tab Filtering ──
+  function filterSchemes(tab) {
+    // Switch active tab
+    document.querySelectorAll('.scheme-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+
+    var filter = tab.getAttribute('data-filter');
+    var cards = document.querySelectorAll('.scheme-card');
+
+    cards.forEach(function(card) {
+      if (filter === 'all') {
+        card.style.display = '';
+      } else {
+        card.style.display = card.getAttribute('data-type') === filter ? '' : 'none';
+      }
+    });
+  }
+
+  // ── Apply Scheme ──
+  function applyScheme(name) {
+    showToast('Scheme "' + name + '" applied to current order', 'success');
+  }
+
+  // ── Open Scheme Detail ──
+  function openSchemeDetail(index) {
+    var s = schemes[index];
+    if (!s) return;
+
+    document.getElementById('bsTitle').textContent = s.name;
+    document.getElementById('bsSubtitle').textContent = s.type + ' Scheme \u00B7 ' + s.status;
+
+    // Info rows
+    var infoHtml =
+      '<div class="bs-info-row"><span class="bs-info-label">Scheme Type</span><span class="bs-info-value">' + s.type + '</span></div>' +
+      '<div class="bs-info-row"><span class="bs-info-label">Validity</span><span class="bs-info-value">' + s.validity + '</span></div>' +
+      '<div class="bs-info-row"><span class="bs-info-label">Min Order</span><span class="bs-info-value">' + s.minOrder + '</span></div>' +
+      '<div class="bs-info-row"><span class="bs-info-label">Status</span><span class="bs-info-value">' + s.status + '</span></div>' +
+      '<div class="bs-info-row"><span class="bs-info-label">Category</span><span class="bs-info-value">' + s.category + '</span></div>';
+    document.getElementById('bsInfoRows').innerHTML = infoHtml;
+
+    // Products
+    var prodHtml = '';
+    for (var i = 0; i < s.products.length; i++) {
+      prodHtml += '<div class="bs-product-item">' +
+        '<div class="bs-product-dot"></div>' +
+        '<div class="bs-product-name">' + s.products[i].name + '</div>' +
+        '<div class="bs-product-sku">' + s.products[i].sku + '</div>' +
+        '</div>';
+    }
+    document.getElementById('bsProducts').innerHTML = prodHtml;
+
+    // Benefit
+    document.getElementById('bsBenefit').innerHTML =
+      '<div class="bs-benefit-card">' +
+        '<div class="bs-benefit-title">Benefits</div>' +
+        '<div class="bs-benefit-text">' + s.benefit + '</div>' +
+      '</div>';
+
+    // Usage
+    var usageLabel = s.usedLabel || ('Used ' + s.used + ' of ' + s.total + ' ' + s.unit);
+    document.getElementById('bsUsageLabel').innerHTML =
+      '<span>' + usageLabel + '</span><span>' + s.pct + '%</span>';
+    var fillEl = document.getElementById('bsUsageFill');
+    fillEl.style.width = s.pct + '%';
+    fillEl.className = 'sc-progress-fill ' + (s.pct >= 80 ? 'red' : s.pct >= 50 ? 'amber' : 'green');
+
+    // T&C
+    var tcLines = s.tc.split('\n');
+    var tcHtml = '<div class="bs-tc"><div class="bs-tc-title">Terms & Conditions</div>';
+    for (var j = 0; j < tcLines.length; j++) {
+      tcHtml += tcLines[j] + '<br>';
+    }
+    tcHtml += '</div>';
+    document.getElementById('bsTC').innerHTML = tcHtml;
+
+    // Apply button
+    var applyBtn = document.getElementById('bsApplyBtn');
+    if (s.status === 'Expired') {
+      applyBtn.className = 'sc-apply-btn disabled';
+      applyBtn.textContent = 'Scheme Expired';
+      applyBtn.onclick = function() { showToast('This scheme has expired', 'error'); };
+    } else {
+      applyBtn.className = 'sc-apply-btn';
+      applyBtn.textContent = 'Apply to Current Order';
+      applyBtn.onclick = function() {
+        closeSchemeDetail();
+        showToast('Scheme "' + s.name + '" applied to current order', 'success');
+      };
+    }
+
+    // Open sheet
+    document.getElementById('bsOverlay').classList.add('open');
+    document.getElementById('bsSheet').classList.add('open');
+  }
+
+  function closeSchemeDetail() {
+    document.getElementById('bsSheet').classList.remove('open');
+    document.getElementById('bsOverlay').classList.remove('open');
+  }
+
+  function applyFromSheet() {
+    var btn = document.getElementById('bsApplyBtn');
+    if (btn.classList.contains('disabled')) {
+      showToast('This scheme has expired', 'error');
+      return;
+    }
+    closeSchemeDetail();
+    showToast('Scheme applied to current order', 'success');
+  }
+</script>
+</body>
+</html>
