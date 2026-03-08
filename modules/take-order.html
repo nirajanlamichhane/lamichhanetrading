@@ -1254,9 +1254,9 @@
       <div class="popup-section-label">Quantity</div>
       <div class="popup-qty-section">
         <div class="popup-qty-row">
-          <button class="popup-qty-btn" onclick="popupChangeQty(-1)">−</button>
+          <button class="popup-qty-btn" onclick="hapticTap(this); popupChangeQty(-1)">−</button>
           <input type="number" class="popup-qty-input" id="popupQtyInput" value="1" min="1" max="999" oninput="updatePopupTotal()">
-          <button class="popup-qty-btn" onclick="popupChangeQty(1)">+</button>
+          <button class="popup-qty-btn" onclick="hapticTap(this); popupChangeQty(1)">+</button>
         </div>
       </div>
 
@@ -1265,7 +1265,7 @@
         <span class="popup-total-value" id="popupTotal">₹0</span>
       </div>
 
-      <button class="popup-confirm-btn" onclick="confirmAddToCart()">
+      <button class="popup-confirm-btn" onclick="hapticSuccess(this); confirmAddToCart()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
         Add to Cart
       </button>
@@ -1458,6 +1458,7 @@
     var val = parseInt(input.value) || 1;
     val = Math.max(1, Math.min(999, val + delta));
     input.value = val;
+    hapticBump(input);
     updatePopupTotal();
   }
 
@@ -1478,7 +1479,12 @@
   function confirmAddToCart() {
     var p = products[currentProductIdx];
     var u = p.units[currentUnitIdx];
-    var qty = parseInt(document.getElementById('popupQtyInput').value) || 1;
+    var qtyInput = document.getElementById('popupQtyInput');
+    var qty = parseInt(qtyInput.value) || 0;
+    if (qty < 1) {
+      hapticError(qtyInput);
+      return;
+    }
 
     // Update button states in both views
     var gridBtns = document.querySelectorAll('#gridView .add-cart-btn');

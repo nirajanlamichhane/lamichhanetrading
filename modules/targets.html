@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Targets & Incentives — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Period Tabs ── */
+    .period-tabs { display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px; }
+    .period-tab {
+      flex:1; text-align:center; padding:8px 4px; font-size:12px; font-weight:600;
+      border-radius:10px; cursor:pointer; color:#64748b; transition:all .2s;
+    }
+    .period-tab.active { background:#fff; color:#1a2540; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+    /* ── Achievement Hero Card ── */
+    .hero-card {
+      background:linear-gradient(135deg,#3066be 0%,#4a90e2 100%);
+      border-radius:16px; padding:24px 20px; color:#fff; margin-bottom:14px; text-align:center;
+      position:relative; overflow:hidden;
+    }
+    .hero-card::after {
+      content:''; position:absolute; top:-40px; right:-40px; width:120px; height:120px;
+      background:rgba(255,255,255,.06); border-radius:50%;
+    }
+    .donut-wrap { display:inline-block; position:relative; margin-bottom:10px; }
+    .donut-svg { width:140px; height:140px; transform:rotate(-90deg); }
+    .donut-bg { fill:none; stroke:rgba(255,255,255,.18); stroke-width:12; }
+    .donut-fill { fill:none; stroke:#fff; stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1.2s ease; }
+    .donut-center {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+    .donut-pct { font-size:34px; font-weight:800; }
+    .donut-label { font-size:10px; opacity:.75; }
+    .hero-amount { font-size:15px; font-weight:700; margin-top:6px; }
+    .hero-amount span { opacity:.7; font-weight:400; }
+    .hero-meta { display:flex; justify-content:center; gap:14px; margin-top:12px; }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.18);
+      border-radius:20px; padding:5px 12px; font-size:11px; font-weight:600;
+    }
+    .hero-badge svg { width:14px; height:14px; }
+    .trend-up { color:#86efac; }
+    .trend-down { color:#fca5a5; }
+
+    /* ── Section Header ── */
+    .section-hdr { font-size:15px; font-weight:700; color:#1a2540; margin-bottom:10px; }
+    .section-sub { font-size:11px; color:#94a3b8; margin-top:-6px; margin-bottom:10px; }
+
+    /* ── Target KPI Cards ── */
+    .target-card {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); cursor:pointer; transition:transform .15s;
+    }
+    .target-card:active { transform:scale(0.97); }
+    .tc-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .tc-name { font-size:13px; font-weight:700; color:#1a2540; }
+    .tc-pct { font-size:13px; font-weight:800; }
+    .tc-pct.green { color:#28a745; }
+    .tc-pct.amber { color:#d97706; }
+    .tc-pct.red { color:#e05252; }
+    .tc-vals { font-size:12px; color:#64748b; margin-bottom:8px; }
+    .tc-vals b { color:#1a2540; }
+    .tc-bar { height:6px; border-radius:3px; background:#f1f5f9; overflow:hidden; }
+    .tc-bar-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+    .tc-bar-fill.green { background:linear-gradient(90deg,#28a745,#34d058); }
+    .tc-bar-fill.amber { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .tc-bar-fill.red { background:linear-gradient(90deg,#e05252,#f87171); }
+    .tc-foot { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+    .tc-incentive {
+      display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:600;
+      color:#047857; background:#d1fae5; border-radius:6px; padding:3px 8px;
+    }
+    .tc-incentive svg { width:12px; height:12px; }
+    .tc-chevron { color:#94a3b8; }
+    .tc-chevron svg { width:16px; height:16px; }
+
+    /* ── Incentive Slabs ── */
+    .slab-card {
+      background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); position:relative; border:2px solid transparent;
+    }
+    .slab-card.current {
+      border-color:#3066be;
+      box-shadow:0 0 16px rgba(48,102,190,.25), 0 2px 8px rgba(48,102,190,.12);
+    }
+    .slab-card.current::after {
+      content:'Current'; position:absolute; top:-9px; right:12px; background:#3066be;
+      color:#fff; font-size:9px; font-weight:700; padding:2px 8px; border-radius:4px;
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    .slab-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .slab-tier { display:flex; align-items:center; gap:6px; }
+    .slab-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .slab-icon.bronze { background:#fef3cd; }
+    .slab-icon.silver { background:#e2e8f0; }
+    .slab-icon.gold { background:#fef3cd; }
+    .slab-icon.platinum { background:#ede9fe; }
+    .slab-name { font-size:14px; font-weight:700; color:#1a2540; }
+    .slab-range { font-size:11px; color:#94a3b8; }
+    .slab-amount { font-size:16px; font-weight:800; color:#3066be; }
+    .slab-desc { font-size:11px; color:#64748b; margin-top:2px; }
+    .slab-progress-wrap { margin-top:10px; }
+    .slab-next { font-size:11px; color:#3066be; font-weight:600; background:#e8f0fe; border-radius:8px; padding:8px 12px; text-align:center; margin-top:10px; }
+    .slab-next svg { width:14px; height:14px; vertical-align:middle; margin-right:4px; }
+
+    /* ── Milestone Cards ── */
+    .milestone-card {
+      background:#fff; border-radius:14px; padding:14px; margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08); display:flex; align-items:center; gap:12px;
+    }
+    .ms-icon {
+      width:40px; height:40px; border-radius:12px; display:flex; align-items:center;
+      justify-content:center; font-size:18px; flex-shrink:0;
+    }
+    .ms-icon.done { background:#d1fae5; }
+    .ms-icon.locked { background:#f1f5f9; }
+    .ms-body { flex:1; min-width:0; }
+    .ms-title { font-size:13px; font-weight:700; color:#1a2540; }
+    .ms-status { font-size:11px; color:#64748b; margin-top:2px; }
+    .ms-status.achieved { color:#28a745; }
+    .ms-bonus { font-size:13px; font-weight:700; color:#3066be; flex-shrink:0; }
+
+    /* ── Bar Chart ── */
+    .chart-card {
+      background:#fff; border-radius:14px; padding:16px; margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(48,102,190,.08);
+    }
+    .chart-title { font-size:14px; font-weight:700; color:#1a2540; margin-bottom:12px; }
+    .bar-chart { display:flex; align-items:flex-end; gap:8px; height:130px; padding:0 4px; position:relative; }
+    .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; position:relative; z-index:1; }
+    .bar-fill {
+      width:100%; border-radius:6px 6px 0 0; min-height:4px; transition:height .6s ease;
+    }
+    .bar-fill.above { background:linear-gradient(180deg,#3066be,#4a90e2); }
+    .bar-fill.below { background:linear-gradient(180deg,#f59e0b,#fbbf24); }
+    .bar-label { font-size:9px; color:#94a3b8; font-weight:600; }
+    .bar-value { font-size:9px; color:#1a2540; font-weight:700; }
+    .target-line {
+      position:absolute; top:0; left:0; right:0; height:1px;
+      border-top:2px dashed #e05252; z-index:0;
+    }
+    .target-line-label {
+      position:absolute; top:-14px; right:0; font-size:8px; color:#e05252; font-weight:700;
+    }
+
+    /* ── Bottom Sheet ── */
+    .sheet-overlay {
+      position:absolute; inset:0; background:rgba(0,0,0,.4); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .sheet-overlay.open { opacity:1; pointer-events:auto; }
+    .bottom-sheet {
+      position:absolute; left:0; right:0; bottom:0; z-index:201;
+      background:#fff; border-radius:20px 20px 0 0; padding:20px 20px 30px;
+      transform:translateY(100%); transition:transform .35s cubic-bezier(.32,.72,0,1);
+      max-height:75%;
+    }
+    .bottom-sheet.open { transform:translateY(0); }
+    .sheet-handle { width:36px; height:4px; background:#d1d5db; border-radius:2px; margin:0 auto 16px; }
+    .sheet-title { font-size:16px; font-weight:800; color:#1a2540; margin-bottom:4px; }
+    .sheet-subtitle { font-size:12px; color:#94a3b8; margin-bottom:16px; }
+    .sheet-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+    .sheet-row:last-child { border-bottom:none; }
+    .sheet-row-label { font-size:13px; color:#64748b; }
+    .sheet-row-value { font-size:13px; font-weight:700; color:#1a2540; }
+    .sheet-tip {
+      background:#f0f4fb; border-radius:10px; padding:12px; margin-top:12px;
+    }
+    .sheet-tip-title { font-size:12px; font-weight:700; color:#1a2540; margin-bottom:4px; }
+    .sheet-tip-text { font-size:11px; color:#64748b; line-height:1.5; }
+    .sheet-btn {
+      display:block; width:100%; padding:14px; border:none; border-radius:12px;
+      background:linear-gradient(135deg,#3066be,#4a90e2); color:#fff;
+      font-size:14px; font-weight:700; cursor:pointer; margin-top:14px; text-align:center;
+    }
+    .sheet-btn:active { opacity:.85; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Targets & Incentives</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer" data-inject="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">🎯 Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="drawer-item-label">Parties</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
+    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><span class="drawer-item-label">Targets</span></div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
+    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Targets & Incentives</div>
+      <button class="icon-btn" onclick="showToast('Period selector coming soon')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Period Tabs -->
+      <div class="period-tabs">
+        <div class="period-tab active" onclick="switchPeriod(this)">Monthly</div>
+        <div class="period-tab" onclick="switchPeriod(this)">Quarterly</div>
+        <div class="period-tab" onclick="switchPeriod(this)">Yearly</div>
+      </div>
+
+      <!-- ═══ Overall Achievement Hero Card ═══ -->
+      <div class="hero-card">
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 140 140" id="heroDonut">
+            <circle class="donut-bg" cx="70" cy="70" r="58"/>
+            <circle class="donut-fill" cx="70" cy="70" r="58"
+              stroke-dasharray="364.42" stroke-dashoffset="364.42" id="donutFill"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">68%</div>
+            <div class="donut-label">Achieved</div>
+          </div>
+        </div>
+        <div class="hero-amount">₹1,72,000 <span>of ₹2,50,000</span></div>
+        <div class="hero-meta">
+          <div class="hero-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            22 days left
+          </div>
+          <div class="hero-badge trend-up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            +8% vs last month
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Target Breakdown ═══ -->
+      <div class="section-hdr">Target Breakdown</div>
+      <div class="section-sub">Tap any card for details</div>
+
+      <!-- 1. Revenue Target -->
+      <div class="target-card" onclick="openSheet('revenue')">
+        <div class="tc-top">
+          <div class="tc-name">Revenue Target</div>
+          <div class="tc-pct amber">68%</div>
+        </div>
+        <div class="tc-vals"><b>₹1,72,000</b> / ₹2,50,000</div>
+        <div class="tc-bar"><div class="tc-bar-fill amber" style="width:68%"></div></div>
+        <div class="tc-foot">
+          <div class="tc-incentive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            ₹5,000
+          </div>
+          <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 2. Order Count -->
+      <div class="target-card" onclick="openSheet('orders')">
+        <div class="tc-top">
+          <div class="tc-name">Order Count</div>
+          <div class="tc-pct amber">76%</div>
+        </div>
+        <div class="tc-vals"><b>152</b> / 200 orders</div>
+        <div class="tc-bar"><div class="tc-bar-fill amber" style="width:76%"></div></div>
+        <div class="tc-foot">
+          <div class="tc-incentive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            ₹2,000
+          </div>
+          <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 3. New Outlets -->
+      <div class="target-card" onclick="openSheet('outlets')">
+        <div class="tc-top">
+          <div class="tc-name">New Outlets</div>
+          <div class="tc-pct red">40%</div>
+        </div>
+        <div class="tc-vals"><b>8</b> / 20 outlets</div>
+        <div class="tc-bar"><div class="tc-bar-fill red" style="width:40%"></div></div>
+        <div class="tc-foot">
+          <div class="tc-incentive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            ₹3,000
+          </div>
+          <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 4. Collection Target -->
+      <div class="target-card" onclick="openSheet('collection')">
+        <div class="tc-top">
+          <div class="tc-name">Collection Target</div>
+          <div class="tc-pct green">92%</div>
+        </div>
+        <div class="tc-vals"><b>₹1,85,000</b> / ₹2,00,000</div>
+        <div class="tc-bar"><div class="tc-bar-fill green" style="width:92%"></div></div>
+        <div class="tc-foot">
+          <div class="tc-incentive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            ₹4,000
+          </div>
+          <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 5. Visit Target -->
+      <div class="target-card" onclick="openSheet('visits')">
+        <div class="tc-top">
+          <div class="tc-name">Visit Target</div>
+          <div class="tc-pct green">84%</div>
+        </div>
+        <div class="tc-vals"><b>168</b> / 200 visits</div>
+        <div class="tc-bar"><div class="tc-bar-fill green" style="width:84%"></div></div>
+        <div class="tc-foot">
+          <div class="tc-incentive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            ₹1,500
+          </div>
+          <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 6. Active Coverage -->
+      <div class="target-card" onclick="openSheet('coverage')">
+        <div class="tc-top">
+          <div class="tc-name">Active Coverage</div>
+          <div class="tc-pct green">84%</div>
+        </div>
+        <div class="tc-vals"><b>67%</b> / 80% coverage</div>
+        <div class="tc-bar"><div class="tc-bar-fill green" style="width:84%"></div></div>
+        <div class="tc-foot">
+          <div class="tc-incentive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            ₹2,500
+          </div>
+          <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- ═══ Incentive Slabs ═══ -->
+      <div class="section-hdr" style="margin-top:6px;">Incentive Structure</div>
+
+      <!-- Bronze -->
+      <div class="slab-card">
+        <div class="slab-top">
+          <div class="slab-tier">
+            <div class="slab-icon bronze">🥉</div>
+            <div>
+              <div class="slab-name">Bronze</div>
+              <div class="slab-range">50% – 70% achievement</div>
+            </div>
+          </div>
+          <div class="slab-amount">₹5,000</div>
+        </div>
+        <div class="slab-desc">Basic incentive</div>
+      </div>
+
+      <!-- Silver (Current) -->
+      <div class="slab-card current">
+        <div class="slab-top">
+          <div class="slab-tier">
+            <div class="slab-icon silver">🥈</div>
+            <div>
+              <div class="slab-name">Silver</div>
+              <div class="slab-range">70% – 85% achievement</div>
+            </div>
+          </div>
+          <div class="slab-amount">₹10,000</div>
+        </div>
+        <div class="slab-desc">Standard incentive + 1 day extra leave</div>
+      </div>
+
+      <!-- Next slab progress -->
+      <div class="slab-next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        17% more to reach <b>Gold</b>
+      </div>
+
+      <!-- Gold -->
+      <div class="slab-card" style="margin-top:10px;">
+        <div class="slab-top">
+          <div class="slab-tier">
+            <div class="slab-icon gold">🥇</div>
+            <div>
+              <div class="slab-name">Gold</div>
+              <div class="slab-range">85% – 95% achievement</div>
+            </div>
+          </div>
+          <div class="slab-amount">₹18,000</div>
+        </div>
+        <div class="slab-desc">Premium incentive + 2 days leave + certificate</div>
+      </div>
+
+      <!-- Platinum -->
+      <div class="slab-card">
+        <div class="slab-top">
+          <div class="slab-tier">
+            <div class="slab-icon platinum">💎</div>
+            <div>
+              <div class="slab-name">Platinum</div>
+              <div class="slab-range">95% – 100% achievement</div>
+            </div>
+          </div>
+          <div class="slab-amount">₹30,000</div>
+        </div>
+        <div class="slab-desc">Top performer + trip reward + promotion priority</div>
+      </div>
+
+      <!-- ═══ Milestone Rewards ═══ -->
+      <div class="section-hdr" style="margin-top:6px;">Milestone Rewards</div>
+
+      <div class="milestone-card">
+        <div class="ms-icon done">✅</div>
+        <div class="ms-body">
+          <div class="ms-title">First ₹1L Revenue</div>
+          <div class="ms-status achieved">Achieved on Mar 5</div>
+        </div>
+        <div class="ms-bonus">₹1,000</div>
+      </div>
+
+      <div class="milestone-card">
+        <div class="ms-icon locked">🔒</div>
+        <div class="ms-body">
+          <div class="ms-title">10 New Outlets</div>
+          <div class="ms-status">8/10 (80%)</div>
+        </div>
+        <div class="ms-bonus">₹2,000</div>
+      </div>
+
+      <div class="milestone-card">
+        <div class="ms-icon locked">🔒</div>
+        <div class="ms-body">
+          <div class="ms-title">Zero Returns Month</div>
+          <div class="ms-status">2 returns so far</div>
+        </div>
+        <div class="ms-bonus">₹1,500</div>
+      </div>
+
+      <!-- ═══ Monthly Trend Chart ═══ -->
+      <div class="chart-card">
+        <div class="chart-title">Monthly Achievement Trend</div>
+        <div class="bar-chart" id="trendChart" style="position:relative;">
+          <div class="target-line" style="top:0;"><span class="target-line-label">100% Target</span></div>
+          <div class="bar-col">
+            <div class="bar-value">72%</div>
+            <div class="bar-fill above" id="bar0" style="height:0;"></div>
+            <div class="bar-label">Oct</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-value">65%</div>
+            <div class="bar-fill below" id="bar1" style="height:0;"></div>
+            <div class="bar-label">Nov</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-value">78%</div>
+            <div class="bar-fill above" id="bar2" style="height:0;"></div>
+            <div class="bar-label">Dec</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-value">81%</div>
+            <div class="bar-fill above" id="bar3" style="height:0;"></div>
+            <div class="bar-label">Jan</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-value">74%</div>
+            <div class="bar-fill above" id="bar4" style="height:0;"></div>
+            <div class="bar-label">Feb</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-value">68%</div>
+            <div class="bar-fill below" id="bar5" style="height:0;"></div>
+            <div class="bar-label">Mar</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- ═══ Bottom Sheet (Incentive Detail) ═══ -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+    <div class="bottom-sheet" id="detailSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title" id="sheetTitle">Revenue Target</div>
+      <div class="sheet-subtitle" id="sheetSubtitle">Monthly target details</div>
+      <div id="sheetBody">
+        <div class="sheet-row">
+          <span class="sheet-row-label">Current</span>
+          <span class="sheet-row-value" id="sheetCurrent">₹1,72,000</span>
+        </div>
+        <div class="sheet-row">
+          <span class="sheet-row-label">Target</span>
+          <span class="sheet-row-value" id="sheetTarget">₹2,50,000</span>
+        </div>
+        <div class="sheet-row">
+          <span class="sheet-row-label">Remaining</span>
+          <span class="sheet-row-value" id="sheetRemaining">₹78,000</span>
+        </div>
+        <div class="sheet-row">
+          <span class="sheet-row-label">Daily Run Rate Needed</span>
+          <span class="sheet-row-value" id="sheetRunRate">₹3,545/day</span>
+        </div>
+        <div class="sheet-row">
+          <span class="sheet-row-label">Projected End-of-Month</span>
+          <span class="sheet-row-value" id="sheetProjected">₹2,18,000</span>
+        </div>
+        <div class="sheet-tip">
+          <div class="sheet-tip-title">💡 Tips to Achieve</div>
+          <div class="sheet-tip-text" id="sheetTips">Focus on high-value orders from top 10 outlets. Schedule revisits to pending collections. Push combo deals for higher order value.</div>
+        </div>
+      </div>
+      <button class="sheet-btn" onclick="closeSheet(); showToast('Reminder set successfully!')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Set Reminder
+      </button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" data-inject="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap">
+        <div class="nav-center" onclick="goTo('../modules/orders.html')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  /* ── Period Tab Switch ── */
+  function switchPeriod(el) {
+    document.querySelectorAll('.period-tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    showToast(el.textContent + ' view selected');
+  }
+
+  /* ── Bottom Sheet Data ── */
+  var sheetData = {
+    revenue: {
+      title: 'Revenue Target',
+      subtitle: 'Monthly revenue collection target',
+      current: '₹1,72,000', target: '₹2,50,000', remaining: '₹78,000',
+      runRate: '₹3,545/day', projected: '₹2,18,000',
+      tips: 'Focus on high-value orders from top 10 outlets. Schedule revisits to pending collections. Push combo deals for higher order value.'
+    },
+    orders: {
+      title: 'Order Count',
+      subtitle: 'Monthly order placement target',
+      current: '152', target: '200 orders', remaining: '48 orders',
+      runRate: '2.2 orders/day', projected: '186 orders',
+      tips: 'Visit untapped outlets in your beat. Offer introductory schemes to new parties. Follow up on pending reorders from last week.'
+    },
+    outlets: {
+      title: 'New Outlets',
+      subtitle: 'Monthly new outlet acquisition',
+      current: '8', target: '20 outlets', remaining: '12 outlets',
+      runRate: '0.5 outlets/day', projected: '14 outlets',
+      tips: 'Scout new market areas during morning beat. Ask existing retailers for referrals. Target shops near high-footfall zones.'
+    },
+    collection: {
+      title: 'Collection Target',
+      subtitle: 'Monthly payment collection target',
+      current: '₹1,85,000', target: '₹2,00,000', remaining: '₹15,000',
+      runRate: '₹682/day', projected: '₹1,98,000',
+      tips: 'Follow up on overdue invoices from top debtors. Offer early payment discounts. Prioritize high-value pending collections.'
+    },
+    visits: {
+      title: 'Visit Target',
+      subtitle: 'Monthly outlet visit target',
+      current: '168', target: '200 visits', remaining: '32 visits',
+      runRate: '1.5 visits/day', projected: '192 visits',
+      tips: 'Plan efficient route to cover more outlets per day. Start early to maximize visits. Combine nearby outlets in single trips.'
+    },
+    coverage: {
+      title: 'Active Coverage',
+      subtitle: 'Monthly active outlet coverage %',
+      current: '67%', target: '80%', remaining: '13% gap',
+      runRate: '0.6%/day increase needed', projected: '75%',
+      tips: 'Re-activate dormant outlets with special offers. Visit lapsed accounts personally. Track and follow up on zero-billing outlets.'
+    }
+  };
+
+  function openSheet(key) {
+    var d = sheetData[key];
+    if (!d) return;
+    document.getElementById('sheetTitle').textContent = d.title;
+    document.getElementById('sheetSubtitle').textContent = d.subtitle;
+    document.getElementById('sheetCurrent').textContent = d.current;
+    document.getElementById('sheetTarget').textContent = d.target;
+    document.getElementById('sheetRemaining').textContent = d.remaining;
+    document.getElementById('sheetRunRate').textContent = d.runRate;
+    document.getElementById('sheetProjected').textContent = d.projected;
+    document.getElementById('sheetTips').textContent = d.tips;
+    document.getElementById('sheetOverlay').classList.add('open');
+    document.getElementById('detailSheet').classList.add('open');
+  }
+
+  function closeSheet() {
+    document.getElementById('detailSheet').classList.remove('open');
+    document.getElementById('sheetOverlay').classList.remove('open');
+  }
+
+  /* ── Animated Donut & Bars on Load ── */
+  (function() {
+    var donutFill = document.getElementById('donutFill');
+    var circumference = 2 * Math.PI * 58; // ~364.42
+    var targetOffset = circumference * (1 - 0.68); // 68% fill
+
+    // Animate donut on load
+    setTimeout(function() {
+      donutFill.style.strokeDashoffset = targetOffset;
+    }, 300);
+
+    // Animate bar chart with IntersectionObserver
+    var barValues = [72, 65, 78, 81, 74, 68];
+    var maxH = 100; // max bar height in px (out of 130px chart height)
+    var animated = false;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting && !animated) {
+          animated = true;
+          barValues.forEach(function(val, i) {
+            var bar = document.getElementById('bar' + i);
+            if (bar) {
+              setTimeout(function() {
+                bar.style.height = (val / 100) * maxH + 'px';
+              }, i * 100);
+            }
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    var chart = document.getElementById('trendChart');
+    if (chart) observer.observe(chart);
+  })();
+</script>
+
+</body>
+</html>

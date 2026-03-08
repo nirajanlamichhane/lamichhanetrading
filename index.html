@@ -155,6 +155,119 @@
   transition: transform 0.2s ease;
 }
 .onboard-help-btn:hover { transform: scale(1.1); }
+
+/* ── App Update Banner ── */
+.update-banner { background:linear-gradient(135deg,#3066be,#6366f1); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transform:translateY(-100%); transition:transform .4s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; }
+.update-banner.show { transform:translateY(0); }
+.update-banner .ub-icon { width:36px; height:36px; background:rgba(255,255,255,.2); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
+.update-banner .ub-text { flex:1; }
+.update-banner .ub-title { font-size:13px; font-weight:700; }
+.update-banner .ub-desc { font-size:11px; opacity:.8; }
+.update-banner .ub-btn { padding:6px 16px; background:#fff; color:#3066be; border-radius:20px; font-size:12px; font-weight:700; border:none; cursor:pointer; }
+.update-banner .ub-close { position:absolute; top:4px; right:6px; background:none; border:none; color:rgba(255,255,255,.6); font-size:16px; cursor:pointer; line-height:1; }
+
+/* ── Changelog Bottom Sheet ── */
+.changelog-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:1000; opacity:0; pointer-events:none; transition:opacity .3s ease; }
+.changelog-overlay.active { opacity:1; pointer-events:auto; }
+.changelog-sheet { position:absolute; bottom:0; left:0; right:0; background:#fff; border-radius:16px 16px 0 0; z-index:1001; transform:translateY(100%); transition:transform .35s cubic-bezier(.4,0,.2,1); max-height:85%; display:flex; flex-direction:column; }
+.changelog-sheet.active { transform:translateY(0); }
+.changelog-sheet .cl-handle { width:36px; height:4px; background:#cbd5e1; border-radius:2px; margin:10px auto 0; }
+.changelog-sheet .cl-header { display:flex; align-items:center; gap:12px; padding:16px 20px 12px; border-bottom:1px solid #f1f5f9; }
+.changelog-sheet .cl-app-icon { width:44px; height:44px; background:linear-gradient(135deg,#3066be,#6366f1); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; font-weight:700; }
+.changelog-sheet .cl-header-text h3 { font-size:16px; font-weight:700; color:#1e293b; margin:0; }
+.changelog-sheet .cl-header-text .cl-meta { font-size:11px; color:#94a3b8; margin-top:2px; }
+.changelog-sheet .cl-version-badge { display:inline-block; background:#f1f5f9; color:#64748b; font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px; margin-right:6px; }
+.changelog-sheet .cl-size { font-size:10px; color:#94a3b8; }
+.changelog-sheet .cl-body { flex:1; overflow-y:auto; padding:16px 20px; -webkit-overflow-scrolling:touch; }
+.changelog-sheet .cl-section { margin-bottom:18px; }
+.changelog-sheet .cl-section-title { font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+.changelog-sheet .cl-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; }
+.changelog-sheet .cl-badge { flex-shrink:0; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; margin-top:2px; }
+.changelog-sheet .cl-badge.new { background:#dcfce7; color:#16a34a; }
+.changelog-sheet .cl-badge.improved { background:#dbeafe; color:#3b82f6; }
+.changelog-sheet .cl-badge.fix { background:#f1f5f9; color:#64748b; }
+.changelog-sheet .cl-item-text { font-size:13px; color:#1e293b; line-height:1.4; }
+.changelog-sheet .cl-item-text span { display:block; font-size:11px; color:#94a3b8; margin-top:1px; }
+.changelog-sheet .cl-footer { padding:12px 20px 20px; border-top:1px solid #f1f5f9; }
+.changelog-sheet .cl-update-btn { width:100%; padding:12px; background:linear-gradient(135deg,#3066be,#6366f1); color:#fff; border:none; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; position:relative; overflow:hidden; }
+.changelog-sheet .cl-update-btn .cl-progress { position:absolute; top:0; left:0; bottom:0; width:0; background:rgba(255,255,255,.2); transition:width .05s linear; }
+.changelog-sheet .cl-later { display:block; text-align:center; color:#94a3b8; font-size:12px; margin-top:10px; cursor:pointer; border:none; background:none; width:100%; }
+/* ── Quick Actions ── */
+.quick-actions{display:flex;gap:10px;padding:12px 16px;overflow-x:auto;scrollbar-width:none}
+.quick-actions::-webkit-scrollbar{display:none}
+.qa-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;background:#fff;border:1.5px solid #e2e8f0;font-size:12px;font-weight:600;color:var(--text-primary);white-space:nowrap;cursor:pointer;transition:all .2s ease;flex-shrink:0}
+.qa-btn:active{transform:scale(.95);background:var(--bg)}
+.qa-btn svg{width:16px;height:16px;color:var(--primary)}
+.qa-overlay{position:absolute;top:0;left:0;right:0;bottom:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.qa-overlay.active{opacity:1;pointer-events:auto}
+.qa-overlay-dark{background:rgba(0,0,0,.85)}
+.voice-mic-circle{width:100px;height:100px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;animation:voicePulse 1.5s ease-in-out infinite}
+.voice-mic-circle svg{width:44px;height:44px;color:#fff}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(48,102,190,.5);transform:scale(1)}50%{box-shadow:0 0 0 24px rgba(48,102,190,0);transform:scale(1.08)}}
+.voice-label{color:#fff;font-size:18px;font-weight:600;margin-top:20px}
+.voice-sub{color:rgba(255,255,255,.6);font-size:13px;margin-top:6px}
+.voice-cancel{margin-top:32px;padding:10px 28px;border-radius:20px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.voice-result{text-align:center}
+.voice-result svg{width:48px;height:48px;color:var(--success);margin-bottom:12px}
+.voice-result-text{color:#fff;font-size:15px;font-weight:500;line-height:1.5}
+.scan-viewfinder{width:250px;height:150px;position:relative}
+.scan-corner{position:absolute;width:24px;height:24px;border-color:var(--primary);border-style:solid;border-width:0}
+.scan-corner.tl{top:0;left:0;border-top-width:3px;border-left-width:3px;border-top-left-radius:6px}
+.scan-corner.tr{top:0;right:0;border-top-width:3px;border-right-width:3px;border-top-right-radius:6px}
+.scan-corner.bl{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px;border-bottom-left-radius:6px}
+.scan-corner.br{bottom:0;right:0;border-bottom-width:3px;border-right-width:3px;border-bottom-right-radius:6px}
+.scan-line{position:absolute;left:8px;right:8px;height:2px;background:#e05252;box-shadow:0 0 8px rgba(224,82,82,.6);animation:scanMove 1.8s ease-in-out infinite}
+@keyframes scanMove{0%,100%{top:8px}50%{top:calc(100% - 10px)}}
+.scan-text{color:#fff;font-size:14px;margin-top:24px;font-weight:500}
+.scan-result{text-align:center;padding:0 24px}
+.scan-result-title{color:#fff;font-size:13px;margin-bottom:8px;opacity:.7}
+.scan-result-product{color:#fff;font-size:17px;font-weight:700;margin-bottom:4px}
+.scan-result-price{color:var(--primary-light);font-size:20px;font-weight:700;margin-bottom:20px}
+.scan-add-btn{padding:12px 32px;border-radius:12px;background:var(--primary);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.scan-dismiss{margin-top:12px;padding:8px 20px;background:none;border:none;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer}
+.qa-sheet-backdrop{position:absolute;top:0;left:0;right:0;bottom:0;z-index:998;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.qa-sheet-backdrop.active{opacity:1;pointer-events:auto}
+.qa-sheet{position:absolute;left:0;right:0;bottom:0;z-index:999;background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 28px;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,.24,1);max-height:75%;overflow-y:auto}
+.qa-sheet.active{transform:translateY(0)}
+.qa-sheet-handle{width:36px;height:4px;background:#ddd;border-radius:4px;margin:0 auto 16px}
+.qa-sheet h3{font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:16px}
+.qo-input{width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--font);margin-bottom:8px}
+.qo-input:focus{outline:none;border-color:var(--primary)}
+.qo-recent-parties{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.qo-party-chip{padding:6px 12px;border-radius:16px;background:var(--bg);border:1px solid #e2e8f0;font-size:12px;cursor:pointer;color:var(--text-primary);font-weight:500}
+.qo-party-chip:active,.qo-party-chip.selected{background:var(--primary);color:#fff;border-color:var(--primary)}
+.qo-product-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.qo-product-info{flex:1}
+.qo-product-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.qo-product-price{font-size:12px;color:var(--text-secondary)}
+.qo-qty-ctrl{display:flex;align-items:center;gap:8px}
+.qo-qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #e2e8f0;background:#fff;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--primary)}
+.qo-qty-btn:active{background:var(--bg)}
+.qo-qty-val{font-size:14px;font-weight:700;min-width:18px;text-align:center}
+.qo-total{display:flex;justify-content:space-between;padding:14px 0 12px;font-size:15px;font-weight:700;color:var(--text-primary);border-top:1.5px solid #e2e8f0;margin-top:12px}
+.qo-place-btn{width:100%;padding:13px;border-radius:12px;background:var(--primary);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+.qo-place-btn:active{background:var(--primary-dark)}
+.ds-row{display:flex;align-items:center;gap:12px;padding:10px 0}
+.ds-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ds-icon svg{width:18px;height:18px}
+.ds-info{flex:1}
+.ds-label{font-size:12px;color:var(--text-secondary);margin-bottom:2px}
+.ds-value{font-size:16px;font-weight:700;color:var(--text-primary)}
+.ds-bar{height:4px;border-radius:4px;background:#e8ecf4;margin-top:4px}
+.ds-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.ds-eod-btn{width:100%;padding:12px;border-radius:12px;background:var(--bg);border:1.5px solid #e2e8f0;color:var(--text-primary);font-size:14px;font-weight:600;cursor:pointer;margin-top:16px}
+.ds-eod-btn:active{background:#e2e8f0}
+.sos-option{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;border:1.5px solid #fecaca;background:#fff5f5;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.sos-option:active{background:#fecaca}
+.sos-option.selected{border-color:#e05252;background:#fee2e2}
+.sos-option-icon{width:32px;height:32px;border-radius:8px;background:#fecaca;display:flex;align-items:center;justify-content:center}
+.sos-option-icon svg{width:16px;height:16px;color:#e05252}
+.sos-option-text{font-size:14px;font-weight:600;color:#991b1b}
+.sos-location{font-size:12px;color:var(--text-secondary);margin:12px 0;padding:8px 12px;background:var(--bg);border-radius:8px}
+.sos-location span{font-weight:600;color:var(--text-primary)}
+.sos-send-btn{width:100%;padding:13px;border-radius:12px;background:#e05252;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.sos-send-btn:active{background:#c53030}
+.sos-call-btn{width:100%;padding:12px;border-radius:12px;background:#fff5f5;border:1.5px solid #fecaca;color:#e05252;font-size:14px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
@@ -393,6 +506,41 @@
       </div>
     </div>
 
+    <!-- App Update Banner -->
+    <div class="update-banner" id="updateBanner">
+      <div class="ub-icon">&#x1F680;</div>
+      <div class="ub-text">
+        <div class="ub-title">Update Available &mdash; v2.0</div>
+        <div class="ub-desc">New features &amp; bug fixes</div>
+      </div>
+      <button class="ub-btn" onclick="openChangelog(event)">Update</button>
+      <button class="ub-close" onclick="dismissUpdateBanner(event)">&times;</button>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="qaVoice()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Voice
+      </button>
+      <button class="qa-btn" onclick="qaScan()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5V3h4"/><path d="M17 3h4v2"/><path d="M21 19v2h-4"/><path d="M7 21H3v-2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="10" y2="21"/></svg>
+        Scan
+      </button>
+      <button class="qa-btn" onclick="qaQuickOrder()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Quick Order
+      </button>
+      <button class="qa-btn" onclick="qaDaySummary()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Summary
+      </button>
+      <button class="qa-btn" onclick="qaSOS()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#e05252"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        SOS
+      </button>
+    </div>
+
     <!-- Greeting -->
     <div class="greeting-banner">
       <div class="greeting-row">
@@ -407,7 +555,7 @@
 
     <!-- Check-In -->
     <div class="checkin-section">
-      <button class="checkin-btn" id="checkinBtn" onclick="handleCheckin()">
+      <button class="checkin-btn" id="checkinBtn" onclick="hapticPress(this); handleCheckin()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
         </svg>
@@ -497,109 +645,109 @@
       </div>
 
       <div class="module-grid">
-        <div class="module-card bar-blue" onclick="goTo('modules/parties.html')">
+        <div class="module-card bar-blue" onclick="hapticTap(this); goTo('modules/parties.html')">
           <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
           <div class="module-label">Parties</div>
         </div>
-        <div class="module-card bar-orange" onclick="goTo('modules/orders.html')">
+        <div class="module-card bar-orange" onclick="hapticTap(this); goTo('modules/orders.html')">
           <div class="module-badge">5</div>
           <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
           <div class="module-label">Orders</div>
         </div>
-        <div class="module-card bar-green" onclick="goTo('modules/collections.html')">
+        <div class="module-card bar-green" onclick="hapticTap(this); goTo('modules/collections.html')">
           <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
           <div class="module-label">Collections</div>
         </div>
-        <div class="module-card bar-indigo" onclick="goTo('modules/attendance.html')">
+        <div class="module-card bar-indigo" onclick="hapticTap(this); goTo('modules/attendance.html')">
           <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
           <div class="module-label">Attendance</div>
         </div>
-        <div class="module-card bar-teal" onclick="goTo('modules/leaves.html')">
+        <div class="module-card bar-teal" onclick="hapticTap(this); goTo('modules/leaves.html')">
           <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
           <div class="module-label">Leaves</div>
         </div>
-        <div class="module-card bar-yellow" onclick="goTo('modules/notes.html')">
+        <div class="module-card bar-yellow" onclick="hapticTap(this); goTo('modules/notes.html')">
           <div class="module-icon-wrap ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <div class="module-label">Notes</div>
         </div>
-        <div class="module-card bar-red" onclick="goTo('modules/expenses.html')">
+        <div class="module-card bar-red" onclick="hapticTap(this); goTo('modules/expenses.html')">
           <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div>
           <div class="module-label">Expenses</div>
         </div>
-        <div class="module-card bar-purple" onclick="goTo('modules/activities.html')">
+        <div class="module-card bar-purple" onclick="hapticTap(this); goTo('modules/activities.html')">
           <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
           <div class="module-label">Activities</div>
         </div>
-        <div class="module-card bar-blue" onclick="goTo('modules/beatplans.html')">
+        <div class="module-card bar-blue" onclick="hapticTap(this); goTo('modules/beatplans.html')">
           <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
           <div class="module-label">Beatplans</div>
         </div>
-        <div class="module-card bar-teal" onclick="goTo('modules/stock.html')">
+        <div class="module-card bar-teal" onclick="hapticTap(this); goTo('modules/stock.html')">
           <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
           <div class="module-label">Stock Taking</div>
         </div>
-        <div class="module-card bar-orange" onclick="goTo('modules/returns.html')">
+        <div class="module-card bar-orange" onclick="hapticTap(this); goTo('modules/returns.html')">
           <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></div>
           <div class="module-label">Returns</div>
         </div>
-        <div class="module-card bar-indigo" onclick="goTo('modules/collaterals.html')">
+        <div class="module-card bar-indigo" onclick="hapticTap(this); goTo('modules/collaterals.html')">
           <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
           <div class="module-label">Collaterals</div>
         </div>
-        <div class="module-card bar-blue" onclick="goTo('modules/tour.html')">
+        <div class="module-card bar-blue" onclick="hapticTap(this); goTo('modules/tour.html')">
           <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
           <div class="module-label">Tour Plans</div>
         </div>
-        <div class="module-card bar-green" onclick="goTo('modules/visits.html')">
+        <div class="module-card bar-green" onclick="hapticTap(this); goTo('modules/visits.html')">
           <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
           <div class="module-label">Visits</div>
         </div>
-        <div class="module-card bar-yellow" onclick="goTo('modules/remarks.html')">
+        <div class="module-card bar-yellow" onclick="hapticTap(this); goTo('modules/remarks.html')">
           <div class="module-icon-wrap ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
           <div class="module-label">Day Remarks</div>
         </div>
-        <div class="module-card bar-purple" onclick="goTo('modules/performance.html')">
+        <div class="module-card bar-purple" onclick="hapticTap(this); goTo('modules/performance.html')">
           <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
           <div class="module-label">Performance</div>
         </div>
-        <div class="module-card bar-teal" onclick="goTo('modules/eod.html')">
+        <div class="module-card bar-teal" onclick="hapticTap(this); goTo('modules/eod.html')">
           <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <div class="module-label">EOD Report</div>
         </div>
-        <div class="module-card bar-pink" onclick="goTo('modules/custom.html')">
+        <div class="module-card bar-pink" onclick="hapticTap(this); goTo('modules/custom.html')">
           <div class="module-icon-wrap ic-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M2 12h2M20 12h2"/></svg></div>
           <div class="module-label">Custom Module</div>
         </div>
-        <div class="module-card bar-green" onclick="goTo('modules/approvals.html')">
+        <div class="module-card bar-green" onclick="hapticTap(this); goTo('modules/approvals.html')">
           <div class="module-badge">2</div>
           <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
           <div class="module-label">Approvals</div>
         </div>
-        <div class="module-card bar-blue" onclick="goTo('modules/odometer.html')">
+        <div class="module-card bar-blue" onclick="hapticTap(this); goTo('modules/odometer.html')">
           <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
           <div class="module-label">Odometer</div>
         </div>
-        <div class="module-card bar-red" onclick="goTo('modules/outstanding.html')">
+        <div class="module-card bar-red" onclick="hapticTap(this); goTo('modules/outstanding.html')">
           <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M6 20V10M10 20V4M14 20V10M18 20V4"/></svg></div>
           <div class="module-label">Outstanding</div>
         </div>
-        <div class="module-card bar-teal" onclick="goTo('modules/inventory.html')">
+        <div class="module-card bar-teal" onclick="hapticTap(this); goTo('modules/inventory.html')">
           <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
           <div class="module-label">Inventory</div>
         </div>
-        <div class="module-card bar-indigo" onclick="goTo('modules/salesforce.html')">
+        <div class="module-card bar-indigo" onclick="hapticTap(this); goTo('modules/salesforce.html')">
           <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
           <div class="module-label">Sales Force</div>
         </div>
-        <div class="module-card bar-purple" onclick="goTo('modules/reports.html')">
+        <div class="module-card bar-purple" onclick="hapticTap(this); goTo('modules/reports.html')">
           <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <div class="module-label">Reports</div>
         </div>
-        <div class="module-card bar-orange" onclick="goTo('modules/config.html')">
+        <div class="module-card bar-orange" onclick="hapticTap(this); goTo('modules/config.html')">
           <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
           <div class="module-label">Config</div>
         </div>
-        <div class="module-card bar-red" onclick="goTo('modules/support.html')">
+        <div class="module-card bar-red" onclick="hapticTap(this); goTo('modules/support.html')">
           <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
           <div class="module-label">Support</div>
         </div>
@@ -671,6 +819,12 @@
           Clear Synced
         </button>
       </div>
+      <div style="margin-bottom:14px;">
+        <button class="btn btn-sm" style="width:100%;background:#f59e0b;color:#fff;border:none;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;" onclick="closeSyncSheet(); setTimeout(function(){ SyncConflict.show([{id:'conflict_1',syncQueueId:'sync_1',type:'Order #ORD-1851',field:'Amount',localValue:'\u20B912,450',serverValue:'\u20B911,800'},{id:'conflict_2',syncQueueId:'sync_2',type:'Collection',field:'Party Name',localValue:'Krishna Store',serverValue:'Krishna General Store'}]); }, 300);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Test Conflict
+        </button>
+      </div>
       <div id="syncQueueList"></div>
     </div>
   </div>
@@ -691,6 +845,182 @@
       <button class="ob-next" id="onboardNextBtn" onclick="nextStep()">Next</button>
     </div>
   </div>
+
+  <!-- Changelog Bottom Sheet -->
+  <div class="changelog-overlay" id="changelogOverlay" onclick="closeChangelog()"></div>
+  <div class="changelog-sheet" id="changelogSheet">
+    <div class="cl-handle"></div>
+    <div class="cl-header">
+      <div class="cl-app-icon">A</div>
+      <div class="cl-header-text">
+        <h3>What's New in v2.0</h3>
+        <div class="cl-meta">
+          <span class="cl-version-badge">v2.0.0 &mdash; March 2026</span>
+          <span class="cl-size">12.4 MB</span>
+        </div>
+      </div>
+    </div>
+    <div class="cl-body">
+      <!-- New Features -->
+      <div class="cl-section">
+        <div class="cl-section-title">&#x2728; New Features</div>
+        <div class="cl-item">
+          <span class="cl-badge new">NEW</span>
+          <div class="cl-item-text">Geofence Store Check-in<span>Auto-verify your location at stores</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge new">NEW</span>
+          <div class="cl-item-text">Chat &amp; Messaging<span>Real-time communication with your team</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge new">NEW</span>
+          <div class="cl-item-text">Competitor Intelligence<span>Track competitor products &amp; pricing</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge new">NEW</span>
+          <div class="cl-item-text">Schemes &amp; Offers<span>View active promotional schemes</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge new">NEW</span>
+          <div class="cl-item-text">Voice Notes<span>Record voice memos in Notes &amp; Remarks</span></div>
+        </div>
+      </div>
+      <!-- Improvements -->
+      <div class="cl-section">
+        <div class="cl-section-title">&#x1F4A1; Improvements</div>
+        <div class="cl-item">
+          <span class="cl-badge improved">&#x2728;</span>
+          <div class="cl-item-text">Push Notifications<span>Real-time order &amp; collection alerts</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge improved">&#x2728;</span>
+          <div class="cl-item-text">Offline Sync<span>Work without internet, sync when connected</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge improved">&#x2728;</span>
+          <div class="cl-item-text">Animated Charts<span>Interactive performance visualizations</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge improved">&#x2728;</span>
+          <div class="cl-item-text">Swipe Actions<span>Swipe cards to delete or archive</span></div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge improved">&#x2728;</span>
+          <div class="cl-item-text">Pull to Refresh<span>Pull down to refresh on list pages</span></div>
+        </div>
+      </div>
+      <!-- Bug Fixes -->
+      <div class="cl-section">
+        <div class="cl-section-title">&#x1F527; Bug Fixes</div>
+        <div class="cl-item">
+          <span class="cl-badge fix">&#x1F527;</span>
+          <div class="cl-item-text">Fixed search filter on Parties page</div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge fix">&#x1F527;</span>
+          <div class="cl-item-text">Improved form validation across all pages</div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge fix">&#x1F527;</span>
+          <div class="cl-item-text">Better GPS accuracy for check-in</div>
+        </div>
+        <div class="cl-item">
+          <span class="cl-badge fix">&#x1F527;</span>
+          <div class="cl-item-text">Faster page load with skeleton screens</div>
+        </div>
+      </div>
+    </div>
+    <div class="cl-footer">
+      <button class="cl-update-btn" id="clUpdateBtn" onclick="startFakeUpdate()">
+        <div class="cl-progress" id="clProgress"></div>
+        <span id="clUpdateLabel">Update Now</span>
+      </button>
+      <button class="cl-later" onclick="closeChangelog()">Later</button>
+    </div>
+  </div>
+  <!-- Voice Search Overlay -->
+  <div class="qa-overlay qa-overlay-dark" id="qaVoiceOverlay">
+    <div id="qaVoiceContent">
+      <div class="voice-mic-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </div>
+      <div class="voice-label">Listening...</div>
+      <div class="voice-sub">Say a store name or product</div>
+      <button class="voice-cancel" onclick="qaCloseVoice()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Barcode Scan Overlay -->
+  <div class="qa-overlay qa-overlay-dark" id="qaScanOverlay">
+    <div id="qaScanContent">
+      <div class="scan-viewfinder">
+        <div class="scan-corner tl"></div>
+        <div class="scan-corner tr"></div>
+        <div class="scan-corner bl"></div>
+        <div class="scan-corner br"></div>
+        <div class="scan-line"></div>
+      </div>
+      <div class="scan-text">Point at barcode</div>
+      <button class="voice-cancel" style="margin-top:24px" onclick="qaCloseScan()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Quick Order Bottom Sheet -->
+  <div class="qa-sheet-backdrop" id="qaQuickOrderBackdrop" onclick="qaCloseQuickOrder()"></div>
+  <div class="qa-sheet" id="qaQuickOrderSheet">
+    <div class="qa-sheet-handle"></div>
+    <h3>Quick Order</h3>
+    <input class="qo-input" id="qoPartyInput" type="text" placeholder="Party name...">
+    <div class="qo-recent-parties">
+      <span class="qo-party-chip" onclick="qoSelectParty(this,'Krishna Store')">Krishna Store</span>
+      <span class="qo-party-chip" onclick="qoSelectParty(this,'Metro Mart')">Metro Mart</span>
+      <span class="qo-party-chip" onclick="qoSelectParty(this,'Sharma General')">Sharma General</span>
+    </div>
+    <div id="qoProducts">
+      <div class="qo-product-row">
+        <div class="qo-product-info"><div class="qo-product-name">Amul Butter 500g</div><div class="qo-product-price">&#8377;275</div></div>
+        <div class="qo-qty-ctrl"><button class="qo-qty-btn" onclick="qoQty(0,-1)">-</button><span class="qo-qty-val" id="qoQty0">0</span><button class="qo-qty-btn" onclick="qoQty(0,1)">+</button></div>
+      </div>
+      <div class="qo-product-row">
+        <div class="qo-product-info"><div class="qo-product-name">Parle-G Biscuit 800g</div><div class="qo-product-price">&#8377;90</div></div>
+        <div class="qo-qty-ctrl"><button class="qo-qty-btn" onclick="qoQty(1,-1)">-</button><span class="qo-qty-val" id="qoQty1">0</span><button class="qo-qty-btn" onclick="qoQty(1,1)">+</button></div>
+      </div>
+      <div class="qo-product-row">
+        <div class="qo-product-info"><div class="qo-product-name">Tata Salt 1kg</div><div class="qo-product-price">&#8377;28</div></div>
+        <div class="qo-qty-ctrl"><button class="qo-qty-btn" onclick="qoQty(2,-1)">-</button><span class="qo-qty-val" id="qoQty2">0</span><button class="qo-qty-btn" onclick="qoQty(2,1)">+</button></div>
+      </div>
+    </div>
+    <div class="qo-total"><span>Total</span><span id="qoTotal">&#8377;0</span></div>
+    <button class="qo-place-btn" onclick="qoPlace()">Place Order</button>
+  </div>
+
+  <!-- Day Summary Bottom Sheet -->
+  <div class="qa-sheet-backdrop" id="qaDaySummaryBackdrop" onclick="qaCloseDaySummary()"></div>
+  <div class="qa-sheet" id="qaDaySummarySheet">
+    <div class="qa-sheet-handle"></div>
+    <h3>Today's Summary</h3>
+    <div class="ds-row"><div class="ds-icon" style="background:#e8efec"><svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="ds-info"><div class="ds-label">Visits</div><div class="ds-value">7 / 12</div><div class="ds-bar"><div class="ds-bar-fill" style="width:58%;background:var(--success)"></div></div></div></div>
+    <div class="ds-row"><div class="ds-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div><div class="ds-info"><div class="ds-label">Orders</div><div class="ds-value">5</div><div class="ds-bar"><div class="ds-bar-fill" style="width:50%;background:var(--primary)"></div></div></div></div>
+    <div class="ds-row"><div class="ds-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="ds-info"><div class="ds-label">Revenue</div><div class="ds-value">&#8377;48,200</div><div class="ds-bar"><div class="ds-bar-fill" style="width:68%;background:#f59e0b"></div></div></div></div>
+    <div class="ds-row"><div class="ds-icon" style="background:#e8efec"><svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="ds-info"><div class="ds-label">Collections</div><div class="ds-value">&#8377;32,450</div><div class="ds-bar"><div class="ds-bar-fill" style="width:45%;background:var(--success)"></div></div></div></div>
+    <div class="ds-row"><div class="ds-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="ds-info"><div class="ds-label">New Parties</div><div class="ds-value">1</div><div class="ds-bar"><div class="ds-bar-fill" style="width:20%;background:#8b5cf6"></div></div></div></div>
+    <button class="ds-eod-btn" onclick="qaCloseDaySummary();goTo('eod.html')">View Full EOD Report</button>
+  </div>
+
+  <!-- SOS Bottom Sheet -->
+  <div class="qa-sheet-backdrop" id="qaSOSBackdrop" onclick="qaCloseSOS()"></div>
+  <div class="qa-sheet" id="qaSOSSheet">
+    <div class="qa-sheet-handle"></div>
+    <h3 style="color:#e05252">Report Emergency</h3>
+    <div class="sos-option" onclick="sosSelect(this)"><div class="sos-option-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div class="sos-option-text">Vehicle Breakdown</div></div>
+    <div class="sos-option" onclick="sosSelect(this)"><div class="sos-option-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="sos-option-text">Safety Concern</div></div>
+    <div class="sos-option" onclick="sosSelect(this)"><div class="sos-option-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="sos-option-text">Medical Emergency</div></div>
+    <div class="sos-option" onclick="sosSelect(this)"><div class="sos-option-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="sos-option-text">Other</div></div>
+    <div class="sos-location">Location: <span>27.7172&deg;N, 85.3240&deg;E</span> (auto-captured)</div>
+    <button class="sos-send-btn" onclick="sosSend()">Send Alert</button>
+    <button class="sos-call-btn" onclick="showToast('Calling manager...','info')">Call Manager</button>
+  </div>
+
 </div><!-- /phone-frame -->
 
 <script src="js/app.js"></script>
@@ -1062,6 +1392,105 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+})();
+</script>
+<script>
+// Haptic bump stat values when they scroll into view
+(function() {
+  var statEls = document.querySelectorAll('.stat-value, .kpi-value');
+  if (!statEls.length || !('IntersectionObserver' in window)) return;
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        hapticBump(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  statEls.forEach(function(el) { observer.observe(el); });
+})();
+</script>
+
+<!-- App Update Banner & Changelog JS -->
+<script>
+(function() {
+  var UPDATE_VERSION = 'v2.0';
+  var LS_KEY = 'adera_update_dismissed';
+  var banner = document.getElementById('updateBanner');
+  var overlay = document.getElementById('changelogOverlay');
+  var sheet = document.getElementById('changelogSheet');
+  var progressBar = document.getElementById('clProgress');
+  var updateLabel = document.getElementById('clUpdateLabel');
+  var updateBtn = document.getElementById('clUpdateBtn');
+  var updating = false;
+
+  // Show banner after 2s if not dismissed for this version
+  function maybeShowBanner() {
+    if (localStorage.getItem(LS_KEY) === UPDATE_VERSION) return;
+    setTimeout(function() {
+      if (banner) banner.classList.add('show');
+    }, 2000);
+  }
+
+  // Dismiss banner
+  window.dismissUpdateBanner = function(e) {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    localStorage.setItem(LS_KEY, UPDATE_VERSION);
+    if (banner) banner.classList.remove('show');
+  };
+
+  // Open changelog sheet
+  window.openChangelog = function(e) {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    if (overlay) overlay.classList.add('active');
+    if (sheet) sheet.classList.add('active');
+  };
+
+  // Close changelog sheet
+  window.closeChangelog = function() {
+    if (updating) return;
+    if (overlay) overlay.classList.remove('active');
+    if (sheet) sheet.classList.remove('active');
+  };
+
+  // Fake update with progress bar
+  window.startFakeUpdate = function() {
+    if (updating) return;
+    updating = true;
+    updateBtn.disabled = true;
+    updateLabel.textContent = 'Downloading...';
+    var progress = 0;
+    var interval = setInterval(function() {
+      progress += Math.random() * 8 + 2;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        progressBar.style.width = '100%';
+        updateLabel.textContent = 'Installing...';
+        setTimeout(function() {
+          updating = false;
+          updateBtn.disabled = false;
+          progressBar.style.width = '0';
+          updateLabel.textContent = 'Update Now';
+          localStorage.setItem(LS_KEY, UPDATE_VERSION);
+          if (banner) banner.classList.remove('show');
+          closeChangelog();
+          if (typeof showToast === 'function') {
+            showToast('App updated successfully!', 'success');
+          }
+        }, 500);
+      } else {
+        progressBar.style.width = progress + '%';
+        updateLabel.textContent = 'Downloading... ' + Math.round(progress) + '%';
+      }
+    }, 100);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', maybeShowBanner);
+  } else {
+    maybeShowBanner();
   }
 })();
 </script>

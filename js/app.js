@@ -939,6 +939,63 @@ function seedSyncQueue() {
   SyncQueue.updateBadge();
 }
 
+// ═══ Offline Sync — Auto-sync on Reconnect ═══
+(function() {
+  // Listen for messages from service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      var msg = event.data;
+      if (!msg) return;
+
+      if (msg.type === 'REQUEST_QUEUED') {
+        // A request was queued while offline — update badge
+        SyncQueue.updateBadge();
+        if (typeof showToast === 'function') {
+          showToast('Saved offline — will sync when connected', 'info');
+        }
+      }
+
+      if (msg.type === 'SYNC_COMPLETE') {
+        SyncQueue.updateBadge();
+        if (typeof renderSyncQueue === 'function') renderSyncQueue();
+        if (msg.synced > 0 && typeof showToast === 'function') {
+          showToast(msg.synced + ' items synced to server', 'success');
+        }
+        if (msg.failed > 0 && typeof showToast === 'function') {
+          showToast(msg.failed + ' items failed to sync', 'error');
+        }
+      }
+    });
+  }
+
+  // Auto-trigger sync when coming back online
+  window.addEventListener('online', function() {
+    // Short delay to ensure connection is stable
+    setTimeout(function() {
+      var pending = SyncQueue.getPendingCount();
+      if (pending > 0) {
+        showToast('Back online — syncing ' + pending + ' items...', 'info');
+        showSyncBar();
+      } else {
+        showToast('Back online', 'success');
+      }
+
+      // Also trigger SW background sync if available
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(function(reg) {
+          if (reg.sync) reg.sync.register('adera-offline-sync');
+        });
+      }
+    }, 1500);
+  });
+
+  window.addEventListener('offline', function() {
+    if (typeof showToast === 'function') {
+      showToast('You\'re offline — changes will be saved locally', 'info');
+    }
+  });
+})();
+
 // ═══ Contextual Tooltip System ═══
 var CtxTooltip = {
   activeTooltip: null,
@@ -1039,4 +1096,192 @@ function bindTooltip(el, opts) {
     e.stopPropagation();
     CtxTooltip.show(el, opts);
   });
+}
+
+// ═══ Sync Conflict Resolution ═══
+var SyncConflict = {
+  _conflicts: [],
+
+  show: function(conflicts) {
+    this._conflicts = conflicts || [];
+    // Remove existing sheet if any
+    var existing = document.getElementById('conflictSheet');
+    if (existing) existing.remove();
+    var existingOverlay = document.getElementById('conflictSheetOverlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    var frame = document.querySelector('.phone-frame');
+    if (!frame) return;
+
+    // Create overlay
+    var overlay = document.createElement('div');
+    overlay.id = 'conflictSheetOverlay';
+    overlay.className = 'sync-sheet-overlay open';
+    overlay.onclick = function() { SyncConflict.close(); };
+    frame.appendChild(overlay);
+
+    // Build conflict cards HTML
+    var cardsHtml = '';
+    for (var i = 0; i < conflicts.length; i++) {
+      var c = conflicts[i];
+      cardsHtml +=
+        '<div class="conflict-card" id="conflict-card-' + c.id + '">' +
+          '<div class="conflict-header">' +
+            '<span class="conflict-type">' + (c.type || 'Conflict') + '</span>' +
+            '<span class="conflict-field">' + (c.field || '') + '</span>' +
+          '</div>' +
+          '<div class="conflict-values">' +
+            '<div class="conflict-val local">' +
+              '<div class="conflict-val-label">Local (Mine)</div>' +
+              '<div class="conflict-val-data">' + (c.localValue || '') + '</div>' +
+            '</div>' +
+            '<div class="conflict-val server">' +
+              '<div class="conflict-val-label">Server</div>' +
+              '<div class="conflict-val-data">' + (c.serverValue || '') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="conflict-actions">' +
+            '<button class="conflict-btn mine" onclick="SyncConflict.resolve(\'' + c.id + '\', \'local\')">Keep Mine</button>' +
+            '<button class="conflict-btn server" onclick="SyncConflict.resolve(\'' + c.id + '\', \'server\')">Keep Server</button>' +
+            '<button class="conflict-btn merge" onclick="SyncConflict.resolve(\'' + c.id + '\', \'merge\')">Merge</button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Create bottom sheet
+    var sheet = document.createElement('div');
+    sheet.id = 'conflictSheet';
+    sheet.className = 'sync-sheet';
+    sheet.innerHTML =
+      '<div class="sync-sheet-handle"></div>' +
+      '<div class="sync-sheet-header">' +
+        '<div class="sync-sheet-title">Sync Conflicts (' + conflicts.length + ')</div>' +
+        '<button class="sync-sheet-close" onclick="SyncConflict.close()">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+      '</div>' +
+      '<div class="sync-sheet-body">' + cardsHtml + '</div>';
+
+    frame.appendChild(sheet);
+
+    // Trigger open animation
+    requestAnimationFrame(function() {
+      sheet.classList.add('open');
+    });
+  },
+
+  close: function() {
+    var sheet = document.getElementById('conflictSheet');
+    var overlay = document.getElementById('conflictSheetOverlay');
+    if (sheet) sheet.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+    setTimeout(function() {
+      if (sheet) sheet.remove();
+      if (overlay) overlay.remove();
+    }, 300);
+  },
+
+  resolve: function(conflictId, resolution) {
+    var conflict = null;
+    for (var i = 0; i < this._conflicts.length; i++) {
+      if (this._conflicts[i].id === conflictId) {
+        conflict = this._conflicts[i];
+        this._conflicts.splice(i, 1);
+        break;
+      }
+    }
+    if (!conflict) return;
+
+    // Update SyncQueue based on resolution
+    var queue = SyncQueue.getQueue();
+    for (var j = 0; j < queue.length; j++) {
+      if (queue[j].id === conflict.syncQueueId) {
+        if (resolution === 'local') {
+          queue[j].resolvedWith = 'local';
+          queue[j].data[conflict.field] = conflict.localValue;
+        } else if (resolution === 'server') {
+          queue[j].resolvedWith = 'server';
+          queue[j].data[conflict.field] = conflict.serverValue;
+        } else if (resolution === 'merge') {
+          queue[j].resolvedWith = 'merge';
+          queue[j].data[conflict.field] = conflict.localValue + ' / ' + conflict.serverValue;
+        }
+        queue[j].conflictResolved = true;
+        break;
+      }
+    }
+    localStorage.setItem(SyncQueue.KEY, JSON.stringify(queue));
+
+    // Remove the conflict card from the UI
+    var card = document.getElementById('conflict-card-' + conflictId);
+    if (card) {
+      card.style.transition = 'opacity .3s ease, transform .3s ease';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(60px)';
+      setTimeout(function() { card.remove(); }, 300);
+    }
+
+    // Update header count
+    var title = document.querySelector('#conflictSheet .sync-sheet-title');
+    if (title) {
+      title.textContent = 'Sync Conflicts (' + this._conflicts.length + ')';
+    }
+
+    // Show resolution toast
+    var labels = { local: 'Kept local version', server: 'Kept server version', merge: 'Merged values' };
+    if (typeof showToast === 'function') {
+      showToast(labels[resolution] + ' for ' + conflict.field, 'success');
+    }
+
+    // Auto-close sheet if no conflicts remain
+    if (this._conflicts.length === 0) {
+      setTimeout(function() { SyncConflict.close(); }, 800);
+    }
+  }
+};
+
+// Haptic Micro-Animation Helpers
+function hapticTap(el) {
+  if (!el) return;
+  el.classList.remove('anim-tap');
+  void el.offsetWidth; // force reflow
+  el.classList.add('anim-tap');
+  el.addEventListener('animationend', () => el.classList.remove('anim-tap'), {once:true});
+  // Try vibration API
+  if (navigator.vibrate) navigator.vibrate(10);
+}
+
+function hapticPress(el) {
+  if (!el) return;
+  el.classList.remove('anim-press');
+  void el.offsetWidth;
+  el.classList.add('anim-press');
+  el.addEventListener('animationend', () => el.classList.remove('anim-press'), {once:true});
+  if (navigator.vibrate) navigator.vibrate(20);
+}
+
+function hapticError(el) {
+  if (!el) return;
+  el.classList.remove('anim-shake');
+  void el.offsetWidth;
+  el.classList.add('anim-shake');
+  el.addEventListener('animationend', () => el.classList.remove('anim-shake'), {once:true});
+  if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+}
+
+function hapticSuccess(el) {
+  if (!el) return;
+  el.classList.remove('anim-pop');
+  void el.offsetWidth;
+  el.classList.add('anim-pop');
+  el.addEventListener('animationend', () => el.classList.remove('anim-pop'), {once:true});
+  if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+}
+
+function hapticBump(el) {
+  if (!el) return;
+  el.classList.remove('anim-bump');
+  void el.offsetWidth;
+  el.classList.add('anim-bump');
+  el.addEventListener('animationend', () => el.classList.remove('anim-bump'), {once:true});
 }

@@ -249,9 +249,12 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <span class="top-bar-title">Field Notes</span>
-      <button class="icon-btn" onclick="openDrawer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="bulk-select-btn" id="bulkSelectBtn" onclick="enterBulkMode()">Select</button>
+        <button class="icon-btn" onclick="openDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Pull to Refresh -->
@@ -278,6 +281,12 @@
 
     <!-- CONTENT -->
     <div class="content" style="padding:8px 16px 16px;">
+      <!-- Select All Row -->
+      <div class="bulk-select-all" id="bulkSelectAll" onclick="selectAllNotes()">
+        <div class="bulk-checkbox" id="selectAllCheckbox"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span>Select All</span>
+      </div>
+
       <div class="n-section">
         <span class="n-section-title">My Notes</span>
         <span class="n-section-count">10 notes</span>
@@ -499,6 +508,17 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span>Profile</span>
       </a>
+    </div>
+  </div>
+
+  <!-- Bulk Action Bar -->
+  <div class="bulk-bar" id="bulkBar">
+    <button class="bulk-close" onclick="exitBulkMode()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="bulk-count" id="bulkCount">0 selected</div>
+    <div class="bulk-actions">
+      <button class="bulk-btn export" onclick="bulkExport()" title="Export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+      <button class="bulk-btn archive" onclick="bulkArchive()" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></button>
+      <button class="bulk-btn delete" onclick="bulkDelete()" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
     </div>
   </div>
 
@@ -970,6 +990,105 @@ function deleteRecording() {
       activeSwipe = null;
     }
   }, { passive: true });
+})();
+
+// ── Bulk Selection Logic ──
+(function(){
+  var bulkMode = false;
+  var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  // Inject checkboxes into each note card
+  document.querySelectorAll('.note-card').forEach(function(card){
+    var cb = document.createElement('div');
+    cb.className = 'bulk-checkbox';
+    cb.innerHTML = checkSvg;
+    cb.addEventListener('click', function(e){ e.stopPropagation(); toggleSelect(card); });
+    card.style.position = 'relative';
+    card.querySelector('.nc-top').style.display = 'flex';
+    card.insertBefore(cb, card.firstChild);
+  });
+
+  // Long press to enter bulk mode
+  var longPressTimer = null;
+  document.querySelectorAll('.note-card').forEach(function(card){
+    card.addEventListener('touchstart', function(e){
+      longPressTimer = setTimeout(function(){
+        if(!bulkMode) enterBulkMode();
+        toggleSelect(card);
+      }, 500);
+    }, {passive:true});
+    card.addEventListener('touchend', function(){ clearTimeout(longPressTimer); }, {passive:true});
+    card.addEventListener('touchmove', function(){ clearTimeout(longPressTimer); }, {passive:true});
+  });
+
+  function getContentEl(){ return document.querySelector('.content'); }
+  function getCards(){ return document.querySelectorAll('.note-card'); }
+  function getSelected(){ return document.querySelectorAll('.note-card .bulk-checkbox.checked'); }
+
+  window.enterBulkMode = function(){
+    bulkMode = true;
+    getContentEl().classList.add('bulk-mode');
+    document.getElementById('bulkSelectBtn').textContent = 'Cancel';
+    document.getElementById('bulkSelectBtn').onclick = function(){ exitBulkMode(); };
+    updateBulkCount();
+  };
+
+  window.exitBulkMode = function(){
+    bulkMode = false;
+    getContentEl().classList.remove('bulk-mode');
+    document.getElementById('bulkSelectBtn').textContent = 'Select';
+    document.getElementById('bulkSelectBtn').onclick = function(){ enterBulkMode(); };
+    document.querySelectorAll('.note-card .bulk-checkbox').forEach(function(cb){ cb.classList.remove('checked'); });
+    document.getElementById('selectAllCheckbox').classList.remove('checked');
+    document.getElementById('bulkBar').classList.remove('show');
+  };
+
+  window.toggleSelect = function(card){
+    if(!bulkMode) return;
+    var cb = card.querySelector('.bulk-checkbox');
+    cb.classList.toggle('checked');
+    updateBulkCount();
+  };
+
+  function updateBulkCount(){
+    var count = getSelected().length;
+    var total = getCards().length;
+    document.getElementById('bulkCount').textContent = count + ' selected';
+    if(count > 0) document.getElementById('bulkBar').classList.add('show');
+    else document.getElementById('bulkBar').classList.remove('show');
+    var saCheckbox = document.getElementById('selectAllCheckbox');
+    if(count === total && total > 0) saCheckbox.classList.add('checked');
+    else saCheckbox.classList.remove('checked');
+  }
+
+  window.selectAllNotes = function(){
+    var cards = getCards();
+    var allChecked = getSelected().length === cards.length;
+    cards.forEach(function(card){
+      var cb = card.querySelector('.bulk-checkbox');
+      if(allChecked) cb.classList.remove('checked');
+      else cb.classList.add('checked');
+    });
+    updateBulkCount();
+  };
+
+  window.bulkExport = function(){
+    var count = getSelected().length;
+    showToast('Exporting ' + count + ' notes...', 'info');
+  };
+
+  window.bulkDelete = function(){
+    var count = getSelected().length;
+    if(confirm('Delete ' + count + ' note(s)?')){
+      showToast(count + ' note(s) deleted', 'success');
+      exitBulkMode();
+    }
+  };
+
+  window.bulkArchive = function(){
+    var count = getSelected().length;
+    showToast(count + ' note(s) archived', 'success');
+  };
 })();
 </script>
 </body>

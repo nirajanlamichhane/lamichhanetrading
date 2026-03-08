@@ -421,7 +421,7 @@
         </div>
         <div class="os-item-right">
           <div class="os-item-amt">₹22,350</div>
-          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Sunrise Retail','22350')">Collect</button>
+          <button class="os-item-btn" onclick="hapticTap(this); event.stopPropagation(); openCollect('Sunrise Retail','22350')">Collect</button>
         </div>
       </div>
 
@@ -433,7 +433,7 @@
         </div>
         <div class="os-item-right">
           <div class="os-item-amt">₹19,750</div>
-          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('City Bazaar','19750')">Collect</button>
+          <button class="os-item-btn" onclick="hapticTap(this); event.stopPropagation(); openCollect('City Bazaar','19750')">Collect</button>
         </div>
       </div>
 
@@ -445,7 +445,7 @@
         </div>
         <div class="os-item-right">
           <div class="os-item-amt">₹14,200</div>
-          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Himalaya Shop','14200')">Collect</button>
+          <button class="os-item-btn" onclick="hapticTap(this); event.stopPropagation(); openCollect('Himalaya Shop','14200')">Collect</button>
         </div>
       </div>
 
@@ -457,7 +457,7 @@
         </div>
         <div class="os-item-right">
           <div class="os-item-amt">₹12,400</div>
-          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Krishna Provision','12400')">Collect</button>
+          <button class="os-item-btn" onclick="hapticTap(this); event.stopPropagation(); openCollect('Krishna Provision','12400')">Collect</button>
         </div>
       </div>
 
@@ -469,7 +469,7 @@
         </div>
         <div class="os-item-right">
           <div class="os-item-amt">₹9,800</div>
-          <button class="os-item-btn" onclick="event.stopPropagation(); openCollect('Ram Stores','9800')">Collect</button>
+          <button class="os-item-btn" onclick="hapticTap(this); event.stopPropagation(); openCollect('Ram Stores','9800')">Collect</button>
         </div>
       </div>
 
@@ -518,25 +518,25 @@
     <input class="cp-amount-input" id="cpAmount" type="text" placeholder="₹ 0" inputmode="numeric">
     <div class="cp-mode-label">Payment Mode</div>
     <div class="cp-modes">
-      <div class="cp-mode selected" onclick="selectMode(this)">
+      <div class="cp-mode selected" onclick="hapticPress(this); selectMode(this)">
         <div class="cp-mode-icon">💵</div>
         <div class="cp-mode-name">Cash</div>
       </div>
-      <div class="cp-mode" onclick="selectMode(this)">
+      <div class="cp-mode" onclick="hapticPress(this); selectMode(this)">
         <div class="cp-mode-icon">📱</div>
         <div class="cp-mode-name">UPI</div>
       </div>
-      <div class="cp-mode" onclick="selectMode(this)">
+      <div class="cp-mode" onclick="hapticPress(this); selectMode(this)">
         <div class="cp-mode-icon">📝</div>
         <div class="cp-mode-name">Cheque</div>
       </div>
-      <div class="cp-mode" onclick="selectMode(this)">
+      <div class="cp-mode" onclick="hapticPress(this); selectMode(this)">
         <div class="cp-mode-icon">🏦</div>
         <div class="cp-mode-name">Bank</div>
       </div>
     </div>
     <input class="cp-ref-input" type="text" placeholder="Reference number (optional)">
-    <button class="cp-submit" onclick="closeCollect(); showToast('Payment recorded successfully!','success')">Record Payment</button>
+    <button class="cp-submit" onclick="hapticSuccess(this); closeCollect(); showToast('Payment recorded successfully!','success')">Record Payment</button>
   </div>
 
   <!-- ═══ Receipt Sheet ═══ -->
@@ -618,6 +618,7 @@
     document.getElementById('rcAmount').textContent = d.amount;
     document.getElementById('rcOverlay').classList.add('show');
     document.getElementById('rcSheet').classList.add('show');
+    setTimeout(function() { hapticSuccess(document.getElementById('rcSheet')); }, 350);
   }
   function closeReceipt() {
     document.getElementById('rcOverlay').classList.remove('show');

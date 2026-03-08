@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Photo Library — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Stats Row ── */
+    .gal-stats { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+    .gal-stat {
+      background:#fff; border-radius:14px; padding:12px 6px; text-align:center;
+      box-shadow:0 2px 10px rgba(48,102,190,.07);
+    }
+    .gal-stat-val { font-size:20px; font-weight:800; }
+    .gal-stat-val.blue { color:var(--primary); }
+    .gal-stat-val.green { color:var(--success); }
+    .gal-stat-val.amber { color:var(--warning); }
+    .gal-stat-val.purple { color:#7c3aed; }
+    .gal-stat-lbl { font-size:10px; color:#94a3b8; margin-top:2px; }
+
+    /* ── Filter Chips ── */
+    .cat-chips {
+      display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .cat-chips::-webkit-scrollbar { display:none; }
+    .cat-chip {
+      padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600;
+      white-space:nowrap; cursor:pointer; border:1.5px solid #e2e8f0;
+      background:#fff; color:#64748b; transition:all .2s;
+    }
+    .cat-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+    /* ── Date Group ── */
+    .date-group { margin-bottom:20px; }
+    .date-group-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:10px;
+    }
+    .date-group-title { font-size:14px; font-weight:800; color:#1a2540; }
+    .date-group-count { font-size:12px; color:#94a3b8; font-weight:600; }
+
+    /* ── Photo Grid ── */
+    .photo-grid {
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
+    }
+    .photo-thumb {
+      width:100%; aspect-ratio:1; background:#dce5f0; border-radius:12px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      position:relative; cursor:pointer; transition:transform .15s, box-shadow .15s;
+      overflow:hidden;
+    }
+    .photo-thumb:active { transform:scale(0.95); }
+    .photo-thumb svg.thumb-icon { width:28px; height:28px; color:#8096b8; margin-bottom:4px; }
+    .photo-thumb .thumb-label {
+      font-size:9px; font-weight:600; color:#6b83a8; text-align:center;
+      padding:0 4px; line-height:1.2;
+    }
+    .photo-thumb .thumb-time {
+      font-size:8px; color:#94a3b8; margin-top:2px;
+    }
+    .photo-thumb .thumb-check {
+      position:absolute; top:6px; right:6px; width:20px; height:20px;
+      border-radius:50%; border:2px solid #fff; background:rgba(255,255,255,.5);
+      display:none; align-items:center; justify-content:center; cursor:pointer;
+      z-index:5;
+    }
+    .photo-thumb .thumb-check svg { width:12px; height:12px; color:#fff; }
+    .photo-thumb .thumb-check.checked {
+      background:var(--primary); border-color:var(--primary);
+    }
+    .bulk-mode .photo-thumb .thumb-check { display:flex; }
+    .photo-thumb.selected { box-shadow:0 0 0 3px var(--primary); }
+
+    /* ── List View ── */
+    .photo-list { display:none; flex-direction:column; gap:10px; }
+    .photo-list-item {
+      display:flex; gap:12px; align-items:center; background:#fff;
+      border-radius:14px; padding:10px 12px; box-shadow:0 2px 8px rgba(48,102,190,.06);
+      cursor:pointer; transition:transform .15s;
+    }
+    .photo-list-item:active { transform:scale(0.98); }
+    .photo-list-thumb {
+      width:56px; height:56px; background:#dce5f0; border-radius:10px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .photo-list-thumb svg { width:22px; height:22px; color:#8096b8; }
+    .photo-list-info { flex:1; min-width:0; }
+    .photo-list-title { font-size:13px; font-weight:700; color:#1a2540; }
+    .photo-list-sub { font-size:11px; color:#94a3b8; margin-top:2px; }
+    .photo-list-time { font-size:11px; color:#94a3b8; font-weight:600; white-space:nowrap; }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .bs-overlay.show { opacity:1; pointer-events:auto; }
+    .bs-sheet {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+      width:390px; background:#fff; border-radius:20px 20px 0 0;
+      z-index:201; padding:20px; padding-bottom:30px;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+      max-height:85vh; overflow-y:auto;
+    }
+    .bs-sheet.show { transform:translateX(-50%) translateY(0); }
+    .bs-handle { width:40px; height:4px; background:#d1d5db; border-radius:4px; margin:0 auto 16px; }
+    .bs-title { font-size:18px; font-weight:800; color:#1a2540; margin-bottom:4px; }
+    .bs-sub { font-size:13px; color:#94a3b8; margin-bottom:16px; }
+
+    /* ── Photo Detail Sheet ── */
+    .detail-photo-placeholder {
+      width:100%; height:300px; background:#dce5f0; border-radius:16px;
+      display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+    }
+    .detail-photo-placeholder svg { width:56px; height:56px; color:#8096b8; }
+    .detail-info-row {
+      display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap;
+    }
+    .detail-badge {
+      display:inline-block; font-size:11px; font-weight:700; padding:4px 12px;
+      border-radius:8px; background:#e8f0fe; color:var(--primary); text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+    .detail-meta { font-size:12px; color:#94a3b8; }
+    .detail-meta strong { color:#1a2540; }
+    .detail-linked {
+      background:#f8fafc; border-radius:12px; padding:12px; margin:12px 0;
+      font-size:13px; color:#1a2540; display:flex; align-items:center; gap:8px;
+    }
+    .detail-linked svg { width:16px; height:16px; color:var(--primary); flex-shrink:0; }
+    .detail-gps { font-size:11px; color:#94a3b8; margin-bottom:12px; }
+    .detail-actions { display:flex; gap:8px; margin-top:14px; }
+    .detail-actions button { flex:1; }
+
+    /* ── Bulk Action Bar ── */
+    .bulk-bar {
+      position:fixed; bottom:68px; left:50%; transform:translateX(-50%);
+      width:360px; background:#1a2540; border-radius:16px; padding:12px 16px;
+      display:none; align-items:center; gap:10px; z-index:100;
+      box-shadow:0 8px 28px rgba(0,0,0,.3);
+    }
+    .bulk-bar.show { display:flex; }
+    .bulk-bar-count { font-size:13px; font-weight:700; color:#fff; flex:1; }
+    .bulk-bar-btn {
+      width:36px; height:36px; border-radius:10px; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.12);
+    }
+    .bulk-bar-btn svg { width:18px; height:18px; color:#fff; }
+    .bulk-bar-btn.danger { background:rgba(224,82,82,.25); }
+    .bulk-bar-btn.danger svg { color:#ff6b6b; }
+    .bulk-bar-close {
+      width:28px; height:28px; border-radius:50%; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15);
+      margin-left:4px;
+    }
+    .bulk-bar-close svg { width:14px; height:14px; color:#fff; }
+
+    /* ── Grid/List toggle btn ── */
+    .view-toggle-active { background:var(--primary) !important; }
+    .view-toggle-active svg { color:#fff !important; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Photo Library</p>
+
+<div class="phone-frame">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <!-- Side Drawer -->
+  <div class="drawer" id="drawer" data-inject="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">&#128100;</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+      <button class="drawer-target-btn">&#127919; Your Target</button>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><span class="drawer-item-label">Parties</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/collections.html')"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/attendance.html')"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
+    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
+    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><span class="drawer-item-label">Photo Library</span></div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-title">Actions</div>
+    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
+    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
+  </div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Photo Library</div>
+      <div style="display:flex;gap:4px;">
+        <button class="icon-btn" id="viewToggleBtn" onclick="toggleGridView()" title="Toggle Grid/List">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+        <button class="icon-btn" onclick="showToast('Camera opened','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <button class="icon-btn" onclick="openDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;" id="galleryContent">
+
+      <!-- Stats Row -->
+      <div class="gal-stats">
+        <div class="gal-stat">
+          <div class="gal-stat-val blue">47</div>
+          <div class="gal-stat-lbl">Total Photos</div>
+        </div>
+        <div class="gal-stat">
+          <div class="gal-stat-val green">8</div>
+          <div class="gal-stat-lbl">Today</div>
+        </div>
+        <div class="gal-stat">
+          <div class="gal-stat-val amber">23</div>
+          <div class="gal-stat-lbl">This Week</div>
+        </div>
+        <div class="gal-stat">
+          <div class="gal-stat-val purple">12.4</div>
+          <div class="gal-stat-lbl">Storage MB</div>
+        </div>
+      </div>
+
+      <!-- Filter Chips -->
+      <div class="cat-chips">
+        <div class="cat-chip active" onclick="filterPhotos(this,'all')">All</div>
+        <div class="cat-chip" onclick="filterPhotos(this,'selfie')">Selfies</div>
+        <div class="cat-chip" onclick="filterPhotos(this,'receipt')">Receipts</div>
+        <div class="cat-chip" onclick="filterPhotos(this,'odometer')">Odometer</div>
+        <div class="cat-chip" onclick="filterPhotos(this,'shelf')">Shelf</div>
+        <div class="cat-chip" onclick="filterPhotos(this,'product')">Products</div>
+        <div class="cat-chip" onclick="filterPhotos(this,'store')">Stores</div>
+      </div>
+
+      <!-- ═══ Today — Mar 9, 2026 ═══ -->
+      <div class="date-group" data-date="today">
+        <div class="date-group-header">
+          <div class="date-group-title">Today — Mar 9, 2026</div>
+          <div class="date-group-count">8 photos</div>
+        </div>
+        <div class="photo-grid" id="gridToday">
+          <!-- Photo 1: Selfie -->
+          <div class="photo-thumb" data-type="selfie" data-index="0" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div class="thumb-label">Check-in Selfie</div>
+            <div class="thumb-time">9:15 AM</div>
+          </div>
+          <!-- Photo 2: Receipt -->
+          <div class="photo-thumb" data-type="receipt" data-index="1" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+            <div class="thumb-label">Collection Receipt</div>
+            <div class="thumb-time">9:45 AM</div>
+          </div>
+          <!-- Photo 3: Store -->
+          <div class="photo-thumb" data-type="store" data-index="2" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="thumb-label">Store Front</div>
+            <div class="thumb-time">10:20 AM</div>
+          </div>
+          <!-- Photo 4: Shelf -->
+          <div class="photo-thumb" data-type="shelf" data-index="3" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+            <div class="thumb-label">Shelf Display</div>
+            <div class="thumb-time">10:35 AM</div>
+          </div>
+          <!-- Photo 5: Odometer -->
+          <div class="photo-thumb" data-type="odometer" data-index="4" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div class="thumb-label">Start Reading</div>
+            <div class="thumb-time">8:30 AM</div>
+          </div>
+          <!-- Photo 6: Product -->
+          <div class="photo-thumb" data-type="product" data-index="5" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <div class="thumb-label">New Product</div>
+            <div class="thumb-time">11:00 AM</div>
+          </div>
+          <!-- Photo 7: Selfie -->
+          <div class="photo-thumb" data-type="selfie" data-index="6" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div class="thumb-label">Check-in Selfie</div>
+            <div class="thumb-time">11:15 AM</div>
+          </div>
+          <!-- Photo 8: Receipt -->
+          <div class="photo-thumb" data-type="receipt" data-index="7" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+            <div class="thumb-label">Expense Receipt</div>
+            <div class="thumb-time">12:30 PM</div>
+          </div>
+        </div>
+        <!-- List view (hidden by default) -->
+        <div class="photo-list" id="listToday">
+          <div class="photo-list-item" data-type="selfie" onclick="openPhotoDetail(0)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Check-in Selfie</div><div class="photo-list-sub">Krishna Store</div></div>
+            <div class="photo-list-time">9:15 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="receipt" onclick="openPhotoDetail(1)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Collection Receipt</div><div class="photo-list-sub">Amount: Rs.8,500</div></div>
+            <div class="photo-list-time">9:45 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="store" onclick="openPhotoDetail(2)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Store Front</div><div class="photo-list-sub">Metro Mart</div></div>
+            <div class="photo-list-time">10:20 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="shelf" onclick="openPhotoDetail(3)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="3" y1="19" x2="21" y2="19"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Shelf Display</div><div class="photo-list-sub">Metro Mart</div></div>
+            <div class="photo-list-time">10:35 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="odometer" onclick="openPhotoDetail(4)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Start Reading</div><div class="photo-list-sub">82,450 km</div></div>
+            <div class="photo-list-time">8:30 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="product" onclick="openPhotoDetail(5)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">New Product</div><div class="photo-list-sub">Competitor</div></div>
+            <div class="photo-list-time">11:00 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="selfie" onclick="openPhotoDetail(6)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Check-in Selfie</div><div class="photo-list-sub">Sharma Store</div></div>
+            <div class="photo-list-time">11:15 AM</div>
+          </div>
+          <div class="photo-list-item" data-type="receipt" onclick="openPhotoDetail(7)">
+            <div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg></div>
+            <div class="photo-list-info"><div class="photo-list-title">Expense Receipt</div><div class="photo-list-sub">Lunch</div></div>
+            <div class="photo-list-time">12:30 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Yesterday — Mar 8, 2026 ═══ -->
+      <div class="date-group" data-date="yesterday">
+        <div class="date-group-header">
+          <div class="date-group-title">Yesterday — Mar 8, 2026</div>
+          <div class="date-group-count">6 photos</div>
+        </div>
+        <div class="photo-grid" id="gridYesterday">
+          <div class="photo-thumb" data-type="selfie" data-index="8" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div class="thumb-label">Check-in Selfie</div>
+            <div class="thumb-time">9:00 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="store" data-index="9" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="thumb-label">Store Front</div>
+            <div class="thumb-time">9:30 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="receipt" data-index="10" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+            <div class="thumb-label">Order Receipt</div>
+            <div class="thumb-time">10:15 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="shelf" data-index="11" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+            <div class="thumb-label">Shelf Display</div>
+            <div class="thumb-time">10:45 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="odometer" data-index="12" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div class="thumb-label">End Reading</div>
+            <div class="thumb-time">6:30 PM</div>
+          </div>
+          <div class="photo-thumb" data-type="product" data-index="13" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <div class="thumb-label">Product Shot</div>
+            <div class="thumb-time">11:30 AM</div>
+          </div>
+        </div>
+        <div class="photo-list" id="listYesterday">
+          <div class="photo-list-item" data-type="selfie" onclick="openPhotoDetail(8)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Check-in Selfie</div><div class="photo-list-sub">Patel Store</div></div><div class="photo-list-time">9:00 AM</div></div>
+          <div class="photo-list-item" data-type="store" onclick="openPhotoDetail(9)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Store Front</div><div class="photo-list-sub">Patel Store</div></div><div class="photo-list-time">9:30 AM</div></div>
+          <div class="photo-list-item" data-type="receipt" onclick="openPhotoDetail(10)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Order Receipt</div><div class="photo-list-sub">Rs.12,300</div></div><div class="photo-list-time">10:15 AM</div></div>
+          <div class="photo-list-item" data-type="shelf" onclick="openPhotoDetail(11)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="3" y1="19" x2="21" y2="19"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Shelf Display</div><div class="photo-list-sub">Patel Store</div></div><div class="photo-list-time">10:45 AM</div></div>
+          <div class="photo-list-item" data-type="odometer" onclick="openPhotoDetail(12)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="photo-list-info"><div class="photo-list-title">End Reading</div><div class="photo-list-sub">82,512 km</div></div><div class="photo-list-time">6:30 PM</div></div>
+          <div class="photo-list-item" data-type="product" onclick="openPhotoDetail(13)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Product Shot</div><div class="photo-list-sub">New SKU</div></div><div class="photo-list-time">11:30 AM</div></div>
+        </div>
+      </div>
+
+      <!-- ═══ Earlier — Mar 7, 2026 ═══ -->
+      <div class="date-group" data-date="earlier">
+        <div class="date-group-header">
+          <div class="date-group-title">Earlier — Mar 7, 2026</div>
+          <div class="date-group-count">5 photos</div>
+        </div>
+        <div class="photo-grid" id="gridEarlier">
+          <div class="photo-thumb" data-type="selfie" data-index="14" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div class="thumb-label">Check-in Selfie</div>
+            <div class="thumb-time">9:10 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="receipt" data-index="15" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+            <div class="thumb-label">Payment Receipt</div>
+            <div class="thumb-time">10:00 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="store" data-index="16" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="thumb-label">Store Front</div>
+            <div class="thumb-time">10:30 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="odometer" data-index="17" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div class="thumb-label">Start Reading</div>
+            <div class="thumb-time">8:15 AM</div>
+          </div>
+          <div class="photo-thumb" data-type="shelf" data-index="18" onclick="onPhotoTap(this)" oncontextmenu="onPhotoLongPress(event,this)">
+            <div class="thumb-check" onclick="event.stopPropagation();selectPhoto(this.parentElement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <svg class="thumb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+            <div class="thumb-label">Shelf Display</div>
+            <div class="thumb-time">11:00 AM</div>
+          </div>
+        </div>
+        <div class="photo-list" id="listEarlier">
+          <div class="photo-list-item" data-type="selfie" onclick="openPhotoDetail(14)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Check-in Selfie</div><div class="photo-list-sub">Gupta Mart</div></div><div class="photo-list-time">9:10 AM</div></div>
+          <div class="photo-list-item" data-type="receipt" onclick="openPhotoDetail(15)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16l3-2 3 2 3-2 3 2V4a2 2 0 00-2-2z"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Payment Receipt</div><div class="photo-list-sub">Rs.5,200</div></div><div class="photo-list-time">10:00 AM</div></div>
+          <div class="photo-list-item" data-type="store" onclick="openPhotoDetail(16)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Store Front</div><div class="photo-list-sub">Gupta Mart</div></div><div class="photo-list-time">10:30 AM</div></div>
+          <div class="photo-list-item" data-type="odometer" onclick="openPhotoDetail(17)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Start Reading</div><div class="photo-list-sub">82,388 km</div></div><div class="photo-list-time">8:15 AM</div></div>
+          <div class="photo-list-item" data-type="shelf" onclick="openPhotoDetail(18)"><div class="photo-list-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="3" y1="19" x2="21" y2="19"/></svg></div><div class="photo-list-info"><div class="photo-list-title">Shelf Display</div><div class="photo-list-sub">Gupta Mart</div></div><div class="photo-list-time">11:00 AM</div></div>
+        </div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" data-inject="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('../modules/orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item" onclick="goTo('../modules/performance.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Photo Detail Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="detailOverlay" onclick="closePhotoDetail()"></div>
+  <div class="bs-sheet" id="detailSheet">
+    <div class="bs-handle"></div>
+    <div class="detail-photo-placeholder" id="detailPlaceholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </div>
+    <div class="detail-info-row">
+      <div class="detail-badge" id="detailBadge">SELFIE</div>
+      <div class="detail-meta"><strong id="detailLocation">Krishna Store</strong></div>
+    </div>
+    <div class="detail-info-row">
+      <div class="detail-meta">Captured: <strong id="detailTime">9:15 AM, Mar 9 2026</strong></div>
+      <div class="detail-meta">Size: <strong id="detailSize">284 KB</strong></div>
+    </div>
+    <div class="detail-linked" id="detailLinked">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      <span id="detailLinkedText">Check-in at Krishna Store</span>
+    </div>
+    <div class="detail-gps" id="detailGps">GPS: 27.7172, 85.3240</div>
+    <div class="detail-actions">
+      <button class="btn btn-sm btn-secondary" onclick="sharePhotos(); closePhotoDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+      <button class="btn btn-sm btn-primary" onclick="showToast('Photo downloaded','success'); closePhotoDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none;" onclick="deletePhotos(); closePhotoDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        Delete
+      </button>
+    </div>
+    <button class="btn btn-sm btn-secondary btn-block" style="margin-top:10px;" id="detailViewRelated" onclick="showToast('Navigating to related module...','info'); closePhotoDetail()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+      View Related
+    </button>
+  </div>
+
+  <!-- ═══ Bulk Action Bar ═══ -->
+  <div class="bulk-bar" id="bulkBar">
+    <span class="bulk-bar-count" id="bulkCount">0 selected</span>
+    <button class="bulk-bar-btn" onclick="toggleSelectAll()" title="Select All">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    </button>
+    <button class="bulk-bar-btn" onclick="sharePhotos()" title="Share">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
+    <button class="bulk-bar-btn" onclick="downloadPhotos()" title="Download">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+    <button class="bulk-bar-btn danger" onclick="deletePhotos()" title="Delete">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+    </button>
+    <button class="bulk-bar-close" onclick="exitBulkSelect()" title="Cancel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── Photo Data ──
+  var photoData = [
+    { type:'selfie', label:'Check-in Selfie', time:'9:15 AM', date:'Mar 9, 2026', location:'Krishna Store', size:'284 KB', linked:'Check-in at Krishna Store', gps:'27.7172, 85.3240' },
+    { type:'receipt', label:'Collection Receipt', time:'9:45 AM', date:'Mar 9, 2026', location:'Krishna Store', size:'312 KB', linked:'Linked to Order #ORD-1847', gps:'27.7172, 85.3240' },
+    { type:'store', label:'Store Front', time:'10:20 AM', date:'Mar 9, 2026', location:'Metro Mart', size:'1.2 MB', linked:'Check-in at Metro Mart', gps:'27.6950, 85.3420' },
+    { type:'shelf', label:'Shelf Display', time:'10:35 AM', date:'Mar 9, 2026', location:'Metro Mart', size:'980 KB', linked:'Visit to Metro Mart', gps:'27.6950, 85.3420' },
+    { type:'odometer', label:'Start Reading', time:'8:30 AM', date:'Mar 9, 2026', location:'Office', size:'156 KB', linked:'Attendance — Day Start (82,450 km)', gps:'27.7100, 85.3200' },
+    { type:'product', label:'New Product', time:'11:00 AM', date:'Mar 9, 2026', location:'Competitor', size:'445 KB', linked:'Competitor product spotted', gps:'27.7020, 85.3350' },
+    { type:'selfie', label:'Check-in Selfie', time:'11:15 AM', date:'Mar 9, 2026', location:'Sharma Store', size:'290 KB', linked:'Check-in at Sharma Store', gps:'27.7085, 85.3180' },
+    { type:'receipt', label:'Expense Receipt', time:'12:30 PM', date:'Mar 9, 2026', location:'Lunch', size:'198 KB', linked:'Expense claim — Lunch', gps:'27.7150, 85.3260' },
+    { type:'selfie', label:'Check-in Selfie', time:'9:00 AM', date:'Mar 8, 2026', location:'Patel Store', size:'275 KB', linked:'Check-in at Patel Store', gps:'27.7200, 85.3100' },
+    { type:'store', label:'Store Front', time:'9:30 AM', date:'Mar 8, 2026', location:'Patel Store', size:'1.1 MB', linked:'Visit to Patel Store', gps:'27.7200, 85.3100' },
+    { type:'receipt', label:'Order Receipt', time:'10:15 AM', date:'Mar 8, 2026', location:'Patel Store', size:'340 KB', linked:'Linked to Order #ORD-1845', gps:'27.7200, 85.3100' },
+    { type:'shelf', label:'Shelf Display', time:'10:45 AM', date:'Mar 8, 2026', location:'Patel Store', size:'920 KB', linked:'Visit to Patel Store', gps:'27.7200, 85.3100' },
+    { type:'odometer', label:'End Reading', time:'6:30 PM', date:'Mar 8, 2026', location:'Office', size:'148 KB', linked:'Attendance — Day End (82,512 km)', gps:'27.7100, 85.3200' },
+    { type:'product', label:'Product Shot', time:'11:30 AM', date:'Mar 8, 2026', location:'New SKU', size:'510 KB', linked:'New SKU launch photo', gps:'27.7200, 85.3100' },
+    { type:'selfie', label:'Check-in Selfie', time:'9:10 AM', date:'Mar 7, 2026', location:'Gupta Mart', size:'268 KB', linked:'Check-in at Gupta Mart', gps:'27.7300, 85.3050' },
+    { type:'receipt', label:'Payment Receipt', time:'10:00 AM', date:'Mar 7, 2026', location:'Gupta Mart', size:'305 KB', linked:'Linked to Collection #COL-892', gps:'27.7300, 85.3050' },
+    { type:'store', label:'Store Front', time:'10:30 AM', date:'Mar 7, 2026', location:'Gupta Mart', size:'1.05 MB', linked:'Visit to Gupta Mart', gps:'27.7300, 85.3050' },
+    { type:'odometer', label:'Start Reading', time:'8:15 AM', date:'Mar 7, 2026', location:'Office', size:'152 KB', linked:'Attendance — Day Start (82,388 km)', gps:'27.7100, 85.3200' },
+    { type:'shelf', label:'Shelf Display', time:'11:00 AM', date:'Mar 7, 2026', location:'Gupta Mart', size:'890 KB', linked:'Visit to Gupta Mart', gps:'27.7300, 85.3050' }
+  ];
+
+  var isGridView = true;
+  var isBulkMode = false;
+  var selectedPhotos = new Set();
+  var longPressTimer = null;
+
+  // ── Filter Photos ──
+  function filterPhotos(el, type) {
+    document.querySelectorAll('.cat-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+
+    // Filter grid thumbs
+    document.querySelectorAll('.photo-thumb').forEach(function(thumb) {
+      if (type === 'all' || thumb.dataset.type === type) {
+        thumb.style.display = '';
+      } else {
+        thumb.style.display = 'none';
+      }
+    });
+
+    // Filter list items
+    document.querySelectorAll('.photo-list-item').forEach(function(item) {
+      if (type === 'all' || item.dataset.type === type) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // ── Open Photo Detail ──
+  function openPhotoDetail(index) {
+    if (isBulkMode) return;
+    var photo = photoData[index];
+    if (!photo) return;
+    document.getElementById('detailBadge').textContent = photo.type.toUpperCase();
+    document.getElementById('detailLocation').textContent = photo.location;
+    document.getElementById('detailTime').textContent = photo.time + ', ' + photo.date;
+    document.getElementById('detailSize').textContent = photo.size;
+    document.getElementById('detailLinkedText').textContent = photo.linked;
+    document.getElementById('detailGps').textContent = 'GPS: ' + photo.gps;
+    document.getElementById('detailOverlay').classList.add('show');
+    document.getElementById('detailSheet').classList.add('show');
+  }
+  function closePhotoDetail() {
+    document.getElementById('detailOverlay').classList.remove('show');
+    document.getElementById('detailSheet').classList.remove('show');
+  }
+
+  // ── Photo Tap / Long Press ──
+  function onPhotoTap(el) {
+    if (isBulkMode) {
+      selectPhoto(el);
+    } else {
+      openPhotoDetail(parseInt(el.dataset.index));
+    }
+  }
+  function onPhotoLongPress(e, el) {
+    e.preventDefault();
+    if (!isBulkMode) {
+      toggleBulkSelect();
+      selectPhoto(el);
+    }
+  }
+
+  // Mobile long-press via touch events
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.photo-thumb').forEach(function(thumb) {
+      thumb.addEventListener('touchstart', function(e) {
+        longPressTimer = setTimeout(function() {
+          if (!isBulkMode) {
+            toggleBulkSelect();
+            selectPhoto(thumb);
+          }
+        }, 500);
+      }, { passive: true });
+      thumb.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
+      thumb.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
+    });
+  });
+
+  // ── Toggle Grid/List View ──
+  function toggleGridView() {
+    isGridView = !isGridView;
+    var grids = document.querySelectorAll('.photo-grid');
+    var lists = document.querySelectorAll('.photo-list');
+    if (isGridView) {
+      grids.forEach(function(g) { g.style.display = 'grid'; });
+      lists.forEach(function(l) { l.style.display = 'none'; });
+    } else {
+      grids.forEach(function(g) { g.style.display = 'none'; });
+      lists.forEach(function(l) { l.style.display = 'flex'; });
+    }
+  }
+
+  // ── Bulk Selection Mode ──
+  function toggleBulkSelect() {
+    isBulkMode = true;
+    document.getElementById('galleryContent').classList.add('bulk-mode');
+    document.getElementById('bulkBar').classList.add('show');
+    updateBulkCount();
+  }
+  function exitBulkSelect() {
+    isBulkMode = false;
+    selectedPhotos.clear();
+    document.getElementById('galleryContent').classList.remove('bulk-mode');
+    document.getElementById('bulkBar').classList.remove('show');
+    document.querySelectorAll('.photo-thumb').forEach(function(t) {
+      t.classList.remove('selected');
+      t.querySelector('.thumb-check').classList.remove('checked');
+    });
+  }
+  function selectPhoto(el) {
+    var idx = el.dataset.index;
+    var check = el.querySelector('.thumb-check');
+    if (selectedPhotos.has(idx)) {
+      selectedPhotos.delete(idx);
+      el.classList.remove('selected');
+      check.classList.remove('checked');
+    } else {
+      selectedPhotos.add(idx);
+      el.classList.add('selected');
+      check.classList.add('checked');
+    }
+    updateBulkCount();
+  }
+  function updateBulkCount() {
+    document.getElementById('bulkCount').textContent = selectedPhotos.size + ' selected';
+  }
+  function toggleSelectAll() {
+    var allThumbs = document.querySelectorAll('.photo-thumb');
+    if (selectedPhotos.size === allThumbs.length) {
+      // Deselect all
+      selectedPhotos.clear();
+      allThumbs.forEach(function(t) {
+        t.classList.remove('selected');
+        t.querySelector('.thumb-check').classList.remove('checked');
+      });
+    } else {
+      // Select all
+      allThumbs.forEach(function(t) {
+        selectedPhotos.add(t.dataset.index);
+        t.classList.add('selected');
+        t.querySelector('.thumb-check').classList.add('checked');
+      });
+    }
+    updateBulkCount();
+  }
+
+  // ── Bulk Actions ──
+  function deletePhotos() {
+    var count = selectedPhotos.size || 1;
+    showToast(count + ' photo(s) deleted', 'success');
+    if (isBulkMode) exitBulkSelect();
+  }
+  function sharePhotos() {
+    var count = selectedPhotos.size || 1;
+    showToast(count + ' photo(s) shared', 'info');
+    if (isBulkMode) exitBulkSelect();
+  }
+  function downloadPhotos() {
+    var count = selectedPhotos.size || 1;
+    showToast(count + ' photo(s) downloaded', 'success');
+    if (isBulkMode) exitBulkSelect();
+  }
+</script>
+</body>
+</html>

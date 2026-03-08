@@ -1,7 +1,8 @@
 /
   index.html              <- Home screen grid (1 page)
-  sw.js                   <- Service Worker
-  modules/                <- 32 module pages
+  sw.js                   <- Service Worker (v3 — offline sync, background sync)
+  CNAME                   <- Custom domain config
+  modules/                <- 39 module pages
     login.html
     profile.html
     notifications.html
@@ -34,6 +35,13 @@
     config.html
     support.html
     reports.html
+    schemes.html
+    competitors.html
+    geofence.html
+    chat.html
+    targets.html
+    distributor.html
+    gallery.html
   css/
     style.css
   js/
