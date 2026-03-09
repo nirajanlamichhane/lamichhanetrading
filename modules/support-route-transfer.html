@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Route Transfer — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     .rt-temp-dates { display:none; margin-top:8px; gap:8px; }
     .rt-temp-dates.show { display:flex; }
@@ -196,6 +197,20 @@
     showToast('Transfer request submitted successfully', 'success');
     setTimeout(function() { goTo('support.html'); }, 800);
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_routetransfer_onboarded",
+    steps: [
+          {
+                "target": ".form-group",
+                "text": "Request a route transfer by selecting the route and transfer type.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Notes — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Search ── */
     .n-search-area { background:var(--primary); padding:0 14px 16px; }
@@ -173,345 +174,12 @@
   </style>
 </head>
 <body>
-<p class="page-title">Adera Sales · Notes</p>
+<div class="page-title">Adera Sales</div>
 <div class="phone-frame">
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+<!-- DRAWER -->
+  <div id="drawer" data-inject="notes"></div>
 
-  <!-- DRAWER -->
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <div class="drawer-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      </div>
-      <div class="drawer-brand">Adera Sales</div>
-      <button class="drawer-close" onclick="closeDrawer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="drawer-user">
-      <div class="drawer-avatar">RS</div>
-      <div>
-        <div class="drawer-user-name">Rajesh Shrestha</div>
-        <div class="drawer-user-role">Sales Representative</div>
-      </div>
-    </div>
-    <nav class="drawer-nav">
-      <a class="drawer-item" href="../index.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Dashboard
-      </a>
-      <a class="drawer-item" href="parties.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Parties
-      </a>
-      <a class="drawer-item" href="orders.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-        Orders
-      </a>
-      <a class="drawer-item" href="collections.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Collections
-      </a>
-      <a class="drawer-item" href="attendance.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Attendance
-      </a>
-      <a class="drawer-item" href="performance.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Performance
-      </a>
-      <a class="drawer-item active" href="notes.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Notes
-      </a>
-      <div style="border-top:1px solid rgba(255,255,255,.1); margin:8px 16px;"></div>
-      <a class="drawer-item" onclick="showToast('Logged out'); closeDrawer();" style="cursor:pointer;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout
-      </a>
-    </nav>
-  </div>
-
-  <div class="screen-scroll">
-    <!-- STATUS BAR -->
-    <div class="status-bar">
-      <span>9:41</span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
-        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
-      </div>
-    </div>
-
-    <!-- TOP BAR -->
-    <div class="top-bar">
-      <button class="icon-btn" onclick="goBack()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <span class="top-bar-title">Field Notes</span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="bulk-select-btn" id="bulkSelectBtn" onclick="enterBulkMode()">Select</button>
-        <button class="icon-btn" onclick="openDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Pull to Refresh -->
-    <div class="ptr-indicator" id="ptr" style="height:0;opacity:0;overflow:hidden;transition:all .3s ease;display:flex;align-items:center;justify-content:center">
-      <div class="ptr-spinner"></div>
-    </div>
-
-    <!-- SEARCH -->
-    <div class="n-search-area">
-      <div class="n-search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="Search notes by title, party, keyword..." />
-      </div>
-    </div>
-
-    <!-- FILTER CHIPS -->
-    <div class="n-filter-row">
-      <div class="n-chip active">All</div>
-      <div class="n-chip">High Priority</div>
-      <div class="n-chip">Medium</div>
-      <div class="n-chip">Low</div>
-      <div class="n-chip">This Week</div>
-    </div>
-
-    <!-- CONTENT -->
-    <div class="content" style="padding:8px 16px 16px;">
-      <!-- Select All Row -->
-      <div class="bulk-select-all" id="bulkSelectAll" onclick="selectAllNotes()">
-        <div class="bulk-checkbox" id="selectAllCheckbox"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <span>Select All</span>
-      </div>
-
-      <div class="n-section">
-        <span class="n-section-title">My Notes</span>
-        <span class="n-section-count">10 notes</span>
-      </div>
-
-      <!-- Note 1 -->
-      <div class="note-card priority-high" onclick="openNoteDetail()">
-        <div class="nc-top">
-          <div class="nc-title">Ram Stores - Price Negotiation</div>
-          <span class="nc-badge high">High</span>
-        </div>
-        <div class="nc-preview">Discussed bulk discount for Soap 500g and Shampoo 200ml. Owner agreed to increase order volume if 5% discount is applied on orders above Rs 20,000. Need manager approval for special pricing.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Ram Stores
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">10:30 AM</span>
-            <span class="nc-date">Today</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 2 -->
-      <div class="note-card priority-high">
-        <div class="nc-top">
-          <div class="nc-title">Follow-up: Shree Traders Payment Overdue</div>
-          <span class="nc-badge high">High</span>
-        </div>
-        <div class="nc-preview">Outstanding balance of Rs 15,500 is 12 days overdue. Owner promised payment by end of week. Must follow up on Friday and collect cheque or UPI transfer. Escalate to area manager if not resolved.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Shree Traders
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">2:15 PM</span>
-            <span class="nc-date">Today</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 3 -->
-      <div class="note-card priority-medium">
-        <div class="nc-top">
-          <div class="nc-title">Himalaya Shop - New SKUs Requested</div>
-          <span class="nc-badge medium">Medium</span>
-        </div>
-        <div class="nc-preview">Shop owner wants to stock 3 new SKUs: Body Lotion 300ml, Face Wash 100ml, and Conditioner 150ml. Requested product brochure and pricing list. Send catalog by tomorrow morning.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Himalaya Shop
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">9:45 AM</span>
-            <span class="nc-date">Yesterday</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 4 -->
-      <div class="note-card priority-high">
-        <div class="nc-top">
-          <div class="nc-title">Price Complaint - City Bazaar</div>
-          <span class="nc-badge high">High</span>
-        </div>
-        <div class="nc-preview">Owner complained about MRP increase on Detergent 1kg (Rs 180 to Rs 210). Says competitor brand is cheaper by Rs 25. Threatening to switch brands. Urgent: discuss with regional head for price match or scheme.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            City Bazaar
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">4:00 PM</span>
-            <span class="nc-date">Yesterday</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 5 -->
-      <div class="note-card priority-medium">
-        <div class="nc-top">
-          <div class="nc-title">Stock Issue at Nepal Mart</div>
-          <span class="nc-badge medium">Medium</span>
-        </div>
-        <div class="nc-preview">Shampoo 200ml and Face Wash 100ml out of stock for 5 days. Customers complaining. Warehouse confirmed next batch arriving Thursday. Place priority restock order for 10 cartons each.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Nepal Mart
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">11:20 AM</span>
-            <span class="nc-date">Mar 6</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 6 -->
-      <div class="note-card priority-low">
-        <div class="nc-top">
-          <div class="nc-title">Product Demo at Lakshmi General Store</div>
-          <span class="nc-badge low">Low</span>
-        </div>
-        <div class="nc-preview">Conducted demo for new Detergent 1kg and Face Wash range. Manager interested, wants to trial 2 cartons each. Schedule delivery for next Monday. Good potential for regular orders.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Lakshmi General
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">3:30 PM</span>
-            <span class="nc-date">Mar 5</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 7 -->
-      <div class="note-card priority-medium">
-        <div class="nc-top">
-          <div class="nc-title">Scheme Feedback - Ganesh Provision</div>
-          <span class="nc-badge medium">Medium</span>
-        </div>
-        <div class="nc-preview">Current buy 10 get 1 free scheme not attractive enough. Owner suggests buy 8 get 1 to compete with local distributor offer. Adjacent shops also expressing same concern. Consolidate feedback for weekly report.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Ganesh Provision
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">1:00 PM</span>
-            <span class="nc-date">Mar 4</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 8 -->
-      <div class="note-card priority-low">
-        <div class="nc-top">
-          <div class="nc-title">Visit Recap - Sunrise Supermart</div>
-          <span class="nc-badge low">Low</span>
-        </div>
-        <div class="nc-preview">Routine visit completed. All shelves stocked properly. Placed reorder for 5 cartons Soap 500g and 3 cartons Conditioner 150ml. Payment of Rs 12,000 collected via UPI. Next visit scheduled for March 12.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Sunrise Supermart
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">5:00 PM</span>
-            <span class="nc-date">Mar 3</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 9 -->
-      <div class="note-card priority-high">
-        <div class="nc-top">
-          <div class="nc-title">Damaged Goods - Pokhara Traders</div>
-          <span class="nc-badge high">High</span>
-        </div>
-        <div class="nc-preview">6 units of Body Lotion 300ml found damaged on delivery (leaking caps). Owner refusing to accept shipment. Initiated return request RET-2026-012. Need replacement within 48 hours to retain relationship.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Pokhara Traders
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">10:00 AM</span>
-            <span class="nc-date">Mar 2</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Note 10 -->
-      <div class="note-card priority-low">
-        <div class="nc-top">
-          <div class="nc-title">New Lead - Bhaktapur Cosmetics</div>
-          <span class="nc-badge low">Low</span>
-        </div>
-        <div class="nc-preview">Met shop owner Suresh during beat route. Currently buying from competitor. Interested in our Shampoo and Face Wash line. Shared catalog and pricing. Schedule follow-up visit next week with samples.</div>
-        <div class="nc-footer">
-          <span class="nc-party">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            Bhaktapur Cosmetics
-          </span>
-          <div class="nc-meta">
-            <span class="nc-time">2:45 PM</span>
-            <span class="nc-date">Mar 1</span>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /content -->
-
-    <!-- BOTTOM NAV -->
-    <div class="bottom-nav">
-      <a class="bottom-nav-item" href="../index.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
-      </a>
-      <a class="bottom-nav-item" href="parties.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        <span>Parties</span>
-      </a>
-      <a class="bottom-nav-item bottom-nav-center" href="orders.html">
-        <div class="bottom-nav-fab">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </div>
-        <span>New</span>
-      </a>
-      <a class="bottom-nav-item" href="performance.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Reports</span>
-      </a>
-      <a class="bottom-nav-item" href="profile.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- Bulk Action Bar -->
+    <!-- Bulk Action Bar -->
   <div class="bulk-bar" id="bulkBar">
     <button class="bulk-close" onclick="exitBulkMode()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div class="bulk-count" id="bulkCount">0 selected</div>
@@ -1090,6 +758,25 @@ function deleteRecording() {
     showToast(count + ' note(s) archived', 'success');
   };
 })();
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_notes_onboarded",
+    steps: [
+          {
+                "target": ".n-search-wrap",
+                "text": "Search your notes by keyword or store name.",
+                "position": "below"
+          },
+          {
+                "target": ".note-card",
+                "text": "Your saved notes with store name, date, and preview. Tap to view or edit.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

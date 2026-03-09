@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>De-Board Outlet — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
 </head>
 <body>
 
@@ -148,6 +149,20 @@
     showToast('De-board request submitted successfully', 'success');
     setTimeout(function() { goTo('support.html'); }, 800);
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_deboard_onboarded",
+    steps: [
+          {
+                "target": ".form-group",
+                "text": "Fill in the outlet details and reason for de-boarding the outlet.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

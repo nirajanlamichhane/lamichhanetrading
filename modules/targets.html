@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Targets & Incentives — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Period Tabs ── */
     .period-tabs { display:flex; gap:0; margin-bottom:14px; background:#f1f5f9; border-radius:12px; padding:3px; }
@@ -181,34 +182,10 @@
 </head>
 <body>
 
-<p class="page-title">Adera Sales · Targets & Incentives</p>
+<div class="page-title">Adera Sales</div>
 
 <div class="phone-frame">
-
-  <!-- Drawer Overlay -->
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
-
-  <!-- Side Drawer -->
-  <div class="drawer" id="drawer" data-inject="drawer">
-    <div class="drawer-header">
-      <div class="drawer-avatar">👤</div>
-      <div class="drawer-name">Elon Musk</div>
-      <div class="drawer-role">Sales Representative · Kathmandu</div>
-      <button class="drawer-target-btn">🎯 Your Target</button>
-    </div>
-    <div class="drawer-section-title">Navigation</div>
-    <div class="drawer-item" onclick="goTo('../index.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="drawer-item-label">Home</span></div>
-    <div class="drawer-item" onclick="goTo('../modules/parties.html')"><div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="drawer-item-label">Parties</span></div>
-    <div class="drawer-item" onclick="goTo('../modules/orders.html')"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div><span class="drawer-item-label">Orders</span></div>
-    <div class="drawer-item" onclick="goTo('../modules/collections.html')"><div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="drawer-item-label">Collection</span></div>
-    <div class="drawer-item" onclick="goTo('../modules/attendance.html')"><div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span class="drawer-item-label">Attendance</span></div>
-    <div class="drawer-item" onclick="goTo('../modules/performance.html')"><div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="drawer-item-label">Performance</span></div>
-    <div class="drawer-item active" onclick="closeDrawer()"><div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><span class="drawer-item-label">Targets</span></div>
-    <div class="drawer-divider"></div>
-    <div class="drawer-section-title">Actions</div>
-    <div class="drawer-item"><div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="drawer-item-label">Logout</span></div>
-    <div class="drawer-footer"><div class="drawer-version">ver 1.0.0 · Adera Sales</div></div>
-  </div>
+  <div id="drawer" data-inject="targets"></div>
 
   <!-- Scrollable Screen -->
   <div class="screen-scroll">
@@ -274,6 +251,7 @@
       <div class="section-hdr">Target Breakdown</div>
       <div class="section-sub">Tap any card for details</div>
 
+      <div id="targetCards">
       <!-- 1. Revenue Target -->
       <div class="target-card" onclick="openSheet('revenue')">
         <div class="tc-top">
@@ -375,6 +353,7 @@
           <div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
         </div>
       </div>
+      </div><!-- /targetCards -->
 
       <!-- ═══ Incentive Slabs ═══ -->
       <div class="section-hdr" style="margin-top:6px;">Incentive Structure</div>
@@ -410,7 +389,7 @@
       </div>
 
       <!-- Next slab progress -->
-      <div class="slab-next">
+      <div class="slab-next" id="slabNextText">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
         17% more to reach <b>Gold</b>
       </div>
@@ -448,6 +427,7 @@
       <!-- ═══ Milestone Rewards ═══ -->
       <div class="section-hdr" style="margin-top:6px;">Milestone Rewards</div>
 
+      <div id="milestoneCards">
       <div class="milestone-card">
         <div class="ms-icon done">✅</div>
         <div class="ms-body">
@@ -474,6 +454,7 @@
         </div>
         <div class="ms-bonus">₹1,500</div>
       </div>
+      </div>
 
       <!-- ═══ Monthly Trend Chart ═══ -->
       <div class="chart-card">
@@ -481,34 +462,34 @@
         <div class="bar-chart" id="trendChart" style="position:relative;">
           <div class="target-line" style="top:0;"><span class="target-line-label">100% Target</span></div>
           <div class="bar-col">
-            <div class="bar-value">72%</div>
+            <div class="bar-value" id="barValue0">72%</div>
             <div class="bar-fill above" id="bar0" style="height:0;"></div>
-            <div class="bar-label">Oct</div>
+            <div class="bar-label" id="barLabel0">Oct</div>
           </div>
           <div class="bar-col">
-            <div class="bar-value">65%</div>
+            <div class="bar-value" id="barValue1">65%</div>
             <div class="bar-fill below" id="bar1" style="height:0;"></div>
-            <div class="bar-label">Nov</div>
+            <div class="bar-label" id="barLabel1">Nov</div>
           </div>
           <div class="bar-col">
-            <div class="bar-value">78%</div>
+            <div class="bar-value" id="barValue2">78%</div>
             <div class="bar-fill above" id="bar2" style="height:0;"></div>
-            <div class="bar-label">Dec</div>
+            <div class="bar-label" id="barLabel2">Dec</div>
           </div>
           <div class="bar-col">
-            <div class="bar-value">81%</div>
+            <div class="bar-value" id="barValue3">81%</div>
             <div class="bar-fill above" id="bar3" style="height:0;"></div>
-            <div class="bar-label">Jan</div>
+            <div class="bar-label" id="barLabel3">Jan</div>
           </div>
           <div class="bar-col">
-            <div class="bar-value">74%</div>
+            <div class="bar-value" id="barValue4">74%</div>
             <div class="bar-fill above" id="bar4" style="height:0;"></div>
-            <div class="bar-label">Feb</div>
+            <div class="bar-label" id="barLabel4">Feb</div>
           </div>
           <div class="bar-col">
-            <div class="bar-value">68%</div>
+            <div class="bar-value" id="barValue5">68%</div>
             <div class="bar-fill below" id="bar5" style="height:0;"></div>
-            <div class="bar-label">Mar</div>
+            <div class="bar-label" id="barLabel5">Mar</div>
           </div>
         </div>
       </div>
@@ -554,31 +535,7 @@
       </button>
     </div>
 
-    <!-- Bottom Nav -->
-    <div class="bottom-nav" data-inject="bottom-nav">
-      <div class="nav-item" onclick="goTo('../index.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
-      </div>
-      <div class="nav-item" onclick="goTo('../modules/parties.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        <span>Parties</span>
-      </div>
-      <div class="nav-center-wrap">
-        <div class="nav-center" onclick="goTo('../modules/orders.html')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </div>
-        <span>New</span>
-      </div>
-      <div class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Reports</span>
-      </div>
-      <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </div>
-    </div>
+    <div class="bottom-nav" data-inject="targets"></div>
 
   </div><!-- /screen-scroll -->
 
@@ -586,61 +543,187 @@
 
 <script src="../js/app.js"></script>
 <script>
+  /* ═══════════════════════════════════════════════
+     Period-based data for Monthly / Quarterly / Yearly
+     ═══════════════════════════════════════════════ */
+  var periodData = {
+    Monthly: {
+      hero: { pct: 68, current: '₹1,72,000', total: '₹2,50,000', daysLeft: '22 days left', trend: '+8% vs last month', trendDir: 'up' },
+      targets: [
+        { key:'revenue', name:'Revenue Target', pct:68, color:'amber', achieved:'₹1,72,000', goal:'₹2,50,000', incentive:'₹5,000' },
+        { key:'orders', name:'Order Count', pct:76, color:'amber', achieved:'152', goal:'200 orders', incentive:'₹2,000' },
+        { key:'outlets', name:'New Outlets', pct:40, color:'red', achieved:'8', goal:'20 outlets', incentive:'₹3,000' },
+        { key:'collection', name:'Collection Target', pct:92, color:'green', achieved:'₹1,85,000', goal:'₹2,00,000', incentive:'₹4,000' },
+        { key:'visits', name:'Visit Target', pct:84, color:'green', achieved:'168', goal:'200 visits', incentive:'₹1,500' },
+        { key:'coverage', name:'Active Coverage', pct:84, color:'green', achieved:'67%', goal:'80% coverage', incentive:'₹2,500' }
+      ],
+      slabs: { currentTier: 'Silver', nextTier: 'Gold', gapPct: 17 },
+      milestones: [
+        { icon:'✅', done:true, title:'First ₹1L Revenue', status:'Achieved on Mar 5', bonus:'₹1,000' },
+        { icon:'🔒', done:false, title:'10 New Outlets', status:'8/10 (80%)', bonus:'₹2,000' },
+        { icon:'🔒', done:false, title:'Zero Returns Month', status:'2 returns so far', bonus:'₹1,500' }
+      ],
+      chart: { labels:['Oct','Nov','Dec','Jan','Feb','Mar'], values:[72,65,78,81,74,68], title:'Monthly Achievement Trend' },
+      sheet: {
+        revenue: { title:'Revenue Target', subtitle:'Monthly revenue collection target', current:'₹1,72,000', target:'₹2,50,000', remaining:'₹78,000', runRate:'₹3,545/day', projected:'₹2,18,000', tips:'Focus on high-value orders from top 10 outlets. Schedule revisits to pending collections. Push combo deals for higher order value.' },
+        orders: { title:'Order Count', subtitle:'Monthly order placement target', current:'152', target:'200 orders', remaining:'48 orders', runRate:'2.2 orders/day', projected:'186 orders', tips:'Visit untapped outlets in your beat. Offer introductory schemes to new parties. Follow up on pending reorders from last week.' },
+        outlets: { title:'New Outlets', subtitle:'Monthly new outlet acquisition', current:'8', target:'20 outlets', remaining:'12 outlets', runRate:'0.5 outlets/day', projected:'14 outlets', tips:'Scout new market areas during morning beat. Ask existing retailers for referrals. Target shops near high-footfall zones.' },
+        collection: { title:'Collection Target', subtitle:'Monthly payment collection target', current:'₹1,85,000', target:'₹2,00,000', remaining:'₹15,000', runRate:'₹682/day', projected:'₹1,98,000', tips:'Follow up on overdue invoices from top debtors. Offer early payment discounts. Prioritize high-value pending collections.' },
+        visits: { title:'Visit Target', subtitle:'Monthly outlet visit target', current:'168', target:'200 visits', remaining:'32 visits', runRate:'1.5 visits/day', projected:'192 visits', tips:'Plan efficient route to cover more outlets per day. Start early to maximize visits. Combine nearby outlets in single trips.' },
+        coverage: { title:'Active Coverage', subtitle:'Monthly active outlet coverage %', current:'67%', target:'80%', remaining:'13% gap', runRate:'0.6%/day increase needed', projected:'75%', tips:'Re-activate dormant outlets with special offers. Visit lapsed accounts personally. Track and follow up on zero-billing outlets.' }
+      }
+    },
+    Quarterly: {
+      hero: { pct: 74, current: '₹5,85,000', total: '₹7,50,000', daysLeft: '52 days left', trend: '+12% vs last quarter', trendDir: 'up' },
+      targets: [
+        { key:'revenue', name:'Revenue Target', pct:78, color:'amber', achieved:'₹5,85,000', goal:'₹7,50,000', incentive:'₹18,000' },
+        { key:'orders', name:'Order Count', pct:82, color:'green', achieved:'492', goal:'600 orders', incentive:'₹8,000' },
+        { key:'outlets', name:'New Outlets', pct:55, color:'amber', achieved:'33', goal:'60 outlets', incentive:'₹12,000' },
+        { key:'collection', name:'Collection Target', pct:88, color:'green', achieved:'₹5,28,000', goal:'₹6,00,000', incentive:'₹15,000' },
+        { key:'visits', name:'Visit Target', pct:79, color:'amber', achieved:'474', goal:'600 visits', incentive:'₹6,000' },
+        { key:'coverage', name:'Active Coverage', pct:86, color:'green', achieved:'72%', goal:'80% coverage', incentive:'₹8,000' }
+      ],
+      slabs: { currentTier: 'Silver', nextTier: 'Gold', gapPct: 11 },
+      milestones: [
+        { icon:'✅', done:true, title:'First ₹3L Quarterly Revenue', status:'Achieved on Jan 28', bonus:'₹3,000' },
+        { icon:'✅', done:true, title:'30 New Outlets in Q', status:'Achieved on Feb 15', bonus:'₹5,000' },
+        { icon:'🔒', done:false, title:'Quarterly Zero Escalations', status:'1 escalation in Jan', bonus:'₹4,000' }
+      ],
+      chart: { labels:['Q2 24','Q3 24','Q4 24','Q1 25','Q2 25','Q3 25'], values:[68,71,80,76,82,74], title:'Quarterly Achievement Trend' },
+      sheet: {
+        revenue: { title:'Revenue Target', subtitle:'Quarterly revenue collection target', current:'₹5,85,000', target:'₹7,50,000', remaining:'₹1,65,000', runRate:'₹3,173/day', projected:'₹7,10,000', tips:'Close pending bulk orders from top 5 distributors. Accelerate schemes push in last month. Target high-value seasonal products.' },
+        orders: { title:'Order Count', subtitle:'Quarterly order placement target', current:'492', target:'600 orders', remaining:'108 orders', runRate:'2.1 orders/day', projected:'582 orders', tips:'Focus on repeat order cycles. Bundle smaller SKUs for quick wins. Target unserved outlets in secondary routes.' },
+        outlets: { title:'New Outlets', subtitle:'Quarterly new outlet acquisition', current:'33', target:'60 outlets', remaining:'27 outlets', runRate:'0.5 outlets/day', projected:'48 outlets', tips:'Expand into adjacent territories. Partner with local distributors for leads. Run intro-offer campaigns for new sign-ups.' },
+        collection: { title:'Collection Target', subtitle:'Quarterly payment collection target', current:'₹5,28,000', target:'₹6,00,000', remaining:'₹72,000', runRate:'₹1,385/day', projected:'₹5,92,000', tips:'Settle outstanding >30 days first. Offer quarterly settlement discounts. Prioritize top 15 debtor accounts.' },
+        visits: { title:'Visit Target', subtitle:'Quarterly outlet visit target', current:'474', target:'600 visits', remaining:'126 visits', runRate:'2.4 visits/day', projected:'570 visits', tips:'Optimize beat plan for max coverage. Combine collection + order visits. Target morning hours for higher conversion.' },
+        coverage: { title:'Active Coverage', subtitle:'Quarterly active outlet coverage %', current:'72%', target:'80%', remaining:'8% gap', runRate:'0.15%/day increase needed', projected:'78%', tips:'Re-engage dormant accounts quarterly. Schedule dedicated coverage drives every 2 weeks. Track zero-billing list weekly.' }
+      }
+    },
+    Yearly: {
+      hero: { pct: 61, current: '₹18,30,000', total: '₹30,00,000', daysLeft: '118 days left', trend: '+5% vs last year', trendDir: 'up' },
+      targets: [
+        { key:'revenue', name:'Revenue Target', pct:61, color:'amber', achieved:'₹18,30,000', goal:'₹30,00,000', incentive:'₹75,000' },
+        { key:'orders', name:'Order Count', pct:67, color:'amber', achieved:'1,608', goal:'2,400 orders', incentive:'₹30,000' },
+        { key:'outlets', name:'New Outlets', pct:48, color:'red', achieved:'115', goal:'240 outlets', incentive:'₹50,000' },
+        { key:'collection', name:'Collection Target', pct:72, color:'amber', achieved:'₹17,28,000', goal:'₹24,00,000', incentive:'₹60,000' },
+        { key:'visits', name:'Visit Target', pct:70, color:'amber', achieved:'1,680', goal:'2,400 visits', incentive:'₹24,000' },
+        { key:'coverage', name:'Active Coverage', pct:78, color:'amber', achieved:'70%', goal:'85% coverage', incentive:'₹35,000' }
+      ],
+      slabs: { currentTier: 'Bronze', nextTier: 'Silver', gapPct: 9 },
+      milestones: [
+        { icon:'✅', done:true, title:'₹10L Annual Revenue', status:'Achieved on Aug 12', bonus:'₹10,000' },
+        { icon:'✅', done:true, title:'100 New Outlets/Year', status:'Achieved on Oct 3', bonus:'₹15,000' },
+        { icon:'🔒', done:false, title:'Top 5 in Region', status:'Currently #8', bonus:'₹25,000' }
+      ],
+      chart: { labels:['2020','2021','2022','2023','2024','2025'], values:[55,62,70,68,75,61], title:'Yearly Achievement Trend' },
+      sheet: {
+        revenue: { title:'Revenue Target', subtitle:'Annual revenue collection target', current:'₹18,30,000', target:'₹30,00,000', remaining:'₹11,70,000', runRate:'₹99,153/month', projected:'₹26,50,000', tips:'Maximize Q4 festive season push. Secure annual contracts with top distributors. Diversify product mix for higher margins.' },
+        orders: { title:'Order Count', subtitle:'Annual order placement target', current:'1,608', target:'2,400 orders', remaining:'792 orders', runRate:'198 orders/month', projected:'2,220 orders', tips:'Increase order frequency from existing base. Launch loyalty programs for repeat orders. Tap into e-commerce channels.' },
+        outlets: { title:'New Outlets', subtitle:'Annual new outlet acquisition', current:'115', target:'240 outlets', remaining:'125 outlets', runRate:'31 outlets/month', projected:'195 outlets', tips:'Hire part-time scouts for new territories. Run quarterly expansion drives. Offer first-order incentives for new retailers.' },
+        collection: { title:'Collection Target', subtitle:'Annual payment collection target', current:'₹17,28,000', target:'₹24,00,000', remaining:'₹6,72,000', runRate:'₹1,68,000/month', projected:'₹22,80,000', tips:'Enforce strict credit policies for new accounts. Clear all 60+ day outstanding. Negotiate advance payments for large orders.' },
+        visits: { title:'Visit Target', subtitle:'Annual outlet visit target', current:'1,680', target:'2,400 visits', remaining:'720 visits', runRate:'180 visits/month', projected:'2,280 visits', tips:'Maintain discipline on daily visit count. Use route optimization. Add evening quick-visits for nearby outlets.' },
+        coverage: { title:'Active Coverage', subtitle:'Annual active outlet coverage %', current:'70%', target:'85%', remaining:'15% gap', runRate:'3.75%/month increase needed', projected:'80%', tips:'Conduct bi-annual market mapping. Run re-activation campaigns each quarter. Assign coverage KPIs to weekly reviews.' }
+      }
+    }
+  };
+
+  var currentPeriod = 'Monthly';
+  var circumference = 2 * Math.PI * 58;
+
   /* ── Period Tab Switch ── */
   function switchPeriod(el) {
     document.querySelectorAll('.period-tab').forEach(function(t) { t.classList.remove('active'); });
     el.classList.add('active');
-    showToast(el.textContent + ' view selected');
+    currentPeriod = el.textContent.trim();
+    renderPeriod(currentPeriod);
   }
 
-  /* ── Bottom Sheet Data ── */
-  var sheetData = {
-    revenue: {
-      title: 'Revenue Target',
-      subtitle: 'Monthly revenue collection target',
-      current: '₹1,72,000', target: '₹2,50,000', remaining: '₹78,000',
-      runRate: '₹3,545/day', projected: '₹2,18,000',
-      tips: 'Focus on high-value orders from top 10 outlets. Schedule revisits to pending collections. Push combo deals for higher order value.'
-    },
-    orders: {
-      title: 'Order Count',
-      subtitle: 'Monthly order placement target',
-      current: '152', target: '200 orders', remaining: '48 orders',
-      runRate: '2.2 orders/day', projected: '186 orders',
-      tips: 'Visit untapped outlets in your beat. Offer introductory schemes to new parties. Follow up on pending reorders from last week.'
-    },
-    outlets: {
-      title: 'New Outlets',
-      subtitle: 'Monthly new outlet acquisition',
-      current: '8', target: '20 outlets', remaining: '12 outlets',
-      runRate: '0.5 outlets/day', projected: '14 outlets',
-      tips: 'Scout new market areas during morning beat. Ask existing retailers for referrals. Target shops near high-footfall zones.'
-    },
-    collection: {
-      title: 'Collection Target',
-      subtitle: 'Monthly payment collection target',
-      current: '₹1,85,000', target: '₹2,00,000', remaining: '₹15,000',
-      runRate: '₹682/day', projected: '₹1,98,000',
-      tips: 'Follow up on overdue invoices from top debtors. Offer early payment discounts. Prioritize high-value pending collections.'
-    },
-    visits: {
-      title: 'Visit Target',
-      subtitle: 'Monthly outlet visit target',
-      current: '168', target: '200 visits', remaining: '32 visits',
-      runRate: '1.5 visits/day', projected: '192 visits',
-      tips: 'Plan efficient route to cover more outlets per day. Start early to maximize visits. Combine nearby outlets in single trips.'
-    },
-    coverage: {
-      title: 'Active Coverage',
-      subtitle: 'Monthly active outlet coverage %',
-      current: '67%', target: '80%', remaining: '13% gap',
-      runRate: '0.6%/day increase needed', projected: '75%',
-      tips: 'Re-activate dormant outlets with special offers. Visit lapsed accounts personally. Track and follow up on zero-billing outlets.'
-    }
-  };
+  /* ── Render all sections for the active period ── */
+  function renderPeriod(period) {
+    var d = periodData[period];
+    if (!d) return;
 
+    // Hero card
+    document.querySelector('.donut-pct').textContent = d.hero.pct + '%';
+    document.querySelector('.hero-amount').innerHTML = d.hero.current + ' <span>of ' + d.hero.total + '</span>';
+    var badges = document.querySelectorAll('.hero-badge');
+    badges[0].innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + d.hero.daysLeft;
+    badges[1].className = 'hero-badge trend-' + d.hero.trendDir;
+    badges[1].innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' + d.hero.trend;
+
+    // Animate donut
+    var donutFill = document.getElementById('donutFill');
+    donutFill.style.strokeDashoffset = circumference;
+    setTimeout(function() {
+      donutFill.style.strokeDashoffset = circumference * (1 - d.hero.pct / 100);
+    }, 50);
+
+    // Target cards
+    var cardContainer = document.getElementById('targetCards');
+    var html = '';
+    d.targets.forEach(function(t) {
+      html += '<div class="target-card" onclick="openSheet(\'' + t.key + '\')">' +
+        '<div class="tc-top"><div class="tc-name">' + t.name + '</div><div class="tc-pct ' + t.color + '">' + t.pct + '%</div></div>' +
+        '<div class="tc-vals"><b>' + t.achieved + '</b> / ' + t.goal + '</div>' +
+        '<div class="tc-bar"><div class="tc-bar-fill ' + t.color + '" style="width:0%"></div></div>' +
+        '<div class="tc-foot">' +
+          '<div class="tc-incentive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>' + t.incentive + '</div>' +
+          '<div class="tc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>' +
+        '</div></div>';
+    });
+    cardContainer.innerHTML = html;
+    // Animate bars after paint
+    setTimeout(function() {
+      cardContainer.querySelectorAll('.tc-bar-fill').forEach(function(bar, i) {
+        bar.style.width = d.targets[i].pct + '%';
+      });
+    }, 50);
+
+    // Incentive slabs — update "next slab" text
+    document.getElementById('slabNextText').innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>' +
+      d.slabs.gapPct + '% more to reach <b>' + d.slabs.nextTier + '</b>';
+
+    // Highlight current slab
+    document.querySelectorAll('.slab-card').forEach(function(s) { s.classList.remove('current'); });
+    var tierMap = { 'Bronze': 0, 'Silver': 1, 'Gold': 2, 'Platinum': 3 };
+    var slabCards = document.querySelectorAll('.slab-card');
+    if (tierMap[d.slabs.currentTier] !== undefined && slabCards[tierMap[d.slabs.currentTier]]) {
+      slabCards[tierMap[d.slabs.currentTier]].classList.add('current');
+    }
+
+    // Milestones
+    var msContainer = document.getElementById('milestoneCards');
+    var msHtml = '';
+    d.milestones.forEach(function(m) {
+      msHtml += '<div class="milestone-card">' +
+        '<div class="ms-icon ' + (m.done ? 'done' : 'locked') + '">' + m.icon + '</div>' +
+        '<div class="ms-body"><div class="ms-title">' + m.title + '</div>' +
+        '<div class="ms-status ' + (m.done ? 'achieved' : '') + '">' + m.status + '</div></div>' +
+        '<div class="ms-bonus">' + m.bonus + '</div></div>';
+    });
+    msContainer.innerHTML = msHtml;
+
+    // Chart
+    document.querySelector('.chart-title').textContent = d.chart.title;
+    var maxH = 100;
+    d.chart.values.forEach(function(val, i) {
+      var bar = document.getElementById('bar' + i);
+      var label = document.getElementById('barLabel' + i);
+      var value = document.getElementById('barValue' + i);
+      if (bar) {
+        bar.style.height = '0px';
+        bar.className = 'bar-fill ' + (val >= 70 ? 'above' : 'below');
+        setTimeout(function() { bar.style.height = (val / 100) * maxH + 'px'; }, i * 80);
+      }
+      if (label) label.textContent = d.chart.labels[i];
+      if (value) value.textContent = val + '%';
+    });
+  }
+
+  /* ── Bottom Sheet ── */
   function openSheet(key) {
-    var d = sheetData[key];
+    var d = periodData[currentPeriod].sheet[key];
     if (!d) return;
     document.getElementById('sheetTitle').textContent = d.title;
     document.getElementById('sheetSubtitle').textContent = d.subtitle;
@@ -659,42 +742,64 @@
     document.getElementById('sheetOverlay').classList.remove('open');
   }
 
-  /* ── Animated Donut & Bars on Load ── */
+  /* ── Initial Render ── */
   (function() {
+    // Animate donut on first load
     var donutFill = document.getElementById('donutFill');
-    var circumference = 2 * Math.PI * 58; // ~364.42
-    var targetOffset = circumference * (1 - 0.68); // 68% fill
-
-    // Animate donut on load
     setTimeout(function() {
-      donutFill.style.strokeDashoffset = targetOffset;
+      donutFill.style.strokeDashoffset = circumference * (1 - 0.68);
+    }, 300);
+
+    // Animate target card bars on first load
+    setTimeout(function() {
+      document.querySelectorAll('.tc-bar-fill').forEach(function(bar) {
+        bar.style.width = bar.getAttribute('data-w') || bar.style.width;
+      });
     }, 300);
 
     // Animate bar chart with IntersectionObserver
-    var barValues = [72, 65, 78, 81, 74, 68];
-    var maxH = 100; // max bar height in px (out of 130px chart height)
+    var barValues = periodData.Monthly.chart.values;
+    var maxH = 100;
     var animated = false;
-
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting && !animated) {
           animated = true;
           barValues.forEach(function(val, i) {
             var bar = document.getElementById('bar' + i);
-            if (bar) {
-              setTimeout(function() {
-                bar.style.height = (val / 100) * maxH + 'px';
-              }, i * 100);
-            }
+            if (bar) setTimeout(function() { bar.style.height = (val / 100) * maxH + 'px'; }, i * 100);
           });
         }
       });
     }, { threshold: 0.3 });
-
     var chart = document.getElementById('trendChart');
     if (chart) observer.observe(chart);
   })();
 </script>
 
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_targets_onboarded",
+    steps: [
+          {
+                "target": ".hero-card",
+                "text": "Your target achievement overview with progress toward incentive slabs.",
+                "position": "below"
+          },
+          {
+                "target": ".period-tabs",
+                "text": "Switch between Daily, Weekly, Monthly, or Quarterly target views.",
+                "position": "below"
+          },
+          {
+                "target": ".target-card",
+                "text": "Each target shows metric, achieved value, and progress bar.",
+                "position": "below"
+          }
+    ]
+  });
+</script>
 </body>
 </html>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Support — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     .sp-search { position:relative; margin-bottom:14px; }
     .sp-search input {
@@ -214,6 +215,25 @@
     searchSupport('');
     input.focus();
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_onboarded",
+    steps: [
+          {
+                "target": ".sp-search",
+                "text": "Search support tickets or browse categories to find help.",
+                "position": "below"
+          },
+          {
+                "target": ".list-item",
+                "text": "Your support requests with status. Tap to view details or create new.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

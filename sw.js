@@ -70,6 +70,7 @@ const urlsToCache = [
   "/modules/report-order-analysis.html",
   "/modules/report-time-route.html",
   "/modules/sf-cluster-tools.html",
+  "/modules/push-banner.html",
 ];
 
 self.addEventListener("install", event => {

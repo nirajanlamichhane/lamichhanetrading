@@ -1,10 +1,10 @@
 # Adera Sales — Complete Implementation & Design Document
 
-**Version:** 1.3.0
+**Version:** 1.9.0
 **Type:** Mobile Field Sales App — UI Prototype (Static HTML/CSS/JS)
 **Last Updated:** March 9, 2026
-**Total Screens:** 47 (1 home + 46 modules)
-**Status:** All module pages complete with full UI content + interactive features
+**Total Screens:** 67 (1 home + 66 modules)
+**Status:** 64/67 module pages fully built with HTML content + interactive features; 3 skeleton pages (beatplans, returns, stock) have CSS/JS/bottom-sheets but need HTML body; all pages use shared data-inject navigation; hub pages have search; onboarding system on all 66 pages; all module cards linked from home screen
 
 ---
 
@@ -26,6 +26,12 @@
 14. [Recent Additions (v1.1)](#14-recent-additions-v11)
 15. [Recent Additions (v1.2)](#15-recent-additions-v12)
 16. [Recent Additions (v1.3)](#16-recent-additions-v13)
+17. [Recent Additions (v1.4)](#17-recent-additions-v14)
+18. [Recent Additions (v1.5)](#18-recent-additions-v15)
+19. [Recent Additions (v1.6)](#19-recent-additions-v16)
+20. [Recent Additions (v1.7)](#20-recent-additions-v17)
+21. [Recent Additions (v1.8)](#21-recent-additions-v18)
+22. [Recent Additions (v1.9)](#22-recent-additions-v19)
 
 ---
 
@@ -57,9 +63,11 @@ Adera Sales is a mobile-first field sales representative application prototype. 
 ├── index.html                  # Home screen / main dashboard
 ├── sw.js                       # Service Worker (PWA shell)
 ├── css/
-│   └── style.css               # Global design system (906 lines)
+│   ├── style.css               # Global design system (906 lines)
+│   └── onboarding.css          # Onboarding walkthrough styles (shared)
 ├── js/
-│   └── app.js                  # Shared app logic (352 lines)
+│   ├── app.js                  # Shared app logic (352 lines)
+│   └── onboarding.js           # Onboarding walkthrough engine (shared)
 ├── modules/                    # 65 module pages
 │   ├── login.html              # Login, OTP, company selection (pre-auth)
 │   ├── profile.html            # User profile, settings, edit
@@ -125,7 +133,8 @@ Adera Sales is a mobile-first field sales representative application prototype. 
 │   ├── report-goods-received.html # Reports — Goods received
 │   ├── report-merchandise.html # Reports — Merchandise report
 │   ├── report-order-analysis.html # Reports — Order analysis
-│   └── report-time-route.html  # Reports — Time & route report
+│   ├── report-time-route.html  # Reports — Time & route report
+│   └── push-banner.html        # Push notification banner demo (v1.7)
 └── docs/
     └── implementation.md       # This document
 ```
@@ -279,6 +288,10 @@ Used across many modules for detail views and forms:
 | `SyncConflict.show(conflicts)` | `(array)` | Shows conflict resolution bottom sheet |
 | `CtxTooltip.show(el, opts)` | `(HTMLElement, object)` | Shows contextual tooltip with value, trend, auto-close |
 | `bindTooltip(el, opts)` | `(HTMLElement, object)` | Binds long-press/click tooltip to element |
+| `Onboarding.init(opts)` | `(object)` | Initializes help walkthrough. opts: `{key, steps[], beforeStep?, onStart?, onEnd?, autoStart?}`. From `js/onboarding.js` |
+| `Onboarding.start()` | `()` | Manually starts the walkthrough (also exposed as `window.startOnboarding`) |
+| `Onboarding.skip()` | `()` | Skips/closes the walkthrough and saves to localStorage |
+| `Onboarding.next()` | `()` | Advances to the next step (or finishes if on last step) |
 
 ### 5.2 Auto-Injection System (v1.1)
 
@@ -291,7 +304,7 @@ Pages opt into standardized drawer + bottom nav via `data-inject` attributes:
 
 - Value sets which item gets `.active` class; if empty, auto-detects from filename
 - Path-aware: detects `/modules/` in URL for correct relative links
-- Only affects elements with `data-inject` — existing hardcoded navs unchanged
+- As of v1.5, all 64 module pages use `data-inject` (only `login.html` excluded — no nav needed)
 
 ---
 
@@ -413,17 +426,20 @@ Status Bar → Top Bar → Greeting Banner → Check-In Section → Content Area
 - Support: Help & FAQ, report a problem, terms & privacy
 - Logout button (red outline)
 - **Edit Profile Bottom Sheet:** editable fields for name, email, phone
+- **Navigation:** Uses `data-inject="profile"` for drawer + bottom nav
 - **JS:** `openEditProfile()`, `closeEditProfile()`, `toggleSwitch()`
 
-#### `notifications.html` — Notification Center
+#### `notifications.html` — Notification Center (1013 lines)
 - Header: back button, title, Mark All Read button, Settings gear icon
-- Stats strip: Unread (8), Today (12), This Week (47)
-- Filter tabs: All / Orders / Approvals / System — live filtering
-- 15 notification cards in 3 date groups (Today 8, Yesterday 4, Earlier 3)
-- Each card: colored icon, title, description, relative timestamp, unread dot indicator
-- **Detail Bottom Sheet:** dynamic notification content with action buttons
-- **Settings Bottom Sheet:** 7 notification type toggles + Quiet Hours config
-- **JS:** mark-all-read, tab filtering, detail/settings sheet open/close
+- **3 stats:** Unread (dynamic), Today (8), This Week (47)
+- **Filter tabs:** All / Orders / Approvals / System — live filtering with auto section count updates
+- **15 notification cards** in 3 date groups (Today 8, Yesterday 4, Earlier 3)
+- Each card: colored icon (8 color variants), title, 2-line description, relative timestamp, unread dot + blue left border for unread
+- **Detail Bottom Sheet:** dynamic content per notification with context-specific action buttons (View Order, Approve, Mark Read, Dismiss)
+- **Settings Bottom Sheet:** 7 notification type toggles (Orders, Collections, Approvals, System, Promotions, Chat, Location) + Quiet Hours with time pickers
+- **Push notification permission:** prompt sheet with Allow/Not Now, saved to localStorage
+- **Card interactions:** mark as read on tap, swipe-to-dismiss animation
+- **JS:** `switchNotifTab()`, `openNotifDetail()`, `closeNotifDetail()`, `handleNotifAction()`, `markCardAsRead()`, `dismissCard()`, `updateUnreadCount()`, `updateSectionCounts()`, `openSettings()`, `closeSettings()`, `markAllRead()`, `requestPushPermission()`, `enablePushNotifications()`
 
 ### 8.1 Order Flow
 
@@ -624,17 +640,137 @@ Status Bar → Top Bar → Greeting Banner → Check-In Section → Content Area
 - DMS inventory management interface
 - Stock levels, categories, warehouse view
 
-#### `salesforce.html` — Sales Force Module
-- Team management and performance tracking
-- Sales rep list with metrics
+#### `salesforce.html` — Sales Force Hub
+- Info card: "Sales Officers" — 1 Active, 0 Inactive, 0 On Leave
+- **Targets section:** 3 navigable items — Distributor Sales Target, SBD Target, Sales Targets
+- **Field Operations section:** 5 navigable items — Campaigns, Fundamental Targets, Call Roster, Routes, POSMs
+- **Management section:** 4 navigable items — Sub-D Replenishment, Leave Management, Cluster Target Tools, Attendance
+- All items link to dedicated sub-pages via `goTo()`
 
-#### `reports.html` — Reports Module
-- Report templates and generation
-- Sales, collection, and performance reports
+#### `sf-distributor-target.html` — Distributor Target
+- Info card: "Monthly Distributor Targets" — Rs 15,00,000 goal, 68% achieved
+- Summary card: Target / Achieved (Rs 10,20,000) / Remaining (Rs 4,80,000) / Days Left (12)
+- 3 distributor list items with achievement badges: ABC Distributors (75%), XYZ Trading (64%), Nepal Supplies (63%)
 
-#### `config.html` — Configuration
-- App settings and preferences
-- Sync settings, notification preferences
+#### `sf-sbd-target.html` — SBD Target
+- Info card: "SBD Performance" — 72% Achievement, Must Stock List tracking
+- SKU Overview: Total SKUs (45), Stocked (32), Gap (13), Compliance (72%)
+- 4 category items: Beverages (85%), Snacks (78%), Personal Care (65%), Home Care (58%)
+- 3 gap items (red alerts): Floor Cleaner 500ml, Hand Wash 250ml, Shampoo Sachet 5ml
+
+#### `sf-sales-targets.html` — Sales Targets
+- Info card: "Individual Goals" — Rs 8,50,000 Target
+- 3 target categories with progress: Primary Sales (75%), Secondary Sales (62%), Collection Target (88%)
+- Weekly breakdown: 4 weeks with revenue amounts
+
+#### `sf-campaigns.html` — Campaigns
+- Info card: "Active Campaigns" — 3 Running
+- 3 active campaigns: Summer Bonanza (45% target), New Product Launch (23% enrolled), Loyalty Rewards (156 participants)
+- Summer Bonanza detail card with period, target outlets, enrolled, revenue
+- 2 upcoming campaigns: Monsoon Sale (May 1), Festival Dhamaka (Jun 15)
+
+#### `sf-fundamental-targets.html` — Fundamental Targets
+- Info card: "Outlet Fundamentals" — 78% Score
+- 4 key metrics: Effective Coverage (85%), Billing Accuracy (92%), Productive Calls (78%), Strike Rate (65%)
+- 3 outlets below threshold (red alerts): Sharma General Store, Poudel Kirana, Thapa Mart
+
+#### `sf-call-roster.html` — Call Roster
+- Info card: "Visit Schedule" — 24 Calls Today
+- Summary: Completed (8), Pending (12), Skipped (4)
+- 7 schedule items: 3 completed (Done), 3 pending, 1 skipped (Shop closed)
+
+#### `sf-routes.html` — Routes
+- Info card: "Route Planning" — 5 Active Routes
+- 5 route items: Route A–E across Balaju, Lazimpat, Thamel, Ason, Naxal with schedules and outlet counts
+- Summary: Total Routes (5), Total Outlets (82), Avg/Route (16.4), Coverage Days (6/week)
+
+#### `sf-posms.html` — POSMs
+- Info card: "Point of Sale Materials" — 128 Deployed
+- 4 POSM types: Shelf Talkers (45), Danglers (32), Standees (18), Counter Displays (33)
+- 3 recent deployments with dates/locations
+- Summary: Deployed (128), Pending (18), Compliance Rate (88%)
+
+#### `sf-subd-replenishment.html` — Sub-D Replenishment
+- Info card: "Sub-Distributor Stock" — 3 Pending Orders
+- Stock status: Adequate (12), Low Stock (8), Out of Stock (3)
+- 3 pending orders: RPL-001 (Rs 1,25,000), RPL-002 (Rs 85,000), RPL-003 (Rs 62,000)
+- 3 out-of-stock alert items; "Quick Reorder All" button
+
+#### `sf-cluster-tools.html` — Cluster Target Tools
+- Info card: "Cluster Management" — 3 Clusters, Kathmandu Region
+- 3 clusters: North KTM (32 outlets, 92%), Central KTM (45 outlets, 74%), South KTM (28 outlets, 88%)
+- Target summary: Total (Rs 16,50,000), Achieved (Rs 13,86,000), Overall 84%
+- Action buttons: View Sales Targets, Distributor Targets
+
+#### `reports.html` — Reports Hub
+- Period tab bar: Weekly (active) / Monthly with inline JS tab switching
+- **Fundamentals:** Coverage Report (View badge), DSE Productivity
+- **Sales Reports:** Product Sales, Net Sales, Order Summary (View badge), Order Analysis
+- **Operations:** Time Spent On Route, Merchandise Report, Goods Received
+- Order Summary Preview: 6-row outlet table (IDs + names)
+- "View Performance Dashboard" quick link button
+
+#### `report-coverage.html` — Coverage Report
+- Info card: "Outlet Coverage" — 85% Coverage Rate, 156 of 184 outlets
+- Summary: Total (184), Visited (156), Not Visited (28)
+- 5 area items with gradient progress bars: Balaju (95%), Lazimpat (88%), Thamel (82%), Ason (78%), Naxal (72%)
+- **CSS:** `.progress-row`, `.progress-bar-wrap`, `.progress-bar-fill`
+
+#### `report-dse-productivity.html` — DSE Productivity
+- Info card: Productivity Score 78%, last 7 days
+- 4 stat boxes: Calls Made (142), Orders Booked (98), Conversion (69%), Avg Time/Visit (18 min)
+- 5 DSE items with score badges: Elon Musk (92%), Ramesh Sharma (85%), Sita Poudel (78%), Bikash Thapa (71%), Anita Gurung (65%)
+- **CSS:** `.stats-row`, `.stat-box`, `.score-badge` (high/mid/low)
+
+#### `report-net-sales.html` — Net Sales Report
+- Info card: Rs 12,45,600 Net Revenue (after returns & discounts)
+- Breakdown: Gross (Rs 14,20,000), Returns (-Rs 84,400), Discounts (-Rs 90,000), Net (Rs 12,45,600)
+- Weekly trend: 4 weeks with revenue and primary badges
+
+#### `report-order-summary.html` — Order Summary
+- Info card: 245 Total Orders, Rs 8,75,400
+- 4 stat boxes: Pending (12), Confirmed (189), Dispatched (32), Delivered (12)
+- 5 recent orders with color-coded status badges
+- **CSS:** `.stats-row`, `.status-*` badge variants
+
+#### `report-product-sales.html` — Product Sales
+- Info card: Rs 4,52,800 Total (weekly breakdown)
+- 5 products with percentage share badges: A (28%), B (22%), C (17%), D (15%), E (19%)
+
+#### `report-order-analysis.html` — Order Analysis
+- Info card: Rs 4,82,350, 156 orders this month
+- CSS bar chart: 4 weekly bars (W1=28, W2=42, W3=36, W4=50)
+- Breakdown: Confirmed (128), Pending (18), Cancelled (10), Avg Value (Rs 3,092), Fulfilment (82%)
+- 3 top outlets: Annapurna Store, BS Kirana, Shivang Nepal
+- **CSS:** `.bar-chart`, `.bar-col`, `.bar-fill`, `.bar-label`, `.bar-val`
+
+#### `report-time-route.html` — Time On Route
+- Info card: Avg 5h 42m, Target 6h 00m
+- Summary: Total Field Time (28h 30m), Working Days (5), Target Achievement (95%)
+- 5 daily items with gradient time bars: Mon (6h15m), Tue (6h05m), Wed (5h30m), Thu (4h40m), Fri (6h00m)
+- **CSS:** `.time-bar`, `.time-bar-wrap`, `.time-bar-fill`, `.time-bar-val`
+
+#### `report-merchandise.html` — Merchandise Report
+- SVG donut ring chart: 83% Compliance (132/160 outlets)
+- Breakdown: Audited (160), Compliant (132), Partial (20), Non-Compliant (8)
+- 4 POSM items: Shelf Talkers (91%, Good), Danglers (75%, Fair), Counter Displays (61%, Low), Banners (55%, Low)
+- **CSS:** `.compliance-ring` with SVG donut
+
+#### `report-goods-received.html` — Goods Received
+- Info card: Rs 12,45,800, 42 shipments received, 3 pending
+- Summary: Total (45), Received (42), In Transit (3), Damaged/Short (2), Acceptance Rate (95.2%)
+- 4 recent GRN items: 2 Verified, 1 Shortage, 1 In Transit
+
+#### `config.html` — Configuration (716 lines)
+- **Search bar:** Real-time filter with section auto-hide, no-results state
+- **Sub-D:** Sub-Distributors (8), Assortment (145) — detail bottom sheets
+- **Product Catalogue:** SKU (342), Channel Assortment (5)
+- **GTM:** Classification (6), Territory (12), Town (24)
+- **User:** Accounts (15); **Presentation:** Display Settings
+- **App Settings:** 4 toggles — Push Notifications, Location Tracking, Offline Sync, Auto-Save Drafts — persisted via `localStorage.app_config`
+- **Data & Storage:** Clear Cache (12.4 MB), Export Data (JSON backup)
+- **Detail bottom sheet:** `configItems[]` array (9 entries), "Manage Users" → `manage-users.html`
+- **JS:** `configItems[]`, `initToggles()`, `toggleSetting()`, `searchConfig()`, `openConfigDetail()`, `closeDetail()`, `clearCache()`, `exportData()`
 
 #### `support.html` — Help & Support Hub
 - Uses `data-inject` for drawer + bottom nav
@@ -679,32 +815,46 @@ Status Bar → Top Bar → Greeting Banner → Check-In Section → Content Area
 - **JS:** `toggleTempDates()` — shows/hides temp date fields; `submitTransfer()` — validates all fields including temp dates, success toast + redirect
 
 #### `support-new-request.html` — New Support Ticket
-- Hardcoded drawer (not data-inject)
-- Full ticket form: subject, category dropdown (7 options), priority (Low/Medium/High/Urgent), related outlet, description
-- File attachment upload zone
+- Uses `data-inject` for drawer + bottom nav
+- Full ticket form: subject (`#nrSubject`), category dropdown (`#nrCategory`, 7 options), priority (`#nrPriority` — Low/Medium/High/Urgent), related outlet (`#nrOutlet`), description (`#nrDesc`)
+- File attachment upload zone (info toast — backend required)
 - Cancel + Submit Ticket buttons
+- **JS:** `submitTicket()` — validates all required fields with `showToast()`, generates random ticket number, redirects to `support.html`
+- **JS:** IIFE auto-prefills category from `localStorage('support_prefill_category')` set by `support-category.html`
 
 #### `support-ticket-detail.html` — Ticket Detail View
-- Hardcoded drawer (not data-inject)
-- Ticket header card: #1024, "GPS not updating", Open badge, submitted 2 days ago, App/Technical
-- Detail card: Priority (High), Category (App/Technical), Assigned To (IT Support), full description
-- Activity timeline with border-left + colored dots: Created (blue) → Assigned (info) → IT Support replied (warning)
-- Reply section: textarea, file attachment, Close Ticket + Send Reply buttons
+- Uses `data-inject` for drawer + bottom nav
+- Ticket header card: #1024, "GPS not updating", Open badge (`#ticketStatus`), submitted 2 days ago, App/Technical
+- Detail card (`.td-meta`): Priority (High), Category (App/Technical), Assigned To (IT Support), full description
+- Activity timeline (`#timeline`) with `.tl-line` border-left + colored `.tl-dot` dots: Created (primary) → Assigned (info) → IT Support replied (warning)
+- **Custom CSS classes:** `.tl-line`, `.tl-item`, `.tl-dot`, `.tl-card`, `.tl-head`, `.tl-title`, `.tl-time`, `.tl-body`, `.td-meta`, `.td-meta-row`, `.td-meta-label`, `.td-meta-val`
+- Reply section: textarea (`#replyText`), file attachment (info toast), Close Ticket + Send Reply buttons
+- **JS:** `sendReply()` — validates text, appends new timeline entry with HTML-escaped content, clears textarea
+- **JS:** `closeTicket()` — changes `#ticketStatus` badge to "Closed" (success), appends timeline entry, prevents double-close
 
-#### `manage-users.html` — User Management (DMS)
-- Search bar with custom `.mu-search` styles
-- User list with role management
-- Add/edit/remove user capabilities
+#### `manage-users.html` — User Management (670 lines)
+- **4 stats:** Total Users, Active, Inactive, Admins (dynamically computed)
+- **Search bar** (`.mu-search`): live search by name, email, role
+- **Filter tabs:** All / Active / Inactive / Admin
+- **10 mock users** with roles (Admin, Manager, Sales Rep, Support), status badges, avatars
+- **User detail bottom sheet:** full profile view, role badge, contact info, last login, action buttons
+- **Actions:** Toggle status (Activate/Deactivate), Reset Password, Change Role (dropdown with confirmation)
+- **Invite sheet:** Email-based user invitation form with role selector
+- **JS:** `searchUsers()`, `filterUsers()`, `openUserDetail()`, `toggleUserStatus()`, `resetPassword()`, `changeRole()`, `openInviteSheet()`, `sendInvite()`, `renderUsers()`, `updateStats()`
 
 ### 8.9 New Modules (v1.3)
 
-#### `schemes.html` — Schemes & Offers
-- 4 stats (Active 12, Expiring 3, Target Linked 5, Value ₹2.4L)
-- Filter tabs: All / Product / Value / Quantity / Combo
-- 8 scheme cards with colored left borders, progress bars, type badges, "Apply to Order"
-- Scheme detail bottom sheet: eligible products, T&C, usage stats
-- 3 target-linked incentive cards with SVG donut rings
-- **JS:** `filterSchemes()`, `openSchemeDetail()`, `closeSchemeDetail()`, `applyScheme()`
+#### `schemes.html` — Schemes & Offers (1263 lines)
+- **4 stats:** Active (12), Expiring (3), Target Linked (5), Value (₹2.4L)
+- **Search bar:** live search across scheme names and categories
+- **Filter tabs:** All / Product / Value / Quantity / Combo
+- **8 scheme cards** with colored left borders (green=active, amber=expiring, red=expired), progress bars, type badges
+- **Bookmark system:** toggle bookmark per scheme, saved to `localStorage.adera_scheme_bookmarks`
+- **Scheme detail bottom sheet:** full scheme info, eligible products list, T&C, usage stats, Apply/Bookmark/Share actions
+- **Share:** Web Share API with clipboard fallback
+- **3 target-linked incentive cards** with animated SVG donut progress rings, achievement percentage
+- **Target detail bottom sheet:** milestone breakdown, reward tiers
+- **JS:** `searchSchemes()`, `clearSearch()`, `filterSchemes()`, `openSchemeDetail()`, `openTargetDetail()`, `closeSchemeDetail()`, `applyScheme()`, `applyFromSheet()`, `toggleBookmark()`, `toggleBookmarkFromSheet()`, `shareScheme()`, `restoreBookmarks()`
 
 #### `competitors.html` — Competitor Intelligence
 - 4 stats, search bar, filter tabs (All/Pricing/Products/Promotions/Shelf)
@@ -730,12 +880,15 @@ Status Bar → Top Bar → Greeting Banner → Check-In Section → Content Area
 - **JS:** `openChat()`, `closeChat()`, `sendMessage()`, `filterConversations()`, `tapQuickReply()`
 
 #### `targets.html` — Targets & Incentives
-- Animated SVG donut hero (68%, ₹1,72,000 / ₹2,50,000, trend arrow)
-- 6 KPI target cards with incentive amounts and color-coded progress bars
-- 4 incentive slabs (Bronze/Silver/Gold/Platinum) — current slab highlighted
-- 3 milestone rewards (achieved/locked states with progress)
-- Monthly trend SVG bar chart (6 months with target line)
-- **JS:** `switchPeriod()`, `openTargetDetail()`, `closeTargetDetail()`
+- **Fully functional period tabs** (Monthly / Quarterly / Yearly) — switching tabs dynamically updates all sections
+- Animated SVG donut hero with period-specific data (pct, amounts, days left, trend)
+- 6 KPI target cards with incentive amounts, color-coded progress bars, animated on tab switch
+- 4 incentive slabs (Bronze/Silver/Gold/Platinum) — current slab auto-highlighted per period
+- "X% more to reach [Next Tier]" dynamically updates per period
+- 3 milestone rewards per period (achieved/locked states with progress)
+- Trend SVG bar chart (6 bars) — labels & values update per period (months/quarters/years)
+- Bottom sheet detail per target — shows period-specific current, target, remaining, run rate, projected, tips
+- **JS:** `switchPeriod()`, `renderPeriod()`, `openSheet()`, `closeSheet()`, `periodData{}` (3 full datasets)
 
 #### `distributor.html` — Distributor Management
 - Hero card: company profile, license #, status badge, quick actions (Call/Email/Directions)
@@ -871,9 +1024,12 @@ Home → Orders (orders.html)
 ## 11. PWA & Offline Support
 
 - **Service Worker:** Registered in `app.js` via `navigator.serviceWorker.register('/sw.js')`
-- **sw.js:** Basic shell at project root
-- **Status:** Minimal — no caching strategy implemented yet
-- **Future:** Add cache-first strategy for static assets, network-first for API calls
+- **sw.js v6:** Full caching — 66 pages (index + 65 modules) + CSS + JS
+- **Cache strategy:** cache-first for static assets, network-first for `/api/` calls
+- **Offline queue:** IndexedDB-based request queue (`adera_offline_requests`)
+- **Background Sync:** Background Sync API registration, manual sync via `postMessage`
+- **Cache cleanup:** Old caches removed on `activate` event
+- **Offline banner:** Auto-detection via `online`/`offline` events on home page
 
 ---
 
@@ -1049,11 +1205,13 @@ Live search + tab/chip filtering added to 3 key modules:
 - Quick reply chips: "On my way", "Will do", "Noted", "Thanks", "Call me"
 
 #### `targets.html` — Targets & Incentives
-- Animated SVG donut hero (68% achievement, ₹1,72,000 / ₹2,50,000)
-- 6 KPI target cards with incentive amounts and progress bars
-- 4-tier incentive slab system (Bronze→Platinum) with current slab highlight
-- 3 milestone reward cards (achieved/locked states)
-- Monthly trend SVG bar chart (6 months)
+- **Functional period tabs** (Monthly / Quarterly / Yearly) — all sections update dynamically
+- Animated SVG donut hero with period-specific achievement data
+- 6 KPI target cards with animated progress bars, color coding, incentive amounts
+- 4-tier incentive slab system (Bronze→Platinum) — current tier auto-highlighted per period
+- 3 milestone reward cards per period (achieved/locked states)
+- Trend SVG bar chart with period-appropriate labels (months/quarters/years)
+- Bottom sheet detail with run rate, projected, tips per target per period
 
 #### `distributor.html` — Distributor Management
 - Distributor profile hero card (Nepal Foods Pvt. Ltd)
@@ -1115,12 +1273,15 @@ Live search + tab/chip filtering added to 3 key modules:
 - Monthly trend sparkline/area chart (6 data points)
 - IntersectionObserver triggers animations on scroll
 
-#### Onboarding Walkthrough (index.html)
-- 4-step spotlight tutorial (CHECK-IN, module grid, drawer, bottom nav)
+#### Onboarding Help Walkthrough (all 66 pages)
+- Shared reusable system: `css/onboarding.css` + `js/onboarding.js` (`Onboarding.init()`)
 - Dark overlay with spotlight cutout (box-shadow trick)
-- Tooltip bubbles with step counter and dots
-- Auto-starts on first visit, "?" button to replay
-- Saved to `localStorage.adera_onboarded`
+- Tooltip bubbles with step counter, dots, Skip / Next navigation
+- Auto-starts on first visit per page; "?" help button to replay anytime
+- Per-page localStorage keys (e.g., `adera_onboarded`, `adera_geo_onboarded`)
+- Lifecycle hooks: `beforeStep(idx, step)`, `onStart()`, `onEnd()` for page-specific actions
+- Auto-injects help button, overlay, spotlight, and tooltip HTML into `.phone-frame`
+- Applied to index.html (4 steps) + 65 modules (1–4 contextual steps each)
 
 #### Contextual Tooltips
 - `CtxTooltip.show()` — dark tooltip with title, value, trend arrow
@@ -1160,7 +1321,7 @@ Live search + tab/chip filtering added to 3 key modules:
 - Saved to `localStorage.adera_update_dismissed`
 - **Auto-hide:** Banner auto-hides after 5 seconds if not interacted with
 - **Swipe-to-dismiss:** Swipe banner upward (>40px threshold) to dismiss; small drags snap back. Swipe handler skips touches on close/update buttons to avoid conflicts
-- **24-hour snooze:** Clicking the X button hides the banner for 24 hours (timestamp stored in `localStorage.adera_update_dismissed_at`); reappears after 24h unless the update is completed
+- **Permanent dismiss:** Clicking the X button permanently hides the banner for the current version (stores version in `localStorage.adera_update_dismissed`); banner will not reappear until a new version is set
 - **Close button:** 32×32px circular button with semi-transparent white background, inline in flex layout (no longer absolute-positioned to avoid `overflow:hidden` clipping)
 
 ### CSS Component Additions (style.css)
@@ -1174,4 +1335,371 @@ Live search + tab/chip filtering added to 3 key modules:
 
 ---
 
-*Generated for Adera Sales v1.3.0 — March 2026*
+## 17. Recent Additions (v1.4)
+
+**Date:** March 9, 2026
+**Version bump:** 1.3.0 → 1.4.0
+**Total pages:** 66 (was 47)
+
+### New Sub-Module Pages (26 pages added)
+
+#### Sales Force Sub-Pages (10 pages)
+| Page | Lines | Description |
+|------|-------|-------------|
+| `sf-distributor-target.html` | 165 | Monthly distributor sales target tracking with achievement bars |
+| `sf-sbd-target.html` | 178 | SBD (Sales By Design) performance tracking with product compliance matrix |
+| `sf-sales-targets.html` | 140 | Individual sales goals, achievement percentage, incentive slabs |
+| `sf-campaigns.html` | 163 | Active promotional campaigns with status badges, date ranges, budget tracking |
+| `sf-fundamental-targets.html` | 154 | Outlet & user fundamental metrics (productivity, coverage, billing) |
+| `sf-call-roster.html` | 168 | Visit schedules & call planning calendar with outlet list |
+| `sf-routes.html` | 158 | Sales route planning, outlet counts, day assignments |
+| `sf-posms.html` | 170 | Point of sale materials tracking with placement status |
+| `sf-subd-replenishment.html` | 170 | Sub-distributor restocking with stock level monitoring |
+| `sf-cluster-tools.html` | 153 | Cluster-level target management (3 clusters with achievement stats) |
+
+#### Reports Sub-Pages (9 pages)
+| Page | Lines | Description |
+|------|-------|-------------|
+| `report-coverage.html` | 191 | Outlet coverage analysis with progress bars per route |
+| `report-dse-productivity.html` | 181 | DSE (sales executive) performance scoring with stat grid |
+| `report-net-sales.html` | ~180 | Net revenue breakdown by category with trend indicators |
+| `report-order-summary.html` | ~200 | Order overview by outlet with status distribution |
+| `report-product-sales.html` | ~180 | Product-wise sales breakdown with quantity & value columns |
+| `report-order-analysis.html` | ~190 | Order analytics with SVG bar chart & trend metrics |
+| `report-time-route.html` | ~190 | Field rep route time analysis with daily visit breakdown |
+| `report-merchandise.html` | ~180 | Merchandising compliance with SVG ring chart & POSM placement scores |
+| `report-goods-received.html` | ~180 | GRN (Goods Received Note) report with shipment tracking & status |
+
+#### Support Sub-Pages (6 pages)
+| Page | Lines | Description |
+|------|-------|-------------|
+| `support-category.html` | 138 | 6 issue categories with open count badges, auto-navigate to new request with prefill |
+| `support-deboard.html` | 153 | Outlet de-boarding form: outlet selector, auto-fill code, reason, photo upload, history |
+| `support-geolocation.html` | 184 | 4 selectable issue types, GPS coordinate capture (real Geolocation API), outlet selector |
+| `support-route-transfer.html` | 201 | 3 current routes display, transfer form with conditional temp date fields, history |
+| `support-new-request.html` | 156 | Full ticket form: subject, category (7 options), priority (4 levels), outlet, description |
+| `support-ticket-detail.html` | 231 | Ticket #1024 detail with activity timeline, reply system, close ticket, dynamic updates |
+
+#### Management Page (1 page)
+| Page | Lines | Description |
+|------|-------|-------------|
+| `manage-users.html` | 670 | Full user CRUD: search, filter, 10 mock users, detail sheet, role change, invite system |
+
+### Enhanced Modules (v1.4)
+
+#### `config.html` — Expanded to 716 lines
+- Added search bar, 7 config sections (Sub-D, Product Catalogue, GTM, User, Presentation, App Settings, Data & Storage)
+- Toggle switches with localStorage persistence
+- Detail bottom sheet per config item, Clear Cache, Export Data utilities
+
+#### `notifications.html` — Expanded to 1013 lines
+- Added 3 stat cards, enhanced filter tabs with section count updates
+- 8 color icon variants, card interactions (mark read, swipe dismiss)
+- Push notification permission flow, settings sheet with 7 toggles + Quiet Hours
+
+#### `schemes.html` — Expanded to 1263 lines
+- Added search bar, bookmark system (localStorage), share via Web Share API
+- Target detail bottom sheet with milestone breakdown
+- Enhanced Apply from sheet, bookmark toggle from sheet
+
+#### `salesforce.html` — Updated links
+- Hub page now links to all 10 `sf-*.html` sub-pages
+
+#### `reports.html` — Updated links
+- Hub page now links to all 9 `report-*.html` sub-pages
+
+#### `support.html` — Restructured
+- Search bar with keyword matching, section auto-hide, no-results state
+- Links to 6 support sub-pages
+
+### Bug Fixes
+- Fixed update banner X button not closing (added `display:none` after transition, increased close button z-index)
+- Fixed update banner dismiss to permanently hide per version instead of 24-hour snooze (replaced unreliable `transitionend` listener with `setTimeout`)
+- Fixed broken `goTo('eod.html')` link in index.html (missing `modules/` prefix)
+
+### Infrastructure
+- Service Worker bumped to `cache-v6` — all 66 pages cached (index + 65 modules)
+- Zero broken navigation links across entire app
+
+---
+
+## 18. Recent Additions (v1.5)
+
+**Date:** March 9, 2026
+**Version bump:** 1.4.0 → 1.5.0
+
+### Navigation Standardization — All Pages Converted to `data-inject`
+
+Migrated all 64 module pages (excluding `login.html`) from hardcoded inline drawer/bottom-nav HTML to the shared `data-inject` auto-injection system. Previously, most pages had 40+ lines of duplicated drawer markup and 20+ lines of bottom-nav markup that could drift out of sync with the canonical navigation defined in `app.js`.
+
+**Changes per file:**
+1. Removed `<div class="drawer-overlay">` elements
+2. Replaced hardcoded `<div class="drawer" id="drawer">...(40+ lines)...</div>` with `<div id="drawer" data-inject="pagename"></div>`
+3. Replaced hardcoded `<div class="bottom-nav">...(20+ lines)...</div>` with `<div class="bottom-nav" data-inject="pagename"></div>`
+4. Standardized page titles from `<p class="page-title">Adera Sales · PageName</p>` to `<div class="page-title">Adera Sales</div>`
+
+**Files converted (52 pages):**
+
+| Category | Pages |
+|----------|-------|
+| Core Modules | parties, orders, collections, attendance, leaves, notes, performance, profile |
+| Order/Finance | cart, take-order, outstanding, expenses, returns, stock, inventory, collaterals |
+| Field Modules | beatplans, route, tour, visits, eod, odometer, remarks, custom |
+| Reports (10) | reports, report-coverage, report-dse-productivity, report-net-sales, report-order-summary, report-product-sales, report-order-analysis, report-time-route, report-goods-received, report-merchandise |
+| Sales Force (11) | salesforce, sf-call-roster, sf-campaigns, sf-distributor-target, sf-fundamental-targets, sf-posms, sf-routes, sf-sales-targets, sf-sbd-target, sf-subd-replenishment, sf-cluster-tools |
+| Other | activities, approvals, competitors, chat, distributor, gallery, targets |
+
+**Previously converted (12 pages):** config, geofence, manage-users, notifications, schemes, support, support-category, support-deboard, support-geolocation, support-new-request, support-route-transfer, support-ticket-detail
+
+**Benefits:**
+- Single source of truth for drawer menu items and bottom nav in `js/app.js`
+- Adding/removing/reordering nav items updates all 64 pages at once
+- Eliminated ~2,800 lines of duplicated navigation markup
+- Consistent active-state highlighting across all pages
+- Fixed broken relative paths (`../modules/` vs `./`) that existed in some hardcoded navs
+
+---
+
+## 19. Recent Additions (v1.6)
+
+**Date:** March 9, 2026
+**Version bump:** 1.5.0 → 1.6.0
+
+### Bug Fix — Orphaned Bottom-Nav HTML in 45 Pages
+
+All 45 pages that used `data-inject` for bottom navigation still had leftover inline nav items (Parties, New, Reports, Profile `<div>` elements) sitting as orphaned HTML outside the self-closing `<div class="bottom-nav" data-inject="..."></div>`. This caused **duplicate navigation bars** to render — one auto-injected by `app.js` and one from the orphaned markup.
+
+**Fix:** Automated script removed 9 orphaned lines per file (4 nav-item divs + closing `</div>`) across all 45 affected files. Pages now have a clean `data-inject` bottom-nav with no leftover markup.
+
+**Files fixed (45):** approvals, attendance, cart, collaterals, collections, competitors, custom, distributor, eod, gallery, inventory, leaves, odometer, orders, outstanding, parties, performance, profile, remarks, report-coverage, report-dse-productivity, report-goods-received, report-merchandise, report-net-sales, report-order-analysis, report-order-summary, report-product-sales, report-time-route, reports, route, salesforce, sf-call-roster, sf-campaigns, sf-cluster-tools, sf-distributor-target, sf-fundamental-targets, sf-posms, sf-routes, sf-sales-targets, sf-sbd-target, sf-subd-replenishment, take-order, targets, tour, visits
+
+### Hub Page Search — `reports.html`
+
+Added search bar to the Reports hub page with keyword-based filtering:
+
+- **Search input** with magnifying glass icon and clear (X) button
+- **`data-rp-item`** attribute on all 8 report list items for filter targeting
+- **`data-keywords`** attribute on each item for expanded search matching (e.g., `data-keywords="coverage outlet analysis"`)
+- **`data-rp-section`** on section headers (Fundamentals, Sales Reports, Operations) — auto-hide when no child items match
+- **No-results empty state** with search icon + "No reports found" message
+- **Order Summary Preview** section and Performance button auto-hide during active search to reduce clutter
+- Period tabs (Weekly/Monthly) retained above search
+
+### Hub Page Search — `salesforce.html`
+
+Added search bar to the Sales Force hub page with the same pattern:
+
+- **Search input** with clear button (`sf-search` class prefix)
+- **`data-sf-item`** on all 11 salesforce list items
+- **`data-keywords`** on each item (e.g., `data-keywords="distributor sales target monthly"`)
+- **`data-sf-section`** on 3 section headers (Targets, Field Operations, Management) — auto-hide when empty
+- **No-results empty state**
+- SO Status info card remains visible above search
+
+### Onboarding Walkthrough System — Initial Addition
+
+Initial onboarding tooltip system added to `support.html` as proof-of-concept. Full system rollout to all 66 pages documented in [v1.7 § Shared Onboarding Help System](#20-recent-additions-v17).
+
+### Search Pattern Convention
+
+All 3 hub pages (support, reports, salesforce) now follow a consistent search pattern:
+
+| Hub Page | Prefix | Item Attr | Section Attr | Keywords |
+|----------|--------|-----------|--------------|----------|
+| `support.html` | `sp-` | `data-sp-item` | `data-sp-section` | `data-keywords` |
+| `reports.html` | `rp-` | `data-rp-item` | `data-rp-section` | `data-keywords` |
+| `salesforce.html` | `sf-` | `data-sf-item` | `data-sf-section` | `data-keywords` |
+
+**Shared behavior:** Input with icon → filter items by text + keywords → auto-hide empty sections → show no-results state → clear button resets.
+
+---
+
+## 20. Recent Additions (v1.7)
+
+**Date:** March 9, 2026
+**Version bump:** 1.6.0 → 1.7.0
+**Total pages:** 67 (was 66)
+
+### New Page: `push-banner.html` — Push Notification Banner Demo
+
+- Gradient hero header: "Push Notifications — Real-time alerts for orders, targets, payments & more"
+- **3 stats:** Total, Unread, Actioned — update dynamically on banner fire/dismiss
+- **Live preview area:** Shows the current banner inline with slide-in animation; default: "Target Update — You've reached 75% of monthly target — keep going!" at 13:57
+- **4 demo type buttons:** Order (blue), Success (green), Info (amber), Alert (red) — each triggers `showPushNotification()` from app.js at the top of the phone frame
+- **Auto Demo mode:** Start/stop toggle; fires random banners every 5 seconds with pause icon swap
+- **10 notification cards:** Full pool matching `_pushNotificationPool` in app.js — tap any card to preview its banner live
+- **Dismiss interaction:** Preview fades out with `translateY(-40px)` + opacity transition; updates Actioned/Unread stat counters
+- **Linked from:** `notifications.html` push permission settings area (new "Push Banner Demo" card with play icon)
+- Uses `data-inject="push-banner"` for drawer + bottom nav
+
+### Bug Fixes
+- Push banner `.push-banner` z-index increased from 400 → 950 → 10000 in `style.css` so banners appear above all UI layers
+- All popup/banner z-indexes raised: `.push-perm-overlay` 10100, `.push-perm-sheet` 10200, `.sync-bar` 10050, `.sync-sheet-overlay` 10100, `.sync-sheet` 10200
+
+### Infrastructure
+- Service Worker `cache-v6` updated — now caches 67 pages (added `push-banner.html`)
+- `notifications.html` — added "Push Banner Demo" link card below push permission banner
+
+### Shared Onboarding Help System — All 66 Pages
+
+Extracted the onboarding walkthrough (previously inline in `index.html` only) into a reusable shared system and deployed it across all 66 pages.
+
+#### New shared files
+
+| File | Purpose | Size |
+|------|---------|------|
+| `css/onboarding.css` | Overlay, spotlight, tooltip, dots, help button styles | ~110 lines |
+| `js/onboarding.js` | `Onboarding.init()` engine with auto-injection, hooks, localStorage | ~220 lines |
+
+#### API: `Onboarding.init(opts)`
+
+```js
+Onboarding.init({
+  key: 'adera_modulename_onboarded',  // localStorage key (per-page)
+  steps: [
+    { target: '.selector', text: 'Description', position: 'below' },
+    { target: '.other',    text: 'Another step', position: 'above' }
+  ],
+  beforeStep: function(idx, step) {},  // optional: runs before each step
+  onStart: function() {},              // optional: runs when walkthrough starts
+  onEnd: function() {},                // optional: runs when walkthrough ends
+  autoStart: true                      // default true; auto-starts on first visit
+});
+```
+
+#### What the engine auto-injects
+
+When `Onboarding.init()` is called, it dynamically creates and appends into `.phone-frame`:
+- `?` help button (bottom-right, z-index 500)
+- Dark overlay (z-index 9998)
+- Spotlight cutout with animated transitions
+- Tooltip with arrow, text, dot indicators, step counter, Skip/Next buttons
+
+No HTML boilerplate needed per module — only the `<link>`, `<script>`, and `init()` call.
+
+#### Refactored: `index.html`
+
+Removed ~350 lines of inline onboarding code (CSS + HTML elements + JS IIFE). Replaced with:
+- `<link rel="stylesheet" href="css/onboarding.css">`
+- `<script src="js/onboarding.js">` + 8-line `Onboarding.init()` call
+- Same 4 steps preserved: check-in button → module grid → drawer → bottom nav
+- Same `adera_onboarded` localStorage key (no user reset needed)
+
+#### Refactored: `geofence.html`
+
+4-step walkthrough with `beforeStep` hook to open/close the check-in bottom sheet for the selfie verification step.
+
+#### Batch-updated: 64 other modules
+
+Each module received:
+1. `<link rel="stylesheet" href="../css/onboarding.css">` after `style.css`
+2. `<script src="../js/onboarding.js">` + `Onboarding.init()` before `</body>`
+3. 1–4 contextual steps targeting that module's key UI elements
+
+| Category | Modules | Typical steps |
+|----------|---------|---------------|
+| Core (orders, visits, parties, attendance, etc.) | 20 | 2–4 steps |
+| Reports (9 report-*.html pages) | 9 | 2 steps |
+| Salesforce (8 sf-*.html pages) | 8 | 2 steps |
+| Support (7 support-*.html pages) | 7 | 1–2 steps |
+| Other (config, login, profile, chat, etc.) | 20 | 1–3 steps |
+
+#### CSS classes (from `onboarding.css`)
+
+| Class | Purpose |
+|-------|---------|
+| `.onboard-overlay` | Full-screen dark backdrop (opacity transition) |
+| `.onboard-spotlight` | Box-shadow cutout around target element |
+| `.onboard-tooltip` | White tooltip card with arrow, text, dots, actions |
+| `.ob-text` | Step description text |
+| `.ob-dots` / `.ob-dot` | Step indicator dots |
+| `.ob-counter` | "Step X of Y" label |
+| `.ob-skip` / `.ob-next` | Skip and Next action buttons |
+| `.onboard-help-btn` | Floating "?" button to replay walkthrough |
+
+---
+
+## 21. Recent Additions (v1.8)
+
+**Date:** March 9, 2026
+**Version bump:** 1.7.0 → 1.8.0
+
+### Navigation Audit & Dead Link Fixes
+
+Full audit of all 67 pages for broken/missing navigation links.
+
+#### `collections.html` — 2 dead links fixed
+- **"View All"** span (Today's Payments section) — was non-interactive, now triggers `switchCTab()` to switch to History tab
+- **"See All"** span (Pending Outstanding section) — was non-interactive, now navigates to `outstanding.html` via `goTo()`
+
+#### `index.html` — 8 orphan module cards added to home screen
+
+The following module pages existed but had no module card on the home screen, making them unreachable from the main dashboard:
+
+| Module Card | Page | Icon | Color |
+|-------------|------|------|-------|
+| Chat | `chat.html` | Message bubble | Blue |
+| Competitors | `competitors.html` | Person + plus | Indigo |
+| Distributor | `distributor.html` | Delivery truck | Teal |
+| Gallery | `gallery.html` | Image frame | Pink |
+| Geofence | `geofence.html` | Map pin + radius | Green |
+| Targets | `targets.html` | Bullseye circles | Yellow |
+| Schemes | `schemes.html` | Price tag | Purple |
+| Notifications | `notifications.html` | Bell (badge: 3) | Orange |
+
+Home screen module grid now has **34 cards** (was 26).
+
+#### `app.js` — Drawer Logout button linked
+- **Logout** drawer item had no `onclick` handler — now navigates to `login.html`
+
+### Audit Results — No Missing Pages
+All `goTo()` targets across all 67 pages resolve to existing files. Zero broken navigation links.
+
+---
+
+## 22. Recent Additions (v1.9)
+
+**Date:** March 9, 2026
+**Version bump:** 1.8.0 → 1.9.0
+
+### `chat.html` — Full HTML Build-out
+
+Chat page previously had CSS styles + JS logic but no visible HTML content (no screen-scroll, status bar, top bar, or conversation list markup). Now fully built:
+
+#### Chat List View
+- Status bar + top bar with "Messages" title, new message icon, drawer menu
+- Search bar (`#chatSearchInput`) with `filterConversations()` live search
+- **Unread section** (3 conversations with badges):
+  - Rajesh Kumar (Manager, 2 unread, online dot)
+  - Sales Team Group (5 members, 5 unread, group emoji avatar)
+  - Support Team (1 unread, tool emoji avatar)
+- **Earlier section** (4 conversations, no badges):
+  - Priya Sharma (ASM, online dot)
+  - Amit Patel (Delivery)
+  - HR Department
+  - System Alerts (bell SVG avatar)
+- Bottom nav via `data-inject="chat"`
+
+#### Chat Detail View
+- Gradient header with back button, contact name/status, 3 action buttons (call/video/more)
+- Scrollable messages area (`#messagesArea`) — rendered dynamically via `renderMessages()`
+- Typing indicator with 3-dot bounce animation (triggers in Rajesh Kumar chat after 2s)
+- 5 quick reply chips: "OK, noted", "Will do", "On it!", "Thanks!", "Sure, sending now"
+- Input bar: attach button, text input (Enter to send), mic/send toggle button
+- Voice recording state: pulsing red dot, timer, hold-to-record on mic button
+
+### Skeleton Pages Identified
+
+3 module pages still have CSS + JS + bottom sheets defined but **no HTML body content** (missing screen-scroll, status bar, top bar, and visible card/list markup):
+
+| Page | Has | Missing |
+|------|-----|---------|
+| `beatplans.html` | 150 lines CSS (hero, tabs, beat cards, progress bars, bottom sheet), `openBeatSheet()`/`closeBeatSheet()`, 6-shop beat detail sheet, onboarding | screen-scroll, status bar, top bar, hero card, tab filters, beat plan cards, bottom nav |
+| `returns.html` | 163 lines CSS (stats, tabs, return cards, detail sheet, timeline, actions), `openReturnDetail()`/`closeReturnDetail()`, FAB, full detail sheet with items/reason/photos/timeline/approve-reject, onboarding | screen-scroll, status bar, top bar, stats grid, tab filters, return cards, bottom nav |
+| `stock.html` | 128 lines CSS (search, stats, product cards, update sheet), `openStockSheet()`/`closeStockSheet()`, stock update form with qty/reason/notes, onboarding | screen-scroll, status bar, top bar, search bar, stats grid, product cards, bottom nav |
+
+All other 64 module pages have complete HTML content.
+
+---
+
+*Generated for Adera Sales v1.9.0 — March 2026*

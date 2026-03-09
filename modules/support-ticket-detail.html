@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Ticket Detail — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     .tl-line { padding-left:16px; border-left:2px solid var(--border); margin-left:8px; }
     .tl-item { position:relative; padding-bottom:16px; }
@@ -226,6 +227,25 @@
 
     showToast('Ticket closed', 'success');
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_ticketdetail_onboarded",
+    steps: [
+          {
+                "target": ".td-meta",
+                "text": "Ticket details — priority, category, assigned agent, and current status.",
+                "position": "below"
+          },
+          {
+                "target": ".tl-line",
+                "text": "Activity timeline showing all updates and responses on this ticket.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Push Banners — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Hero Section ── */
+    .pb-hero {
+      background: linear-gradient(160deg, #1a2744 0%, #243556 40%, #2d4a7a 100%);
+      margin: 0 -16px; padding: 24px 20px 28px; color: #fff; position: relative; overflow: hidden;
+    }
+    .pb-hero::before {
+      content:''; position:absolute; top:-30px; right:-20px;
+      width:120px; height:120px; border-radius:50%; background:rgba(48,102,190,.3);
+    }
+    .pb-hero::after {
+      content:''; position:absolute; bottom:-40px; left:-10px;
+      width:90px; height:90px; border-radius:50%; background:rgba(245,158,11,.12);
+    }
+    .pb-hero-title { font-size:20px; font-weight:800; margin-bottom:4px; position:relative; z-index:1; }
+    .pb-hero-sub { font-size:12px; color:rgba(255,255,255,.7); position:relative; z-index:1; }
+
+    /* ── Live Preview Banner ── */
+    .pb-preview {
+      background: var(--card-bg); border-radius: 16px; padding: 0; margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(48,102,190,.08); overflow: hidden;
+    }
+    .pb-preview-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      color: var(--text-muted); padding: 12px 16px 0;
+    }
+    .pb-preview-area {
+      position: relative; min-height: 120px; padding: 12px;
+      background: linear-gradient(135deg, #f0f4fb 0%, #e8edf5 100%);
+      border-radius: 0 0 16px 16px; margin-top: 8px;
+    }
+    .pb-live {
+      background: #fff; border-radius: 14px; padding: 14px 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18); display: flex; gap: 12px;
+      align-items: flex-start; position: relative;
+      animation: pbSlideIn .5s cubic-bezier(.4,0,.2,1) both;
+    }
+    @keyframes pbSlideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .pb-live .pb-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pb-live .pb-icon.info { background: rgba(245,158,11,.12); color: #f59e0b; }
+    .pb-live .pb-icon.order { background: rgba(48,102,190,.12); color: #3066be; }
+    .pb-live .pb-icon.alert { background: rgba(224,82,82,.12); color: #e05252; }
+    .pb-live .pb-icon.success { background: rgba(40,167,69,.12); color: #28a745; }
+    .pb-live .pb-body { flex: 1; min-width: 0; }
+    .pb-live .pb-app { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+    .pb-live .pb-ttl { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .pb-live .pb-dsc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+    .pb-live .pb-tm { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+    .pb-live .pb-x {
+      position: absolute; top: 8px; right: 10px; width: 20px; height: 20px;
+      border: none; background: none; color: var(--text-muted); cursor: pointer; font-size: 16px;
+    }
+    .pb-live .pb-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .pb-live .pb-act {
+      padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600;
+      border: none; cursor: pointer;
+    }
+    .pb-live .pb-act.primary { background: var(--primary); color: #fff; }
+    .pb-live .pb-act.dismiss { background: var(--bg); color: var(--text-secondary); }
+
+    /* ── Notification List ── */
+    .pb-section { margin-top: 18px; }
+    .pb-section-title {
+      font-size: 13px; font-weight: 700; color: var(--text-primary);
+      text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px;
+    }
+    .pb-notif-card {
+      background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(48,102,190,.06); cursor: pointer;
+      display: flex; gap: 12px; align-items: flex-start; transition: transform .15s;
+    }
+    .pb-notif-card:active { transform: scale(.98); }
+    .pb-notif-card.active-card { border-left: 3px solid var(--primary); background: #f8faff; }
+    .pb-n-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pb-n-icon.info { background: rgba(245,158,11,.12); color: #f59e0b; }
+    .pb-n-icon.order { background: rgba(48,102,190,.12); color: #3066be; }
+    .pb-n-icon.alert { background: rgba(224,82,82,.12); color: #e05252; }
+    .pb-n-icon.success { background: rgba(40,167,69,.12); color: #28a745; }
+    .pb-n-body { flex: 1; min-width: 0; }
+    .pb-n-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .pb-n-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+    .pb-n-meta { font-size: 10px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between; }
+    .pb-n-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 6px; }
+
+    /* ── Demo Controls ── */
+    .pb-controls {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px;
+    }
+    .pb-ctrl-btn {
+      padding: 12px 10px; border-radius: 12px; border: none; cursor: pointer;
+      font-size: 12px; font-weight: 700; display: flex; align-items: center;
+      justify-content: center; gap: 6px; transition: all .2s;
+    }
+    .pb-ctrl-btn:active { transform: scale(.96); }
+    .pb-ctrl-btn.blue { background: rgba(48,102,190,.1); color: #3066be; }
+    .pb-ctrl-btn.green { background: rgba(40,167,69,.1); color: #28a745; }
+    .pb-ctrl-btn.amber { background: rgba(245,158,11,.1); color: #f59e0b; }
+    .pb-ctrl-btn.red { background: rgba(224,82,82,.1); color: #e05252; }
+    .pb-ctrl-btn.full {
+      grid-column: 1 / -1; background: var(--primary); color: #fff;
+      padding: 14px; border-radius: 12px; font-size: 13px;
+    }
+
+    /* ── Stats ── */
+    .pb-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+    .pb-stat {
+      background: #fff; border-radius: 12px; padding: 10px 8px; text-align: center;
+      box-shadow: 0 1px 4px rgba(48,102,190,.08);
+    }
+    .pb-stat-val { font-size: 18px; font-weight: 800; }
+    .pb-stat-lbl { font-size: 10px; color: #64748b; margin-top: 2px; text-transform: uppercase; letter-spacing: .3px; }
+    .pb-stat.blue .pb-stat-val { color: #3066be; }
+    .pb-stat.amber .pb-stat-val { color: #f59e0b; }
+    .pb-stat.green .pb-stat-val { color: #28a745; }
+  </style>
+</head>
+<body>
+
+<div class="page-title">Adera Sales</div>
+
+<div class="phone-frame">
+
+  <div id="drawer" data-inject="push-banner"></div>
+
+  <div class="screen-scroll">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Push Banners</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="content" style="padding-top:0;">
+
+      <!-- Hero -->
+      <div class="pb-hero">
+        <div class="pb-hero-title">Push Notifications</div>
+        <div class="pb-hero-sub">Real-time alerts for orders, targets, payments & more</div>
+      </div>
+
+      <div style="padding-top:14px;">
+
+        <!-- Stats -->
+        <div class="pb-stats">
+          <div class="pb-stat blue">
+            <div class="pb-stat-val" id="pbTotal">10</div>
+            <div class="pb-stat-lbl">Total</div>
+          </div>
+          <div class="pb-stat amber">
+            <div class="pb-stat-val" id="pbUnread">4</div>
+            <div class="pb-stat-lbl">Unread</div>
+          </div>
+          <div class="pb-stat green">
+            <div class="pb-stat-val" id="pbActioned">6</div>
+            <div class="pb-stat-lbl">Actioned</div>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="pb-preview">
+          <div class="pb-preview-label">Live Preview</div>
+          <div class="pb-preview-area" id="previewArea">
+            <div class="pb-live" id="liveBanner">
+              <div class="pb-icon info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <div class="pb-body">
+                <div class="pb-app">Adera Sales</div>
+                <div class="pb-ttl">Target Update</div>
+                <div class="pb-dsc">You've reached 75% of monthly target — keep going!</div>
+                <div class="pb-tm">13:57</div>
+                <div class="pb-actions">
+                  <button class="pb-act primary" onclick="showToast('Opening targets...', 'info')">View Target</button>
+                  <button class="pb-act dismiss" onclick="dismissPreview()">Dismiss</button>
+                </div>
+              </div>
+              <button class="pb-x" onclick="dismissPreview()">&times;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="section-header">
+          <span class="section-title">Send Test Banner</span>
+        </div>
+
+        <div class="pb-controls">
+          <button class="pb-ctrl-btn blue" onclick="fireBanner('order')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            Order
+          </button>
+          <button class="pb-ctrl-btn green" onclick="fireBanner('success')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Success
+          </button>
+          <button class="pb-ctrl-btn amber" onclick="fireBanner('info')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Info
+          </button>
+          <button class="pb-ctrl-btn red" onclick="fireBanner('alert')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Alert
+          </button>
+          <button class="pb-ctrl-btn full" onclick="startAutoDemo()" id="autoDemoBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Start Auto Demo (Random Banners)
+          </button>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="pb-section">
+          <div class="pb-section-title">Recent Notifications</div>
+
+          <div class="pb-notif-card active-card" onclick="fireBanner('info')">
+            <div class="pb-n-dot"></div>
+            <div class="pb-n-icon info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Target Update</div>
+              <div class="pb-n-desc">You've reached 75% of monthly target — keep going!</div>
+              <div class="pb-n-meta"><span>Today at 1:57 PM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('order')">
+            <div class="pb-n-icon order">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">New Order Received</div>
+              <div class="pb-n-desc">Order #ORD-1847 from Krishna Store — ₹12,450</div>
+              <div class="pb-n-meta"><span>Today at 1:42 PM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('alert')">
+            <div class="pb-n-icon alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Collection Due</div>
+              <div class="pb-n-desc">Rs 34,500 pending from Metro Mart — 45 days overdue</div>
+              <div class="pb-n-meta"><span>Today at 12:30 PM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('success')">
+            <div class="pb-n-icon success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Order Delivered</div>
+              <div class="pb-n-desc">Order #ORD-1832 delivered to Sharma General Store</div>
+              <div class="pb-n-meta"><span>Today at 11:15 AM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('success')">
+            <div class="pb-n-icon success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Leave Approved</div>
+              <div class="pb-n-desc">Your casual leave for Mar 12 has been approved</div>
+              <div class="pb-n-meta"><span>Today at 10:05 AM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('info')">
+            <div class="pb-n-icon info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Price Alert</div>
+              <div class="pb-n-desc">Competitor Amul reduced butter price by ₹5/unit</div>
+              <div class="pb-n-meta"><span>Today at 9:20 AM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('alert')">
+            <div class="pb-n-icon alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Expense Rejected</div>
+              <div class="pb-n-desc">Travel claim #EXP-234 rejected — receipt missing</div>
+              <div class="pb-n-meta"><span>Yesterday at 5:30 PM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('order')">
+            <div class="pb-n-icon order">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">New Beat Assigned</div>
+              <div class="pb-n-desc">Beat Plan B-12 Kathmandu East assigned for tomorrow</div>
+              <div class="pb-n-meta"><span>Yesterday at 4:15 PM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('success')">
+            <div class="pb-n-icon success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Payment Received</div>
+              <div class="pb-n-desc">₹18,200 collected from Gupta Traders — receipt #REC-492</div>
+              <div class="pb-n-meta"><span>Yesterday at 3:00 PM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+          <div class="pb-notif-card" onclick="fireBanner('info')">
+            <div class="pb-n-icon info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="pb-n-body">
+              <div class="pb-n-title">Scheme Launched</div>
+              <div class="pb-n-desc">Buy 10 get 1 free on Premium Blend — valid till Mar 15</div>
+              <div class="pb-n-meta"><span>Yesterday at 10:00 AM</span><span>Tap to preview</span></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav" data-inject="push-banner"></div>
+
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  /* ── Banner Demo Data ── */
+  var bannerPool = [
+    { type:'info',    title:'Target Update',       desc:"You've reached 75% of monthly target — keep going!", actions:['View Target','Dismiss'] },
+    { type:'order',   title:'New Order Received',   desc:'Order #ORD-1847 from Krishna Store — ₹12,450',       actions:['View Order','Dismiss'] },
+    { type:'alert',   title:'Collection Due',       desc:'Rs 34,500 pending from Metro Mart — 45 days overdue', actions:['View Details','Dismiss'] },
+    { type:'success', title:'Order Delivered',       desc:'Order #ORD-1832 delivered to Sharma General Store',   actions:['View Order','OK'] },
+    { type:'success', title:'Leave Approved',        desc:'Your casual leave for Mar 12 has been approved',      actions:['View Leaves','OK'] },
+    { type:'info',    title:'Price Alert',           desc:'Competitor Amul reduced butter price by ₹5/unit',     actions:['View Intel','Dismiss'] },
+    { type:'alert',   title:'Expense Rejected',      desc:'Travel claim #EXP-234 rejected — receipt missing',    actions:['Fix Now','Dismiss'] },
+    { type:'order',   title:'New Beat Assigned',     desc:'Beat Plan B-12 Kathmandu East assigned for tomorrow', actions:['View Beat','Dismiss'] },
+    { type:'success', title:'Payment Received',      desc:'₹18,200 collected from Gupta Traders — receipt #REC-492', actions:['View Receipt','OK'] },
+    { type:'info',    title:'Scheme Launched',       desc:'Buy 10 get 1 free on Premium Blend — valid till Mar 15', actions:['View Scheme','Dismiss'] }
+  ];
+
+  var iconSvgs = {
+    order:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>',
+    alert:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    info:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+  };
+
+  var autoTimer = null;
+  var bannerCount = 0;
+
+  /* ── Fire push banner at top of phone frame ── */
+  function fireBanner(type) {
+    // Find a matching notification from pool
+    var match = bannerPool.filter(function(b) { return b.type === type; });
+    var n = match[Math.floor(Math.random() * match.length)] || bannerPool[0];
+
+    showPushNotification({
+      type: n.type,
+      title: n.title,
+      desc: n.desc,
+      duration: 6000,
+      actions: [
+        { label: n.actions[0], primary: true, onClick: function() { showToast('Opening ' + n.title + '...', 'info'); } },
+        { label: n.actions[1], onClick: function() { showToast('Dismissed', 'info'); } }
+      ]
+    });
+
+    bannerCount++;
+    updatePreview(n);
+  }
+
+  /* ── Update the in-page preview ── */
+  function updatePreview(n) {
+    var live = document.getElementById('liveBanner');
+    var now = new Date();
+    var ts = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    live.style.animation = 'none';
+    live.offsetHeight;
+    live.style.animation = 'pbSlideIn .5s cubic-bezier(.4,0,.2,1) both';
+
+    live.querySelector('.pb-icon').className = 'pb-icon ' + n.type;
+    live.querySelector('.pb-icon').innerHTML = iconSvgs[n.type];
+    live.querySelector('.pb-ttl').textContent = n.title;
+    live.querySelector('.pb-dsc').textContent = n.desc;
+    live.querySelector('.pb-tm').textContent = ts;
+
+    // Update stats
+    var total = parseInt(document.getElementById('pbTotal').textContent) + 1;
+    var unread = parseInt(document.getElementById('pbUnread').textContent) + 1;
+    document.getElementById('pbTotal').textContent = total;
+    document.getElementById('pbUnread').textContent = unread;
+  }
+
+  function dismissPreview() {
+    var live = document.getElementById('liveBanner');
+    live.style.transition = 'transform .3s, opacity .3s';
+    live.style.transform = 'translateY(-40px)';
+    live.style.opacity = '0';
+    setTimeout(function() {
+      live.style.transition = '';
+      live.style.transform = '';
+      live.style.opacity = '';
+      var actioned = parseInt(document.getElementById('pbActioned').textContent) + 1;
+      var unread = Math.max(0, parseInt(document.getElementById('pbUnread').textContent) - 1);
+      document.getElementById('pbActioned').textContent = actioned;
+      document.getElementById('pbUnread').textContent = unread;
+      showToast('Banner dismissed', 'info');
+    }, 300);
+  }
+
+  /* ── Auto demo mode ── */
+  function startAutoDemo() {
+    var btn = document.getElementById('autoDemoBtn');
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start Auto Demo (Random Banners)';
+      showToast('Auto demo stopped', 'info');
+      return;
+    }
+
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Stop Auto Demo';
+
+    var types = ['order','success','info','alert'];
+    fireBanner(types[Math.floor(Math.random() * types.length)]);
+
+    autoTimer = setInterval(function() {
+      fireBanner(types[Math.floor(Math.random() * types.length)]);
+    }, 5000);
+
+    showToast('Auto demo started — banner every 5s', 'success');
+  }
+</script>
+</body>
+</html>

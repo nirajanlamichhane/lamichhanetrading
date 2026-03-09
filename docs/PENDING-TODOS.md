@@ -2,7 +2,7 @@
 
 **Scanned:** March 8, 2026
 **Last Updated:** March 9, 2026
-**Project Version:** 1.3.0
+**Project Version:** 1.8.0
 
 ---
 
@@ -51,8 +51,8 @@
 
 ### Shared Components to Extract
 - [ ] `TopBar` — reusable header with back/menu/title/actions
-- [ ] `BottomNav` — global navigation component (currently `injectBottomNav()` in app.js)
-- [ ] `Drawer` — side navigation with user profile (currently `injectDrawer()` in app.js)
+- [x] `BottomNav` — ✅ `injectBottomNav()` in app.js, all 64 module pages use `data-inject`
+- [x] `Drawer` — ✅ `injectDrawer()` in app.js, all 64 module pages use `data-inject`
 - [ ] `BottomSheet` — reusable slide-up sheet pattern
 - [ ] `StatCard`, `KPICard`, `InfoCard` — data display components
 - [ ] `TabBar`, `ChipGroup` — filter components
@@ -127,7 +127,7 @@
 | Structural Issues | 4 | 4 | 0 |
 | State Persistence | 5 | 5 | 0 |
 | Code-Level TODOs | 6 | 6 | 0 |
-| Production Migration | 33 | 0 | 33 |
-| **Total** | **59** | **26** | **33** |
+| Production Migration | 33 | 2 | 31 |
+| **Total** | **59** | **28** | **31** |
 
-**All frontend mockup work is complete.** Remaining 33 items are production migration tasks requiring a backend (component extraction, data extraction, 23 API endpoints).
+**All frontend mockup work is complete.** BottomNav and Drawer shared components fully extracted via `data-inject` system (all 64 module pages). Remaining 31 items are production migration tasks requiring a backend (5 component extractions, data extraction, 23 API endpoints).

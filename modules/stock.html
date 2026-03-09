@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Stock Taking — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Search & Filter ── */
     .stk-search-area { padding: 0 16px 14px; }
@@ -127,373 +128,12 @@
   </style>
 </head>
 <body>
-<p class="page-title">Adera Sales · Stock Taking</p>
+<div class="page-title">Adera Sales</div>
 <div class="phone-frame">
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+<!-- DRAWER (Simplified) -->
+  <div id="drawer" data-inject="stock"></div>
 
-  <!-- DRAWER (Simplified) -->
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <div class="drawer-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      </div>
-      <div class="drawer-brand">Adera Sales</div>
-      <button class="drawer-close" onclick="closeDrawer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="drawer-user">
-      <div class="drawer-avatar">RS</div>
-      <div>
-        <div class="drawer-user-name">Rajesh Shrestha</div>
-        <div class="drawer-user-role">Sales Representative</div>
-      </div>
-    </div>
-    <nav class="drawer-nav">
-      <a class="drawer-item" href="../index.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Home
-      </a>
-      <a class="drawer-item" href="parties.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Parties
-      </a>
-      <a class="drawer-item" href="orders.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-        Orders
-      </a>
-      <a class="drawer-item" href="collections.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Collections
-      </a>
-      <a class="drawer-item" href="attendance.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Attendance
-      </a>
-      <a class="drawer-item" href="performance.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Performance
-      </a>
-      <div style="height:1px;background:#e2e8f0;margin:8px 16px;"></div>
-      <a class="drawer-item" onclick="showToast('Logged out')" style="color:#e05252;cursor:pointer;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#e05252" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout
-      </a>
-    </nav>
-  </div>
-
-  <div class="screen-scroll">
-    <!-- STATUS BAR -->
-    <div class="status-bar">
-      <span>9:41</span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
-        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
-      </div>
-    </div>
-
-    <!-- TOP BAR -->
-    <div class="top-bar">
-      <button class="icon-btn" onclick="goBack()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <span class="top-bar-title">Stock Taking</span>
-      <button class="icon-btn" onclick="openDrawer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
-
-    <!-- CONTENT -->
-    <div class="content" style="padding:16px;">
-
-      <!-- Search + Filter -->
-      <div class="stk-search-row" style="margin-bottom:14px;">
-        <div class="stk-search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Search products or SKU..." />
-        </div>
-        <button class="stk-filter-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-        </button>
-      </div>
-
-      <!-- Stats -->
-      <div class="stk-stats">
-        <div class="stk-stat blue">
-          <div class="stk-stat-val">48</div>
-          <div class="stk-stat-lbl">Total SKUs</div>
-        </div>
-        <div class="stk-stat green">
-          <div class="stk-stat-val">32</div>
-          <div class="stk-stat-lbl">In Stock</div>
-        </div>
-        <div class="stk-stat amber">
-          <div class="stk-stat-val">12</div>
-          <div class="stk-stat-lbl">Low Stock</div>
-        </div>
-        <div class="stk-stat red">
-          <div class="stk-stat-val">4</div>
-          <div class="stk-stat-lbl">Out</div>
-        </div>
-      </div>
-
-      <!-- Section Header -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <span style="font-size:14px;font-weight:700;color:#1a2540;">Product Inventory</span>
-        <span style="font-size:11px;color:#94a3b8;font-weight:500;">48 items</span>
-      </div>
-
-      <!-- Product 1: Soap 500g — OK -->
-      <div class="prod-card" onclick="openStockSheet('Soap 500g', 'SKU-0001', 120, 'pcs')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#e8f5ed;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Soap 500g</div>
-            <div class="prod-sku">SKU-0001</div>
-          </div>
-          <span class="prod-status ok">OK</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">120</span>
-            <span class="prod-qty-unit">pcs</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 7</span>
-        </div>
-      </div>
-
-      <!-- Product 2: Shampoo 200ml — OK -->
-      <div class="prod-card" onclick="openStockSheet('Shampoo 200ml', 'SKU-0002', 85, 'bottles')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#e8f5ed;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Shampoo 200ml</div>
-            <div class="prod-sku">SKU-0002</div>
-          </div>
-          <span class="prod-status ok">OK</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">85</span>
-            <span class="prod-qty-unit">bottles</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 7</span>
-        </div>
-      </div>
-
-      <!-- Product 3: Detergent 1kg — Low -->
-      <div class="prod-card" onclick="openStockSheet('Detergent 1kg', 'SKU-0003', 14, 'packs')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#fef3cd;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Detergent 1kg</div>
-            <div class="prod-sku">SKU-0003</div>
-          </div>
-          <span class="prod-status low">Low</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">14</span>
-            <span class="prod-qty-unit">packs</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 6</span>
-        </div>
-      </div>
-
-      <!-- Product 4: Toothpaste 150g — OK -->
-      <div class="prod-card" onclick="openStockSheet('Toothpaste 150g', 'SKU-0004', 96, 'pcs')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#e8f5ed;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Toothpaste 150g</div>
-            <div class="prod-sku">SKU-0004</div>
-          </div>
-          <span class="prod-status ok">OK</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">96</span>
-            <span class="prod-qty-unit">pcs</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 7</span>
-        </div>
-      </div>
-
-      <!-- Product 5: Body Lotion 300ml — Low -->
-      <div class="prod-card" onclick="openStockSheet('Body Lotion 300ml', 'SKU-0005', 8, 'bottles')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#fef3cd;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Body Lotion 300ml</div>
-            <div class="prod-sku">SKU-0005</div>
-          </div>
-          <span class="prod-status low">Low</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">8</span>
-            <span class="prod-qty-unit">bottles</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 5</span>
-        </div>
-      </div>
-
-      <!-- Product 6: Face Wash 100ml — Out of Stock -->
-      <div class="prod-card" onclick="openStockSheet('Face Wash 100ml', 'SKU-0006', 0, 'pcs')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#fde8e8;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#e05252" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Face Wash 100ml</div>
-            <div class="prod-sku">SKU-0006</div>
-          </div>
-          <span class="prod-status out">Out</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val" style="color:#e05252;">0</span>
-            <span class="prod-qty-unit">pcs</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 4</span>
-        </div>
-      </div>
-
-      <!-- Product 7: Rice 25kg — OK -->
-      <div class="prod-card" onclick="openStockSheet('Rice 25kg Sack', 'SKU-0007', 45, 'sacks')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#e8f5ed;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Rice 25kg Sack</div>
-            <div class="prod-sku">SKU-0007</div>
-          </div>
-          <span class="prod-status ok">OK</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">45</span>
-            <span class="prod-qty-unit">sacks</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 7</span>
-        </div>
-      </div>
-
-      <!-- Product 8: Cooking Oil 1L — Low -->
-      <div class="prod-card" onclick="openStockSheet('Cooking Oil 1L', 'SKU-0008', 11, 'bottles')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#fef3cd;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Cooking Oil 1L</div>
-            <div class="prod-sku">SKU-0008</div>
-          </div>
-          <span class="prod-status low">Low</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">11</span>
-            <span class="prod-qty-unit">bottles</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 6</span>
-        </div>
-      </div>
-
-      <!-- Product 9: Instant Noodles Pack — Out of Stock -->
-      <div class="prod-card" onclick="openStockSheet('Instant Noodles Pack', 'SKU-0009', 0, 'cartons')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#fde8e8;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#e05252" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Instant Noodles Pack</div>
-            <div class="prod-sku">SKU-0009</div>
-          </div>
-          <span class="prod-status out">Out</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val" style="color:#e05252;">0</span>
-            <span class="prod-qty-unit">cartons</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 3</span>
-        </div>
-      </div>
-
-      <!-- Product 10: Sugar 1kg — OK -->
-      <div class="prod-card" onclick="openStockSheet('Sugar 1kg', 'SKU-0010', 68, 'packs')">
-        <div class="prod-top">
-          <div class="prod-icon" style="background:#e8f5ed;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="prod-info">
-            <div class="prod-name">Sugar 1kg</div>
-            <div class="prod-sku">SKU-0010</div>
-          </div>
-          <span class="prod-status ok">OK</span>
-        </div>
-        <div class="prod-details">
-          <div class="prod-qty-row">
-            <span class="prod-qty-label">Qty:</span>
-            <span class="prod-qty-val">68</span>
-            <span class="prod-qty-unit">packs</span>
-          </div>
-          <span class="prod-updated">Updated: Mar 7</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- BOTTOM NAV -->
-    <div class="bottom-nav">
-      <a class="bottom-nav-item" href="../index.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
-      </a>
-      <a class="bottom-nav-item" href="parties.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        <span>Parties</span>
-      </a>
-      <a class="bottom-nav-item bottom-nav-center" href="orders.html">
-        <div class="bottom-nav-fab">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </div>
-        <span>New</span>
-      </a>
-      <a class="bottom-nav-item" href="performance.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Reports</span>
-      </a>
-      <a class="bottom-nav-item" href="profile.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- STOCK UPDATE BOTTOM SHEET -->
+    <!-- STOCK UPDATE BOTTOM SHEET -->
   <div class="su-overlay" id="suOverlay" onclick="closeStockSheet()"></div>
   <div class="su-sheet" id="suSheet">
     <div class="su-handle"></div>
@@ -560,6 +200,30 @@
     document.getElementById('suOverlay').classList.remove('show');
     document.getElementById('suSheet').classList.remove('show');
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_stock_onboarded",
+    steps: [
+          {
+                "target": ".stk-stats",
+                "text": "Stock taking overview — items counted, pending, and discrepancies found.",
+                "position": "below"
+          },
+          {
+                "target": ".stk-search-wrap",
+                "text": "Search products by name or SKU to quickly find and update stock.",
+                "position": "below"
+          },
+          {
+                "target": ".prod-card",
+                "text": "Enter physical stock count for each product. System calculates variance.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

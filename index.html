@@ -5,157 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Adera Sales</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/onboarding.css">
 <style>
-/* ── Onboarding Walkthrough ── */
-.onboard-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 9998;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.onboard-overlay.active { opacity: 1; pointer-events: auto; }
-.onboard-overlay.hiding { opacity: 0; }
-
-.onboard-spotlight {
-  position: absolute;
-  z-index: 9998;
-  border-radius: 12px;
-  box-shadow: 0 0 0 4000px rgba(0,0,0,0.7);
-  pointer-events: none;
-  transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;
-}
-
-.onboard-tooltip {
-  position: absolute;
-  z-index: 9999;
-  background: #fff;
-  border-radius: 14px;
-  padding: 20px;
-  max-width: 280px;
-  width: 280px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  pointer-events: auto;
-}
-.onboard-tooltip.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.onboard-tooltip .arrow {
-  position: absolute;
-  width: 0; height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-}
-.onboard-tooltip .arrow.arrow-up {
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-bottom: 10px solid #fff;
-}
-.onboard-tooltip .arrow.arrow-down {
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-top: 10px solid #fff;
-}
-.onboard-tooltip .arrow.arrow-left {
-  left: -10px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-right: 10px solid #fff;
-}
-
-.onboard-tooltip .ob-text {
-  font-size: 14px;
-  line-height: 1.5;
-  color: #1e293b;
-  margin-bottom: 16px;
-  font-weight: 500;
-}
-
-.onboard-tooltip .ob-dots {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-.onboard-tooltip .ob-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: #cbd5e1;
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-.onboard-tooltip .ob-dot.active {
-  background: #3b82f6;
-  transform: scale(1.25);
-}
-
-.onboard-tooltip .ob-counter {
-  font-size: 11px;
-  color: #94a3b8;
-  text-align: center;
-  margin-bottom: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.onboard-tooltip .ob-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.onboard-tooltip .ob-skip {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 6px 2px;
-  font-weight: 500;
-}
-.onboard-tooltip .ob-skip:hover { color: #64748b; }
-.onboard-tooltip .ob-next {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.onboard-tooltip .ob-next:hover { background: #2563eb; }
-
-/* Help (?) button */
-.onboard-help-btn {
-  position: absolute;
-  bottom: 70px;
-  right: 10px;
-  z-index: 900;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(59,130,246,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-.onboard-help-btn:hover { transform: scale(1.1); }
-
 /* ── App Update Banner ── */
 .update-banner { background:linear-gradient(135deg,#3066be,#6366f1); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transform:translateY(-100%); transition:transform .4s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; touch-action:pan-y; }
 .update-banner.show { transform:translateY(0); }
@@ -751,6 +602,39 @@
           <div class="module-icon-wrap ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
           <div class="module-label">Support</div>
         </div>
+        <div class="module-card bar-blue" onclick="hapticTap(this); goTo('modules/chat.html')">
+          <div class="module-icon-wrap ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+          <div class="module-label">Chat</div>
+        </div>
+        <div class="module-card bar-indigo" onclick="hapticTap(this); goTo('modules/competitors.html')">
+          <div class="module-icon-wrap ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+          <div class="module-label">Competitors</div>
+        </div>
+        <div class="module-card bar-teal" onclick="hapticTap(this); goTo('modules/distributor.html')">
+          <div class="module-icon-wrap ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+          <div class="module-label">Distributor</div>
+        </div>
+        <div class="module-card bar-pink" onclick="hapticTap(this); goTo('modules/gallery.html')">
+          <div class="module-icon-wrap ic-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+          <div class="module-label">Gallery</div>
+        </div>
+        <div class="module-card bar-green" onclick="hapticTap(this); goTo('modules/geofence.html')">
+          <div class="module-icon-wrap ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 10-16 0c0 3 2.7 7 8 11.7z"/></svg></div>
+          <div class="module-label">Geofence</div>
+        </div>
+        <div class="module-card bar-yellow" onclick="hapticTap(this); goTo('modules/targets.html')">
+          <div class="module-icon-wrap ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div class="module-label">Targets</div>
+        </div>
+        <div class="module-card bar-purple" onclick="hapticTap(this); goTo('modules/schemes.html')">
+          <div class="module-icon-wrap ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+          <div class="module-label">Schemes</div>
+        </div>
+        <div class="module-card bar-orange" onclick="hapticTap(this); goTo('modules/notifications.html')">
+          <div class="module-badge">3</div>
+          <div class="module-icon-wrap ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+          <div class="module-label">Notifications</div>
+        </div>
       </div>
 
     </div><!-- /content -->
@@ -826,23 +710,6 @@
         </button>
       </div>
       <div id="syncQueueList"></div>
-    </div>
-  </div>
-
-  <!-- Onboarding Help Button -->
-  <button class="onboard-help-btn" id="onboardHelpBtn" onclick="startOnboarding()" title="Show walkthrough">?</button>
-
-  <!-- Onboarding Overlay -->
-  <div class="onboard-overlay" id="onboardOverlay"></div>
-  <div class="onboard-spotlight" id="onboardSpotlight" style="display:none;"></div>
-  <div class="onboard-tooltip" id="onboardTooltip" style="display:none;">
-    <div class="arrow arrow-up" id="onboardArrow"></div>
-    <div class="ob-text" id="onboardText"></div>
-    <div class="ob-dots" id="onboardDots"></div>
-    <div class="ob-counter" id="onboardCounter"></div>
-    <div class="ob-actions">
-      <button class="ob-skip" onclick="skipOnboarding()">Skip</button>
-      <button class="ob-next" id="onboardNextBtn" onclick="nextStep()">Next</button>
     </div>
   </div>
 
@@ -1060,197 +927,17 @@
   initOfflineBanner();
 </script>
 
+<script src="js/onboarding.js"></script>
 <script>
-// ── Onboarding Walkthrough ──
-(function() {
-  var currentStep = 0;
-  var isActive = false;
-
-  var steps = [
-    {
-      target: '#checkinBtn',
-      text: 'Start your day by checking in with GPS & selfie',
-      position: 'below'
-    },
-    {
-      target: '.module-grid',
-      text: 'Access all your sales tools from here',
-      position: 'above'
-    },
-    {
-      target: '.top-bar .icon-btn',
-      text: 'Tap to open navigation & DMS modules',
-      position: 'below'
-    },
-    {
-      target: '.bottom-nav',
-      text: 'Quick access to Parties, Orders & Reports',
-      position: 'above'
-    }
-  ];
-
-  var overlay = document.getElementById('onboardOverlay');
-  var spotlight = document.getElementById('onboardSpotlight');
-  var tooltip = document.getElementById('onboardTooltip');
-  var textEl = document.getElementById('onboardText');
-  var dotsEl = document.getElementById('onboardDots');
-  var counterEl = document.getElementById('onboardCounter');
-  var arrowEl = document.getElementById('onboardArrow');
-  var nextBtn = document.getElementById('onboardNextBtn');
-  var phoneFrame = document.querySelector('.phone-frame');
-
-  function getRelativeRect(el) {
-    var elRect = el.getBoundingClientRect();
-    var frameRect = phoneFrame.getBoundingClientRect();
-    return {
-      top: elRect.top - frameRect.top,
-      left: elRect.left - frameRect.left,
-      width: elRect.width,
-      height: elRect.height,
-      frameWidth: frameRect.width,
-      frameHeight: frameRect.height
-    };
-  }
-
-  function showStep(idx) {
-    currentStep = idx;
-    var step = steps[idx];
-    var targetEl = phoneFrame.querySelector(step.target);
-    if (!targetEl) return;
-
-    // Scroll target into view within phone screen
-    var scrollContainer = phoneFrame.querySelector('.screen-scroll');
-    if (scrollContainer && step.target !== '.bottom-nav') {
-      var containerRect = scrollContainer.getBoundingClientRect();
-      var targetRect = targetEl.getBoundingClientRect();
-      if (targetRect.top < containerRect.top || targetRect.bottom > containerRect.bottom) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-
-    setTimeout(function() {
-      var rect = getRelativeRect(targetEl);
-      var pad = 8;
-
-      // Position spotlight
-      spotlight.style.display = 'block';
-      spotlight.style.top = (rect.top - pad) + 'px';
-      spotlight.style.left = (rect.left - pad) + 'px';
-      spotlight.style.width = (rect.width + pad * 2) + 'px';
-      spotlight.style.height = (rect.height + pad * 2) + 'px';
-
-      // Text
-      textEl.textContent = step.text;
-
-      // Counter
-      counterEl.textContent = 'Step ' + (idx + 1) + ' of ' + steps.length;
-
-      // Dots
-      dotsEl.innerHTML = '';
-      for (var i = 0; i < steps.length; i++) {
-        var dot = document.createElement('div');
-        dot.className = 'ob-dot' + (i === idx ? ' active' : '');
-        dotsEl.appendChild(dot);
-      }
-
-      // Button text
-      nextBtn.textContent = (idx === steps.length - 1) ? 'Got it!' : 'Next';
-
-      // Arrow direction & tooltip position
-      arrowEl.className = 'arrow';
-      var tooltipTop, tooltipLeft;
-      var tooltipW = 280;
-
-      if (step.position === 'below') {
-        arrowEl.classList.add('arrow-up');
-        tooltipTop = rect.top + rect.height + pad + 14;
-        tooltipLeft = Math.max(10, Math.min(rect.left + rect.width / 2 - tooltipW / 2, rect.frameWidth - tooltipW - 10));
-        // Adjust arrow horizontal position
-        var arrowOffset = rect.left + rect.width / 2 - tooltipLeft;
-        arrowEl.style.left = arrowOffset + 'px';
-        arrowEl.style.top = '-10px';
-        arrowEl.style.transform = '';
-      } else {
-        arrowEl.classList.add('arrow-down');
-        tooltipTop = rect.top - pad - 14;
-        tooltipLeft = Math.max(10, Math.min(rect.left + rect.width / 2 - tooltipW / 2, rect.frameWidth - tooltipW - 10));
-        // Measure tooltip height after making it visible but hidden
-        tooltip.style.display = 'block';
-        tooltip.style.visibility = 'hidden';
-        tooltip.style.left = tooltipLeft + 'px';
-        tooltip.style.top = '0px';
-        var ttHeight = tooltip.offsetHeight;
-        tooltip.style.visibility = '';
-        tooltipTop = rect.top - pad - 14 - ttHeight;
-        var arrowOffset2 = rect.left + rect.width / 2 - tooltipLeft;
-        arrowEl.style.left = arrowOffset2 + 'px';
-        arrowEl.style.bottom = '-10px';
-        arrowEl.style.top = '';
-        arrowEl.style.transform = '';
-      }
-
-      tooltip.style.display = 'block';
-      tooltip.style.left = tooltipLeft + 'px';
-      tooltip.style.top = tooltipTop + 'px';
-
-      // Animate in
-      tooltip.classList.remove('visible');
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          tooltip.classList.add('visible');
-        });
-      });
-    }, step.target === '.module-grid' || step.target === '.bottom-nav' ? 350 : 50);
-  }
-
-  window.startOnboarding = function() {
-    if (isActive) return;
-    isActive = true;
-    currentStep = 0;
-
-    overlay.style.display = 'block';
-    overlay.classList.remove('hiding');
-    requestAnimationFrame(function() {
-      overlay.classList.add('active');
-    });
-
-    showStep(0);
-  };
-
-  window.nextStep = function() {
-    if (currentStep < steps.length - 1) {
-      tooltip.classList.remove('visible');
-      setTimeout(function() {
-        showStep(currentStep + 1);
-      }, 200);
-    } else {
-      skipOnboarding();
-    }
-  };
-
-  window.skipOnboarding = function() {
-    isActive = false;
-    localStorage.setItem('adera_onboarded', 'true');
-
-    tooltip.classList.remove('visible');
-    overlay.classList.add('hiding');
-    overlay.classList.remove('active');
-
-    setTimeout(function() {
-      overlay.style.display = 'none';
-      overlay.classList.remove('hiding');
-      spotlight.style.display = 'none';
-      tooltip.style.display = 'none';
-    }, 350);
-  };
-
-  // Auto-start on first visit after 1s delay
-  if (!localStorage.getItem('adera_onboarded')) {
-    setTimeout(function() {
-      startOnboarding();
-    }, 1000);
-  }
-})();
+  Onboarding.init({
+    key: 'adera_onboarded',
+    steps: [
+      { target: '#checkinBtn', text: 'Start your day by checking in with GPS & selfie', position: 'below' },
+      { target: '.module-grid', text: 'Access all your sales tools from here', position: 'above' },
+      { target: '.top-bar .icon-btn', text: 'Tap to open navigation & DMS modules', position: 'below' },
+      { target: '.bottom-nav', text: 'Quick access to Parties, Orders & Reports', position: 'above' }
+    ]
+  });
 
   // Read session data from localStorage (set during login)
   (function() {
@@ -1452,18 +1139,15 @@
     }, 2000);
   }
 
-  // Dismiss banner — hide for 24 hours
+  // Dismiss banner permanently for this version
   window.dismissUpdateBanner = function(e) {
     if (e) { e.stopPropagation(); e.preventDefault(); }
     if (autoHideTimer) clearTimeout(autoHideTimer);
-    localStorage.setItem(DISMISS_TIME_KEY, String(Date.now()));
+    localStorage.setItem(LS_KEY, UPDATE_VERSION);
     if (banner) {
+      banner.style.transition = '';
       banner.classList.remove('show');
-      banner.style.transform = '';
-      banner.addEventListener('transitionend', function handler() {
-        banner.removeEventListener('transitionend', handler);
-        banner.style.display = 'none';
-      });
+      setTimeout(function() { banner.style.display = 'none'; }, 400);
     }
   };
 

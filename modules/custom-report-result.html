@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Report Result — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
+  <style>
+    .report-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+    .report-meta { font-size:11px; color:#888; margin-top:4px; }
+    .kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+    .kpi-card { background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(48,102,190,.08); }
+    .kpi-label { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:.3px; margin-bottom:4px; }
+    .kpi-value { font-size:20px; font-weight:800; color:#1a2540; }
+    .kpi-change { font-size:10px; font-weight:600; margin-top:2px; }
+    .kpi-change.up { color:var(--success); }
+    .kpi-change.down { color:var(--danger); }
+    .bar-chart { display:flex; flex-direction:column; gap:8px; }
+    .bar-row { display:flex; align-items:center; gap:8px; }
+    .bar-label { font-size:11px; color:#555; width:70px; flex-shrink:0; text-align:right; }
+    .bar-track { flex:1; height:20px; background:#f0f0f0; border-radius:6px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:6px; transition:width .6s ease; }
+    .bar-val { font-size:11px; font-weight:700; color:#1a2540; width:55px; text-align:right; }
+    .table-wrap { overflow-x:auto; margin-bottom:14px; }
+    .data-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .data-table th { background:#f8f9fb; color:#64748b; font-weight:700; text-transform:uppercase; font-size:10px; letter-spacing:.3px; padding:8px 10px; text-align:left; border-bottom:1.5px solid #e5e7eb; }
+    .data-table td { padding:8px 10px; border-bottom:1px solid #f0f0f0; color:#333; }
+    .data-table tr:last-child td { border-bottom:none; }
+    .data-table .text-right { text-align:right; }
+    .data-table .font-bold { font-weight:700; }
+    .export-bar { display:flex; gap:8px; margin-bottom:14px; }
+    .export-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:10px; border:1.5px solid #e5e7eb; background:#fff; font-size:12px; font-weight:700; color:#333; cursor:pointer; }
+    .export-btn svg { width:16px; height:16px; }
+  </style>
+</head>
+<body>
+
+<div class="page-title">Adera Sales</div>
+
+<div class="phone-frame">
+<div id="drawer" data-inject="custom-report-result"></div>
+
+  <div class="screen-scroll">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title" id="reportTitle">Report Result</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Report Header -->
+      <div class="summary-card" id="reportHeader" style="margin-bottom:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div id="reportHeading" style="font-size:16px; font-weight:800; color:#1a2540;">Sales Report</div>
+          <span class="report-badge" id="reportBadge" style="background:#e6f4ea; color:#28a745;">Generated</span>
+        </div>
+        <div class="report-meta" id="reportMeta">Mar 1, 2026 – Mar 8, 2026 · Generated just now</div>
+      </div>
+
+      <!-- Export Options -->
+      <div class="export-bar">
+        <button class="export-btn" onclick="showToast('Downloading PDF...')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          PDF
+        </button>
+        <button class="export-btn" onclick="showToast('Downloading Excel...')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          Excel
+        </button>
+        <button class="export-btn" onclick="showToast('Sharing report...')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
+
+      <!-- KPI Cards — Sales -->
+      <div id="kpiSection">
+        <div class="kpi-grid" id="kpiGrid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Sales</div>
+            <div class="kpi-value">Rs 4.2L</div>
+            <div class="kpi-change up">+12.4% vs last week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Orders</div>
+            <div class="kpi-value">128</div>
+            <div class="kpi-change up">+8 from last week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Avg Order</div>
+            <div class="kpi-value">Rs 3,281</div>
+            <div class="kpi-change down">-2.1% vs last week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Parties Billed</div>
+            <div class="kpi-value">84</div>
+            <div class="kpi-change up">+5 new parties</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div class="section-header">
+        <span class="section-title" id="chartTitle">Sales by Category</span>
+      </div>
+
+      <div class="summary-card" style="margin-bottom:14px;" id="chartCard">
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">Dairy</div>
+            <div class="bar-track"><div class="bar-fill" style="width:85%;background:var(--primary);"></div></div>
+            <div class="bar-val">Rs 1.2L</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Snacks</div>
+            <div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--success);"></div></div>
+            <div class="bar-val">Rs 89K</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Beverages</div>
+            <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--warning);"></div></div>
+            <div class="bar-val">Rs 72K</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Grocery</div>
+            <div class="bar-track"><div class="bar-fill" style="width:40%;background:#7c3aed;"></div></div>
+            <div class="bar-val">Rs 55K</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Personal</div>
+            <div class="bar-track"><div class="bar-fill" style="width:28%;background:var(--danger);"></div></div>
+            <div class="bar-val">Rs 38K</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="section-header">
+        <span class="section-title" id="tableTitle">Top Items</span>
+      </div>
+
+      <div class="summary-card" style="margin-bottom:14px; padding:0; overflow:hidden;" id="tableCard">
+        <div class="table-wrap">
+          <table class="data-table" id="dataTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item</th>
+                <th class="text-right">Qty</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td class="font-bold">Full Cream Milk 1L</td><td class="text-right">420</td><td class="text-right">Rs 25,200</td></tr>
+              <tr><td>2</td><td class="font-bold">Cheese Slice 200g</td><td class="text-right">310</td><td class="text-right">Rs 21,700</td></tr>
+              <tr><td>3</td><td class="font-bold">Butter 500g</td><td class="text-right">275</td><td class="text-right">Rs 19,250</td></tr>
+              <tr><td>4</td><td class="font-bold">Yogurt Cup 400ml</td><td class="text-right">260</td><td class="text-right">Rs 15,600</td></tr>
+              <tr><td>5</td><td class="font-bold">Cold Coffee 200ml</td><td class="text-right">195</td><td class="text-right">Rs 11,700</td></tr>
+              <tr><td>6</td><td class="font-bold">Paneer 200g</td><td class="text-right">180</td><td class="text-right">Rs 14,400</td></tr>
+              <tr><td>7</td><td class="font-bold">Chips Classic 100g</td><td class="text-right">165</td><td class="text-right">Rs 8,250</td></tr>
+              <tr><td>8</td><td class="font-bold">Biscuit Pack 300g</td><td class="text-right">150</td><td class="text-right">Rs 7,500</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Daily Trend -->
+      <div class="section-header">
+        <span class="section-title" id="trendTitle">Daily Trend</span>
+      </div>
+
+      <div class="summary-card" style="margin-bottom:14px;" id="trendCard">
+        <div style="display:flex; align-items:flex-end; gap:4px; height:100px; padding:4px 0;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Mon</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:60px;opacity:.85;"></div>
+            <div style="font-size:9px;font-weight:700;">52K</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Tue</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:75px;opacity:.85;"></div>
+            <div style="font-size:9px;font-weight:700;">68K</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Wed</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:45px;opacity:.85;"></div>
+            <div style="font-size:9px;font-weight:700;">42K</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Thu</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:88px;opacity:.85;"></div>
+            <div style="font-size:9px;font-weight:700;">78K</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Fri</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:95px;opacity:.85;"></div>
+            <div style="font-size:9px;font-weight:700;">85K</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Sat</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:55px;opacity:.85;"></div>
+            <div style="font-size:9px;font-weight:700;">48K</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:9px;color:#888;">Sun</div>
+            <div style="width:100%;background:var(--primary);border-radius:4px 4px 0 0;height:35px;opacity:.7;border:1.5px dashed var(--primary);background:transparent;"></div>
+            <div style="font-size:9px;font-weight:700;color:#999;">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Footer -->
+      <div class="summary-card" style="margin-bottom:24px; background:linear-gradient(135deg,#eef2ff,#f8f9ff);">
+        <div style="font-size:11px; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Report Summary</div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:12px; color:#555;">Total Records</span>
+          <span style="font-size:12px; font-weight:700; color:#1a2540;" id="summaryRecords">128 orders</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:12px; color:#555;">Date Range</span>
+          <span style="font-size:12px; font-weight:700; color:#1a2540;">Mar 1–8, 2026</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:12px; color:#555;">Report Size</span>
+          <span style="font-size:12px; font-weight:700; color:#1a2540;">142 KB</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="font-size:12px; color:#555;">Format</span>
+          <span style="font-size:12px; font-weight:700; color:#1a2540;">PDF / Excel</span>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <div class="bottom-nav" data-inject="custom-report-result"></div>
+
+  </div><!-- /screen-scroll -->
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+
+<script>
+// Dynamic report content based on URL param
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var type = params.get('type') || 'sales';
+
+  var config = {
+    sales: {
+      title: 'Sales Report',
+      color: 'var(--primary)',
+      bg: '#eef2ff',
+      kpis: [
+        { label:'Total Sales', value:'Rs 4.2L', change:'+12.4% vs last week', dir:'up' },
+        { label:'Orders', value:'128', change:'+8 from last week', dir:'up' },
+        { label:'Avg Order', value:'Rs 3,281', change:'-2.1% vs last week', dir:'down' },
+        { label:'Parties Billed', value:'84', change:'+5 new parties', dir:'up' }
+      ],
+      chartTitle: 'Sales by Category',
+      tableTitle: 'Top Products',
+      trendTitle: 'Daily Sales Trend',
+      records: '128 orders'
+    },
+    collection: {
+      title: 'Collection Report',
+      color: 'var(--success)',
+      bg: '#e6f4ea',
+      kpis: [
+        { label:'Total Collected', value:'Rs 3.8L', change:'+15.2% vs last week', dir:'up' },
+        { label:'Receipts', value:'96', change:'+12 from last week', dir:'up' },
+        { label:'Recovery Rate', value:'78%', change:'+3.5% improved', dir:'up' },
+        { label:'Outstanding', value:'Rs 1.1L', change:'-8K reduced', dir:'up' }
+      ],
+      chartTitle: 'Collection by Mode',
+      tableTitle: 'Top Collections',
+      trendTitle: 'Daily Collection Trend',
+      records: '96 receipts'
+    },
+    visit: {
+      title: 'Visit Report',
+      color: 'var(--warning)',
+      bg: '#fef3e2',
+      kpis: [
+        { label:'Total Visits', value:'245', change:'+18 vs last week', dir:'up' },
+        { label:'Productive', value:'198', change:'80.8% rate', dir:'up' },
+        { label:'Avg Duration', value:'22 min', change:'-3 min improved', dir:'up' },
+        { label:'Unique Parties', value:'112', change:'+6 new visited', dir:'up' }
+      ],
+      chartTitle: 'Visits by Area',
+      tableTitle: 'Visit Details',
+      trendTitle: 'Daily Visit Trend',
+      records: '245 visits'
+    },
+    party: {
+      title: 'Party Report',
+      color: '#7c3aed',
+      bg: '#f3e8ff',
+      kpis: [
+        { label:'Active Parties', value:'156', change:'+8 this week', dir:'up' },
+        { label:'New Parties', value:'12', change:'+4 vs last week', dir:'up' },
+        { label:'Avg Purchase', value:'Rs 5,420', change:'+6.3% growth', dir:'up' },
+        { label:'Dormant', value:'23', change:'-5 reactivated', dir:'up' }
+      ],
+      chartTitle: 'Parties by Segment',
+      tableTitle: 'Top Parties',
+      trendTitle: 'Party Activity Trend',
+      records: '156 parties'
+    },
+    product: {
+      title: 'Product Report',
+      color: 'var(--danger)',
+      bg: '#fde8e8',
+      kpis: [
+        { label:'SKUs Sold', value:'89', change:'+6 new items', dir:'up' },
+        { label:'Top Seller', value:'Milk 1L', change:'420 units sold', dir:'up' },
+        { label:'Slow Movers', value:'14', change:'-3 vs last month', dir:'up' },
+        { label:'Avg Margin', value:'18.5%', change:'+1.2% improved', dir:'up' }
+      ],
+      chartTitle: 'Sales by Product Category',
+      tableTitle: 'Product Performance',
+      trendTitle: 'Daily Product Trend',
+      records: '89 SKUs'
+    }
+  };
+
+  var c = config[type] || config.sales;
+
+  document.getElementById('reportTitle').textContent = c.title;
+  document.getElementById('reportHeading').textContent = c.title;
+  document.title = c.title + ' — Adera Sales';
+  document.getElementById('chartTitle').textContent = c.chartTitle;
+  document.getElementById('tableTitle').textContent = c.tableTitle;
+  document.getElementById('trendTitle').textContent = c.trendTitle;
+  document.getElementById('summaryRecords').textContent = c.records;
+
+  // Update KPI cards
+  var grid = document.getElementById('kpiGrid');
+  grid.innerHTML = c.kpis.map(function(k) {
+    return '<div class="kpi-card"><div class="kpi-label">'+k.label+'</div><div class="kpi-value">'+k.value+'</div><div class="kpi-change '+k.dir+'">'+k.change+'</div></div>';
+  }).join('');
+
+  // Update bar chart colors
+  var bars = document.querySelectorAll('.bar-fill');
+  bars.forEach(function(b,i) {
+    if (i === 0) b.style.background = c.color;
+  });
+
+  // Update trend bar colors
+  var trendBars = document.querySelectorAll('#trendCard [style*="background:var(--primary)"]');
+  // The trend bars use inline styles so we keep them as-is for the prototype
+})();
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_custom_report_result_onboarded",
+    steps: [
+      {
+        "target": ".export-bar",
+        "text": "Export your report as PDF, Excel, or share it with your team.",
+        "position": "below"
+      },
+      {
+        "target": ".kpi-card",
+        "text": "Key metrics at a glance with comparison to previous period.",
+        "position": "below"
+      }
+    ]
+  });
+</script>
+</body>
+</html>

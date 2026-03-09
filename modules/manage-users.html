@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Manage Users — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Search Bar ── */
     .mu-search {
@@ -665,6 +666,30 @@
 
   // ── Boot ──
   init();
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_manage_users_onboarded",
+    steps: [
+          {
+                "target": ".mu-stats",
+                "text": "User overview — total, active, and inactive team members.",
+                "position": "below"
+          },
+          {
+                "target": ".mu-tabs",
+                "text": "Filter users by status or role to find who you need.",
+                "position": "below"
+          },
+          {
+                "target": ".mu-card",
+                "text": "Each user card shows role, status, and last activity. Tap to manage.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

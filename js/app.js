@@ -446,7 +446,7 @@ function injectDrawer(activePage) {
       '<span class="drawer-item-label">Back Up Data</span>' +
     '</div>' +
 
-    '<div class="drawer-item">' +
+    '<div class="drawer-item" onclick="goTo(\'' + prefix + 'login.html\')">' +
       '<div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>' +
       '<span class="drawer-item-label">Logout</span>' +
     '</div>' +

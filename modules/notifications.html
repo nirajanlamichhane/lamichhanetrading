@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Notifications — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Stats Strip ── */
     .notif-stats {
@@ -572,6 +573,18 @@
       <button id="pushToggleBtn" onclick="requestPushPermission()" style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.25);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">Enable</button>
     </div>
 
+    <!-- Push Banner Demo Link -->
+    <div style="margin:0 20px 14px;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(48,102,190,.08);display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTo('push-banner.html')">
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.12);color:#f59e0b;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Push Banner Demo</div>
+        <div style="font-size:11px;color:var(--text-secondary);">Preview all notification banner types</div>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="width:16px;height:16px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
     <div class="ns-group">
       <div class="ns-item">
         <div class="ns-item-left">
@@ -1010,5 +1023,29 @@
   }
 </script>
 
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_notifications_onboarded",
+    steps: [
+          {
+                "target": ".notif-stats",
+                "text": "Notification summary — unread, today's alerts, and action items.",
+                "position": "below"
+          },
+          {
+                "target": ".notif-tabs",
+                "text": "Filter by type — All, Orders, Approvals, System, or Alerts.",
+                "position": "below"
+          },
+          {
+                "target": ".notif-item",
+                "text": "Tap any notification to view details or take action.",
+                "position": "below"
+          }
+    ]
+  });
+</script>
 </body>
 </html>

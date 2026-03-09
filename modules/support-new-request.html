@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>New Support Request — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
 </head>
 <body>
 
@@ -151,6 +152,25 @@
     showToast('Ticket #' + (1025 + Math.floor(Math.random() * 100)) + ' submitted successfully', 'success');
     setTimeout(function() { goTo('support.html'); }, 800);
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_newreq_onboarded",
+    steps: [
+          {
+                "target": ".info-card",
+                "text": "Create a new support ticket by filling in the details below.",
+                "position": "below"
+          },
+          {
+                "target": ".form-group",
+                "text": "Select category, priority, and describe your issue clearly.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

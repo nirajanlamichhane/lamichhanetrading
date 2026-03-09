@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Configuration — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Search Bar ── */
     .cfg-search {
@@ -711,6 +712,25 @@
 
   // ── Init ──
   initToggles();
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_config_onboarded",
+    steps: [
+          {
+                "target": ".cfg-search",
+                "text": "Search settings by name to quickly find what you need.",
+                "position": "below"
+          },
+          {
+                "target": ".cfg-item",
+                "text": "Tap any setting to configure. Toggle switches, select options, or enter values.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

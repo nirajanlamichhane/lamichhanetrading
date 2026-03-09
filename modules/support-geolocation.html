@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Geolocation Support — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     .geo-issue-item { cursor:pointer; transition:background .2s; }
     .geo-issue-item.selected { background:rgba(48,102,190,.06); border-left:3px solid var(--primary); }
@@ -179,6 +180,25 @@
     showToast('Location report submitted successfully', 'success');
     setTimeout(function() { goTo('support.html'); }, 800);
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_geo_onboarded",
+    steps: [
+          {
+                "target": ".geo-issue-item",
+                "text": "Select the type of geolocation issue you're experiencing.",
+                "position": "below"
+          },
+          {
+                "target": ".form-group",
+                "text": "Provide details about the issue to help the support team resolve it.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

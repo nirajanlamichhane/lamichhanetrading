@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Messages — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Chat Search ── */
     .chat-search-area { background:var(--primary); padding:0 14px 16px; }
@@ -67,9 +68,9 @@
     }
 
     /* ── Chat Detail View ── */
-    .chat-detail { display:none; flex-direction:column; height:100%; }
+    .chat-detail { display:none; flex-direction:column; height:760px; }
     .chat-detail.active { display:flex; }
-    .chat-list-view.hidden { display:none; }
+    #chatListView.hidden { display:none; }
 
     .chat-header {
       background:linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
@@ -221,223 +222,226 @@
   </style>
 </head>
 <body>
-<p class="page-title">Adera Sales · Messages</p>
+<div class="page-title">Adera Sales</div>
 <div class="phone-frame">
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
-  <div class="drawer" id="drawer" data-inject="chat"></div>
+  <div id="drawer" data-inject="chat"></div>
 
-  <div class="screen-scroll" id="screenScroll">
-    <!-- STATUS BAR -->
+  <!-- ═══ CHAT LIST VIEW ═══ -->
+  <div id="chatListView" class="screen-scroll">
+
+    <!-- Status Bar -->
     <div class="status-bar">
-      <span>9:41</span>
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Messages</div>
       <div style="display:flex;gap:6px;align-items:center;">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M1.5 8.5C5.5 4.5 10.5 2 12 2s6.5 2.5 10.5 6.5l-2 2C17.5 7.5 14 5 12 5S6.5 7.5 3.5 10.5l-2-2z"/><path d="M5.5 12.5C7.5 10.5 9.5 9 12 9s4.5 1.5 6.5 3.5l-2 2C15 13 13.5 12 12 12s-3 1-4.5 2.5l-2-2z"/><circle cx="12" cy="17" r="2"/></svg>
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="1" y="6" width="4" height="12" rx="1"/><rect x="7" y="4" width="4" height="14" rx="1"/><rect x="13" y="2" width="4" height="16" rx="1"/><rect x="19" y="0" width="4" height="18" rx="1" opacity="0.3"/></svg>
-        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="14"><rect x="1" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="7" width="12" height="10" rx="1"/><path d="M20 10h2a1 1 0 011 1v2a1 1 0 01-1 1h-2"/></svg>
-      </div>
-    </div>
-
-    <!-- ═══════════ CHAT LIST VIEW ═══════════ -->
-    <div id="chatListView" class="chat-list-view">
-      <!-- TOP BAR -->
-      <div class="top-bar">
-        <button class="icon-btn" onclick="goBack()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+        <button class="icon-btn" onclick="showToast('New message','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            <line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/>
+          </svg>
         </button>
-        <span class="top-bar-title">Messages</span>
-        <button class="icon-btn" onclick="showToast('New message composer', 'info')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-      </div>
-
-      <!-- SEARCH -->
-      <div class="chat-search-area">
-        <div class="chat-search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="chatSearchInput" placeholder="Search conversations..." oninput="filterConversations()" />
-        </div>
-      </div>
-
-      <!-- CONVERSATION LIST -->
-      <div id="convList">
-        <!-- Unread Section -->
-        <div class="conv-section" data-section="unread">Unread Messages</div>
-
-        <!-- 1. Rajesh Kumar -->
-        <div class="conv-item" data-index="0" onclick="openChat(0)">
-          <div class="conv-avatar av-blue">
-            RK
-            <div class="conv-online-dot"></div>
-          </div>
-          <div class="conv-body">
-            <div class="conv-name unread">Rajesh Kumar <span class="conv-role">(Manager)</span></div>
-            <div class="conv-preview unread">Please submit today's EOD report before 6 PM</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time unread">10 min ago</span>
-            <span class="conv-badge">2</span>
-          </div>
-        </div>
-
-        <!-- 2. Sales Team Group -->
-        <div class="conv-item" data-index="1" onclick="openChat(1)">
-          <div class="conv-avatar av-green">
-            <span class="conv-group-icon">👥</span>
-          </div>
-          <div class="conv-body">
-            <div class="conv-name unread">Sales Team Group <span class="conv-role">(5 members)</span></div>
-            <div class="conv-preview unread">Target update: Zone achieved 82% MTD</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time unread">25 min ago</span>
-            <span class="conv-badge">5</span>
-          </div>
-        </div>
-
-        <!-- 3. Support Team -->
-        <div class="conv-item" data-index="2" onclick="openChat(2)">
-          <div class="conv-avatar av-red">
-            <span class="conv-group-icon">🛠</span>
-          </div>
-          <div class="conv-body">
-            <div class="conv-name unread">Support Team</div>
-            <div class="conv-preview unread">Your ticket #TK-234 has been resolved</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time unread">1 hr ago</span>
-            <span class="conv-badge">1</span>
-          </div>
-        </div>
-
-        <!-- Read Section -->
-        <div class="conv-section" data-section="read">Earlier</div>
-
-        <!-- 4. Priya Sharma -->
-        <div class="conv-item" data-index="3" onclick="openChat(3)">
-          <div class="conv-avatar av-purple">
-            PS
-            <div class="conv-online-dot"></div>
-          </div>
-          <div class="conv-body">
-            <div class="conv-name">Priya Sharma <span class="conv-role">(ASM)</span></div>
-            <div class="conv-preview">Great work on the Krishna Store order!</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time">2 hrs ago</span>
-          </div>
-        </div>
-
-        <!-- 5. Amit Patel -->
-        <div class="conv-item" data-index="4" onclick="openChat(4)">
-          <div class="conv-avatar av-orange">
-            AP
-          </div>
-          <div class="conv-body">
-            <div class="conv-name">Amit Patel <span class="conv-role">(Delivery)</span></div>
-            <div class="conv-preview">Delivery completed for ORD-1832</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time">Yesterday</span>
-          </div>
-        </div>
-
-        <!-- 6. HR Department -->
-        <div class="conv-item" data-index="5" onclick="openChat(5)">
-          <div class="conv-avatar av-teal">
-            HR
-          </div>
-          <div class="conv-body">
-            <div class="conv-name">HR Department</div>
-            <div class="conv-preview">Holiday notice: Holi on Mar 14</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time">Yesterday</span>
-          </div>
-        </div>
-
-        <!-- 7. System Alerts -->
-        <div class="conv-item" data-index="6" onclick="openChat(6)">
-          <div class="conv-avatar av-indigo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          </div>
-          <div class="conv-body">
-            <div class="conv-name">System Alerts</div>
-            <div class="conv-preview">Weekly report generated successfully</div>
-          </div>
-          <div class="conv-right">
-            <span class="conv-time">2 days ago</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- BOTTOM NAV -->
-      <div class="bottom-nav" data-inject="chat"></div>
-    </div>
-
-    <!-- ═══════════ CHAT DETAIL VIEW ═══════════ -->
-    <div id="chatDetailView" class="chat-detail">
-      <!-- Chat Header -->
-      <div class="chat-header">
-        <button class="chat-header-back" onclick="closeChat()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div class="chat-header-info">
-          <div class="chat-header-name" id="chatHeaderName">Rajesh Kumar</div>
-          <div class="chat-header-status" id="chatHeaderStatus"><span class="online-text">Online</span></div>
-        </div>
-        <div class="chat-header-actions">
-          <button class="chat-header-btn" onclick="showToast('Calling...', 'info')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
-          </button>
-          <button class="chat-header-btn" onclick="showToast('Video call...', 'info')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Messages -->
-      <div class="messages-area" id="messagesArea">
-        <!-- Populated by JS -->
-      </div>
-
-      <!-- Typing Indicator -->
-      <div class="typing-indicator" id="typingIndicator">
-        <div class="typing-dots"><span></span><span></span><span></span></div>
-        <span class="typing-text" id="typingText">Rajesh is typing...</span>
-      </div>
-
-      <!-- Quick Reply Chips -->
-      <div class="quick-replies" id="quickReplies">
-        <div class="qr-chip" onclick="tapQuickReply('On my way')">On my way</div>
-        <div class="qr-chip" onclick="tapQuickReply('Will do')">Will do</div>
-        <div class="qr-chip" onclick="tapQuickReply('Noted')">Noted</div>
-        <div class="qr-chip" onclick="tapQuickReply('Thanks')">Thanks</div>
-        <div class="qr-chip" onclick="tapQuickReply('Call me')">Call me</div>
-      </div>
-
-      <!-- Message Input -->
-      <div class="msg-input-bar">
-        <button class="msg-attach-btn" onclick="showToast('Attach file', 'info')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-        <div class="msg-input-wrap" id="msgInputWrap">
-          <input type="text" id="msgInput" placeholder="Type a message..." oninput="onMsgInput()" onkeydown="if(event.key==='Enter')sendMessage()" />
-        </div>
-        <div class="recording-state" id="recordingState">
-          <div class="rec-dot"></div>
-          <span class="rec-text">Recording...</span>
-          <span class="rec-timer" id="recTimer">0:00</span>
-        </div>
-        <button class="msg-send-btn mic" id="sendBtn"
-          onmousedown="startRecording()" onmouseup="stopRecording()"
-          ontouchstart="startRecording()" ontouchend="stopRecording()">
-          <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          <svg id="sendIcon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <button class="icon-btn" onclick="openDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+          </svg>
         </button>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- Chat Search -->
+    <div class="chat-search-area">
+      <div class="chat-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="chatSearchInput" placeholder="Search conversations..." oninput="filterConversations()">
+      </div>
+    </div>
+
+    <!-- Conversation List -->
+    <div class="conv-list">
+
+      <!-- Unread Section -->
+      <div class="conv-section" data-section="unread">UNREAD</div>
+
+      <!-- Rajesh Kumar -->
+      <div class="conv-item" data-index="0" onclick="openChat(0)">
+        <div class="conv-avatar av-blue">RK<div class="conv-online-dot"></div></div>
+        <div class="conv-body">
+          <div class="conv-name unread">Rajesh Kumar <span class="conv-role">Manager</span></div>
+          <div class="conv-preview unread">Please submit today's EOD report before 6 PM</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time unread">10 min ago</div>
+          <div class="conv-badge">2</div>
+        </div>
+      </div>
+
+      <!-- Sales Team Group -->
+      <div class="conv-item" data-index="1" onclick="openChat(1)">
+        <div class="conv-avatar av-green"><span class="conv-group-icon">&#128101;</span></div>
+        <div class="conv-body">
+          <div class="conv-name unread">Sales Team Group <span class="conv-role">5 members</span></div>
+          <div class="conv-preview unread">Target update: Zone achieved 82% MTD</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time unread">25 min ago</div>
+          <div class="conv-badge">5</div>
+        </div>
+      </div>
+
+      <!-- Support Team -->
+      <div class="conv-item" data-index="2" onclick="openChat(2)">
+        <div class="conv-avatar av-red"><span class="conv-group-icon">&#128736;</span></div>
+        <div class="conv-body">
+          <div class="conv-name unread">Support Team</div>
+          <div class="conv-preview unread">Your ticket #TK-234 has been resolved</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time unread">1 hr ago</div>
+          <div class="conv-badge">1</div>
+        </div>
+      </div>
+
+      <!-- Read Section -->
+      <div class="conv-section" data-section="read">EARLIER</div>
+
+      <!-- Priya Sharma -->
+      <div class="conv-item" data-index="3" onclick="openChat(3)">
+        <div class="conv-avatar av-purple">PS<div class="conv-online-dot"></div></div>
+        <div class="conv-body">
+          <div class="conv-name">Priya Sharma <span class="conv-role">ASM</span></div>
+          <div class="conv-preview">Great work on the Krishna Store order!</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time">2 hrs ago</div>
+        </div>
+      </div>
+
+      <!-- Amit Patel -->
+      <div class="conv-item" data-index="4" onclick="openChat(4)">
+        <div class="conv-avatar av-orange">AP</div>
+        <div class="conv-body">
+          <div class="conv-name">Amit Patel <span class="conv-role">Delivery</span></div>
+          <div class="conv-preview">Delivery completed for ORD-1832</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time">Yesterday</div>
+        </div>
+      </div>
+
+      <!-- HR Department -->
+      <div class="conv-item" data-index="5" onclick="openChat(5)">
+        <div class="conv-avatar av-teal">HR</div>
+        <div class="conv-body">
+          <div class="conv-name">HR Department</div>
+          <div class="conv-preview">Holiday notice: Holi on Mar 14</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time">Yesterday</div>
+        </div>
+      </div>
+
+      <!-- System Alerts -->
+      <div class="conv-item" data-index="6" onclick="openChat(6)">
+        <div class="conv-avatar av-indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <div class="conv-body">
+          <div class="conv-name">System Alerts</div>
+          <div class="conv-preview">Weekly report generated successfully</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time">2 days ago</div>
+        </div>
+      </div>
+
+    </div><!-- /conv-list -->
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" data-inject="chat"></div>
+
+  </div><!-- /screen-scroll (chatListView) -->
+
+  <!-- ═══ CHAT DETAIL VIEW ═══ -->
+  <div id="chatDetailView" class="chat-detail">
+
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <button class="chat-header-back" onclick="closeChat()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="chat-header-info">
+        <div class="chat-header-name" id="chatHeaderName">—</div>
+        <div class="chat-header-status" id="chatHeaderStatus">—</div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-header-btn" onclick="showToast('Voice call','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </button>
+        <button class="chat-header-btn" onclick="showToast('Video call','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </button>
+        <button class="chat-header-btn" onclick="showToast('More options','info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="messages-area" id="messagesArea"></div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <span class="typing-text" id="typingText">typing...</span>
+    </div>
+
+    <!-- Quick Reply Chips -->
+    <div class="quick-replies">
+      <div class="qr-chip" onclick="tapQuickReply('OK, noted')">OK, noted</div>
+      <div class="qr-chip" onclick="tapQuickReply('Will do')">Will do</div>
+      <div class="qr-chip" onclick="tapQuickReply('On it!')">On it!</div>
+      <div class="qr-chip" onclick="tapQuickReply('Thanks!')">Thanks!</div>
+      <div class="qr-chip" onclick="tapQuickReply('Sure, sending now')">Sure, sending now</div>
+    </div>
+
+    <!-- Message Input Bar -->
+    <div class="msg-input-bar">
+      <button class="msg-attach-btn" onclick="showToast('Attach file','info')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      </button>
+      <div id="msgInputWrap" class="msg-input-wrap">
+        <input type="text" id="msgInput" placeholder="Type a message..." oninput="onMsgInput()" onkeydown="if(event.key==='Enter')sendMessage()">
+      </div>
+      <div class="recording-state" id="recordingState">
+        <div class="rec-dot"></div>
+        <span class="rec-text">Recording</span>
+        <span class="rec-timer" id="recTimer">0:00</span>
+      </div>
+      <button class="msg-send-btn mic" id="sendBtn">
+        <span id="micIcon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </span>
+        <span id="sendIcon" style="display:none">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </span>
+      </button>
+    </div>
+
+  </div><!-- /chat-detail -->
+
+</div><!-- /phone-frame -->
 
 <script src="../js/app.js"></script>
 <script>
@@ -796,6 +800,25 @@ function filterConversations() {
     }
   });
 }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_chat_onboarded",
+    steps: [
+          {
+                "target": ".chat-search-area",
+                "text": "Search conversations by name or keyword to find messages quickly.",
+                "position": "below"
+          },
+          {
+                "target": ".conv-list",
+                "text": "Your conversations list. Tap any chat to open the full message thread.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

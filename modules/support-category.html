@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Support Categories — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
 </head>
 <body>
 
@@ -133,6 +134,25 @@
       goTo('support-new-request.html');
     }, 600);
   }
+</script>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_support_cat_onboarded",
+    steps: [
+          {
+                "target": ".info-card",
+                "text": "Choose a support category that best matches your issue.",
+                "position": "below"
+          },
+          {
+                "target": ".list-item",
+                "text": "Tap a category to create a new support request or browse FAQs.",
+                "position": "below"
+          }
+    ]
+  });
 </script>
 </body>
 </html>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Store Check-in — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Map Section ── */
     .geo-map {
@@ -380,11 +381,12 @@
       background: #4ade80; border-radius: 50%;
       animation: gpsPulse 2s ease-in-out infinite;
     }
+
   </style>
 </head>
 <body>
 
-<p class="page-title">Adera Sales</p>
+<div class="page-title">Adera Sales</div>
 
 <div class="phone-frame">
 
@@ -733,6 +735,7 @@
     </div>
   </div>
 
+
 </div><!-- /phone-frame -->
 
 <script src="../js/app.js"></script>
@@ -835,6 +838,25 @@
     if (label) label.textContent = el.textContent + ' radius';
     showToast('Radius set to ' + el.textContent, 'info');
   }
+
+  </script>
+  <script src="../js/onboarding.js"></script>
+  <script>
+  Onboarding.init({
+    key: 'adera_geo_onboarded',
+    steps: [
+      { target: '.geo-map', text: 'Start your day by checking in with GPS & selfie. Your live location and nearby stores appear on this map.', position: 'below' },
+      { target: '.geo-store-card.in-range', text: 'Stores within your geofence radius are shown here. Tap CHECK IN on any green store to begin.', position: 'below' },
+      { target: '.selfie-zone', text: 'Take a selfie to verify your visit. The photo is timestamped and geo-tagged automatically.', position: 'above', openSheet: true },
+      { target: '.geo-settings-card', text: 'Adjust your check-in radius, GPS refresh, and photo requirements from Settings.', position: 'above', closeSheet: true }
+    ],
+    beforeStep: function(idx, step) {
+      if (step.openSheet) openCheckinSheet('Krishna General Store', 'Ason Tole, Kathmandu', 'store1', 'btn1');
+      if (step.closeSheet) closeCheckinSheet();
+    },
+    onStart: function() { closeCheckinSheet(); },
+    onEnd: function() { closeCheckinSheet(); }
+  });
 </script>
 </body>
 </html>

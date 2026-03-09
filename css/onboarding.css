@@ -1,0 +1,122 @@
+/* ── Onboarding / Help Walkthrough ── */
+.onboard-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9998;
+  background: rgba(15, 23, 42, 0.65);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.onboard-overlay.active { opacity: 1; pointer-events: auto; }
+.onboard-overlay.hiding { opacity: 0; }
+
+.onboard-spotlight {
+  position: absolute;
+  z-index: 9998;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65);
+  pointer-events: none;
+  transition: top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease;
+}
+
+.onboard-tooltip {
+  position: absolute;
+  z-index: 9999;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  width: 280px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: auto;
+}
+.onboard-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.onboard-tooltip .arrow {
+  position: absolute;
+  width: 0; height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+}
+.onboard-tooltip .arrow.arrow-up {
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  border-bottom: 10px solid #fff;
+}
+.onboard-tooltip .arrow.arrow-down {
+  bottom: -10px; left: 50%;
+  transform: translateX(-50%);
+  border-top: 10px solid #fff;
+}
+.onboard-tooltip .arrow.arrow-left {
+  left: -10px; top: 50%;
+  transform: translateY(-50%);
+  border-right: 10px solid #fff;
+}
+
+.onboard-tooltip .ob-text {
+  font-size: 14px; line-height: 1.5;
+  color: #1e293b; margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.onboard-tooltip .ob-dots {
+  display: flex; gap: 6px;
+  justify-content: center; margin-bottom: 16px;
+}
+.onboard-tooltip .ob-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%; background: #cbd5e1;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.onboard-tooltip .ob-dot.active {
+  background: #3b82f6; transform: scale(1.25);
+}
+
+.onboard-tooltip .ob-counter {
+  font-size: 11px; color: #94a3b8;
+  text-align: center; margin-bottom: 12px;
+  font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.onboard-tooltip .ob-actions {
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+.onboard-tooltip .ob-skip {
+  background: none; border: none;
+  color: #94a3b8; font-size: 13px;
+  cursor: pointer; padding: 6px 2px;
+  font-weight: 500;
+}
+.onboard-tooltip .ob-skip:hover { color: #64748b; }
+.onboard-tooltip .ob-next {
+  background: #3b82f6; color: #fff;
+  border: none; border-radius: 10px;
+  padding: 8px 20px; font-size: 13px;
+  font-weight: 700; cursor: pointer;
+  transition: background 0.2s ease;
+}
+.onboard-tooltip .ob-next:hover { background: #2563eb; }
+
+/* Help (?) button */
+.onboard-help-btn {
+  position: absolute;
+  bottom: 70px; right: 10px;
+  z-index: 500;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #fff; border: none;
+  font-size: 18px; font-weight: 800;
+  box-shadow: 0 4px 14px rgba(59,130,246,.4);
+  cursor: pointer;
+  display: flex; align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+.onboard-help-btn:hover { transform: scale(1.1); }

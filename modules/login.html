@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Login — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/onboarding.css">
   <style>
     /* ── Login Screen ── */
     .login-screen {
@@ -791,5 +792,19 @@
   }
 </script>
 <style>@keyframes spin { to { transform:rotate(360deg); } }</style>
+
+<script src="../js/onboarding.js"></script>
+<script>
+  Onboarding.init({
+    "key": "adera_login_onboarded",
+    steps: [
+          {
+                "target": ".login-form-area",
+                "text": "Enter your phone number and password to sign in to Adera Sales.",
+                "position": "above"
+          }
+    ]
+  });
+</script>
 </body>
 </html>
