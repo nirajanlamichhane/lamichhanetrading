@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Support Categories — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="page-title">Adera Sales</div>
+
+<div class="phone-frame">
+
+  <div id="drawer" data-inject="support-category"></div>
+
+  <div class="screen-scroll">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Categories</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="content" style="padding-top:14px;">
+
+      <div class="info-card" style="margin-bottom:16px;">
+        <div class="info-card-label">Issue Categories</div>
+        <div class="info-card-value" style="font-size:20px;">3 Open</div>
+        <div class="info-card-sub">Select a category to submit or view requests</div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">All Categories</span>
+      </div>
+
+      <div class="list-item" onclick="selectCategory(this, 'Product Issue')">
+        <div class="list-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Product Issue</div>
+          <div class="list-item-subtitle">Defective, damaged, or wrong product</div>
+        </div>
+        <span class="badge badge-warning">2</span>
+      </div>
+
+      <div class="list-item" onclick="selectCategory(this, 'App / Technical')">
+        <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">App / Technical</div>
+          <div class="list-item-subtitle">App bugs, sync issues, login problems</div>
+        </div>
+        <span class="badge badge-warning">1</span>
+      </div>
+
+      <div class="list-item" onclick="selectCategory(this, 'Route / Location')">
+        <div class="list-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Route / Location</div>
+          <div class="list-item-subtitle">GPS, geofence, route assignment</div>
+        </div>
+        <span class="badge badge-success">0</span>
+      </div>
+
+      <div class="list-item" onclick="selectCategory(this, 'Outlet Management')">
+        <div class="list-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Outlet Management</div>
+          <div class="list-item-subtitle">Onboard, de-board, data correction</div>
+        </div>
+        <span class="badge badge-success">0</span>
+      </div>
+
+      <div class="list-item" onclick="selectCategory(this, 'Scheme / Pricing')">
+        <div class="list-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Scheme / Pricing</div>
+          <div class="list-item-subtitle">Discount errors, scheme queries</div>
+        </div>
+        <span class="badge badge-success">0</span>
+      </div>
+
+      <div class="list-item" onclick="selectCategory(this, 'Other')">
+        <div class="list-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Other</div>
+          <div class="list-item-subtitle">General queries and feedback</div>
+        </div>
+        <span class="badge badge-success">0</span>
+      </div>
+
+      <div style="height:80px;"></div>
+    </div>
+
+    <div class="bottom-nav" data-inject="support-category"></div>
+
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  var selectedCat = null;
+
+  function selectCategory(el, name) {
+    // Toggle selection visual
+    var items = document.querySelectorAll('.list-item');
+    for (var i = 0; i < items.length; i++) {
+      items[i].style.background = '';
+      items[i].style.borderLeft = '';
+    }
+    el.style.background = 'rgba(48,102,190,.06)';
+    el.style.borderLeft = '3px solid var(--primary)';
+    selectedCat = name;
+    showToast('Selected: ' + name + ' — Tap again or submit a new request', 'info');
+
+    // Navigate to new request with pre-selected category
+    setTimeout(function() {
+      localStorage.setItem('support_prefill_category', name);
+      goTo('support-new-request.html');
+    }, 600);
+  }
+</script>
+</body>
+</html>

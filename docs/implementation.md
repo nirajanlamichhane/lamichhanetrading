@@ -1,10 +1,10 @@
 # Adera Sales — Complete Implementation & Design Document
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Type:** Mobile Field Sales App — UI Prototype (Static HTML/CSS/JS)
-**Last Updated:** March 8, 2026
-**Total Screens:** 33 (1 home + 32 modules)
-**Status:** All module pages complete with full UI content
+**Last Updated:** March 9, 2026
+**Total Screens:** 47 (1 home + 46 modules)
+**Status:** All module pages complete with full UI content + interactive features
 
 ---
 
@@ -25,6 +25,7 @@
 13. [Developer Handoff Notes](#13-developer-handoff-notes)
 14. [Recent Additions (v1.1)](#14-recent-additions-v11)
 15. [Recent Additions (v1.2)](#15-recent-additions-v12)
+16. [Recent Additions (v1.3)](#16-recent-additions-v13)
 
 ---
 
@@ -59,7 +60,7 @@ Adera Sales is a mobile-first field sales representative application prototype. 
 │   └── style.css               # Global design system (906 lines)
 ├── js/
 │   └── app.js                  # Shared app logic (352 lines)
-├── modules/                    # 32 module pages
+├── modules/                    # 65 module pages
 │   ├── login.html              # Login, OTP, company selection (pre-auth)
 │   ├── profile.html            # User profile, settings, edit
 │   ├── notifications.html      # Notification center with filters
@@ -83,15 +84,48 @@ Adera Sales is a mobile-first field sales representative application prototype. 
 │   ├── stock.html              # Stock taking / inventory check
 │   ├── visits.html             # Visit history & tracking
 │   ├── approvals.html          # Approval requests & workflows
-│   ├── remarks.html            # Day-end remarks & mood
+│   ├── remarks.html            # Day-end remarks & mood + voice notes
 │   ├── odometer.html           # Vehicle odometer logging
 │   ├── outstanding.html        # Outstanding payment report
 │   ├── custom.html             # Custom reports generator
+│   ├── schemes.html            # Schemes & promotional offers (v1.3)
+│   ├── competitors.html        # Competitor intelligence tracking (v1.3)
+│   ├── geofence.html           # Geofence store check-in (v1.3)
+│   ├── chat.html               # In-app messaging & chat (v1.3)
+│   ├── targets.html            # Targets & incentives tracker (v1.3)
+│   ├── distributor.html        # Distributor profile & management (v1.3)
+│   ├── gallery.html            # Photo library & gallery (v1.3)
 │   ├── inventory.html          # DMS — Inventory module
 │   ├── salesforce.html         # DMS — Sales Force module
 │   ├── reports.html            # DMS — Reports module
 │   ├── config.html             # DMS — Configuration
-│   └── support.html            # Help & support
+│   ├── manage-users.html       # DMS — User management
+│   ├── support.html            # Help & support hub
+│   ├── support-category.html   # Support — Issue categorization
+│   ├── support-deboard.html    # Support — De-board outlet request
+│   ├── support-geolocation.html # Support — Geolocation issues
+│   ├── support-route-transfer.html # Support — Route transfer request
+│   ├── support-new-request.html # Support — New ticket submission
+│   ├── support-ticket-detail.html # Support — Ticket detail & timeline
+│   ├── report-coverage.html    # Reports — Coverage report
+│   ├── report-dse-productivity.html # Reports — DSE productivity
+│   ├── report-net-sales.html   # Reports — Net sales report
+│   ├── report-order-summary.html # Reports — Order summary
+│   ├── report-product-sales.html # Reports — Product sales
+│   ├── sf-call-roster.html     # Sales Force — Call roster
+│   ├── sf-campaigns.html       # Sales Force — Campaigns
+│   ├── sf-distributor-target.html # Sales Force — Distributor targets
+│   ├── sf-fundamental-targets.html # Sales Force — Fundamental targets
+│   ├── sf-posms.html           # Sales Force — POSMs
+│   ├── sf-routes.html          # Sales Force — Routes management
+│   ├── sf-sales-targets.html   # Sales Force — Sales targets
+│   ├── sf-sbd-target.html      # Sales Force — SBD targets
+│   ├── sf-subd-replenishment.html # Sales Force — Sub-D replenishment
+│   ├── sf-cluster-tools.html   # Sales Force — Cluster tools
+│   ├── report-goods-received.html # Reports — Goods received
+│   ├── report-merchandise.html # Reports — Merchandise report
+│   ├── report-order-analysis.html # Reports — Order analysis
+│   └── report-time-route.html  # Reports — Time & route report
 └── docs/
     └── implementation.md       # This document
 ```
@@ -227,6 +261,24 @@ Used across many modules for detail views and forms:
 | `simulateRefresh(cb)` | `(function?)` | Pull-to-refresh illusion: spinner, "Updated!", toast. 1.5s delay |
 | `injectDrawer(page)` | `(string)` | Injects full drawer HTML into `#drawer[data-inject]`. Highlights active page |
 | `injectBottomNav(page)` | `(string)` | Injects 5-item bottom nav into `.bottom-nav[data-inject]`. Highlights active |
+| `showPushNotification(opts)` | `(object)` | Slide-down push banner. opts: {type, title, desc, actions, duration, onClick} |
+| `simulatePushNotifications()` | `()` | Starts random push notification loop (30-45s interval, 10 notification pool) |
+| `stopPushNotifications()` | `()` | Clears the push notification interval |
+| `showEmptyState(id, opts)` | `(string, object)` | Renders empty state (icon, title, desc, action button) in container |
+| `showErrorState(id, opts)` | `(string, object)` | Renders error state with retry button in container |
+| `showOfflineState(id)` | `(string)` | Renders offline warning state in container |
+| `initOfflineBanner()` | `()` | Listens for online/offline events, toggles `.offline-banner.show` |
+| `hapticTap(el)` | `(HTMLElement)` | Scale-down tap animation + vibration |
+| `hapticPress(el)` | `(HTMLElement)` | Deeper press animation + vibration |
+| `hapticError(el)` | `(HTMLElement)` | Shake animation + vibration pattern |
+| `hapticSuccess(el)` | `(HTMLElement)` | Pop/bounce animation + vibration |
+| `hapticBump(el)` | `(HTMLElement)` | Scale bump animation for counters |
+| `SyncQueue.addToQueue(action)` | `(object)` | Adds action to offline sync queue (localStorage) |
+| `SyncQueue.simulateSync(cb)` | `(function)` | Processes pending queue items with progress callback |
+| `showSyncBar()` | `()` | Shows sync progress bar, animates through queue |
+| `SyncConflict.show(conflicts)` | `(array)` | Shows conflict resolution bottom sheet |
+| `CtxTooltip.show(el, opts)` | `(HTMLElement, object)` | Shows contextual tooltip with value, trend, auto-close |
+| `bindTooltip(el, opts)` | `(HTMLElement, object)` | Binds long-press/click tooltip to element |
 
 ### 5.2 Auto-Injection System (v1.1)
 
@@ -584,9 +636,121 @@ Status Bar → Top Bar → Greeting Banner → Check-In Section → Content Area
 - App settings and preferences
 - Sync settings, notification preferences
 
-#### `support.html` — Help & Support
-- FAQ section, contact support, feedback form
-- Ticket history
+#### `support.html` — Help & Support Hub
+- Uses `data-inject` for drawer + bottom nav
+- Info card: "Support Center" with submit/check tickets prompt
+- **Search bar:** live keyword search across all items with `data-sp-item` + `data-keywords` attributes, section header auto-hide, no-results empty state
+- **Requests section:** 4 request types linking to sub-pages
+  - Category (support-category.html) — with "3 Open" badge
+  - De-Board Outlet (support-deboard.html) — outlet removal requests
+  - Geolocation (support-geolocation.html) — location-related support
+  - Route Transfer (support-route-transfer.html) — route reassignment
+- **Recent Tickets section:** 3 tickets (Open, Resolved, In Progress) → support-ticket-detail.html
+- "Submit New Request" button → support-new-request.html
+- **JS:** `searchSupport(val)`, `clearSPSearch()`
+
+#### `support-category.html` — Issue Categories
+- Uses `data-inject` for drawer + bottom nav
+- Info card: "3 Open" categories summary
+- 6 category items: Product Issue, App/Technical, Route/Location, Outlet Management, Scheme/Pricing, Other
+- Each with open count badge; clicking a category saves prefill to `localStorage.support_prefill_category` and navigates to support-new-request.html
+- **JS:** `selectCategory(el, name)` — visual highlight + localStorage prefill + auto-navigate
+
+#### `support-deboard.html` — De-Board Outlet Request
+- Uses `data-inject` for drawer + bottom nav
+- Form: outlet selector (with value codes OUT-001 to OUT-005), outlet code (auto-filled on selection), reason dropdown, additional details textarea
+- Photo upload area (dashed border, shows info toast on tap)
+- Previous requests list with status badges (Done, Pending)
+- **JS:** `autoFillCode()` — fills outlet code from select value; `submitDeBoard()` — validates outlet + reason, shows success toast, redirects to support.html
+
+#### `support-geolocation.html` — Geolocation Issues
+- Uses `data-inject` for drawer + bottom nav
+- 4 selectable issue types with `.geo-issue-item` highlight: GPS Not Working, Wrong Outlet Location, Geofence Error, Route Map Issue
+- Report form: affected outlet, description, GPS coordinates (lat/lng)
+- "Use My Current Location" button — uses real Geolocation API with Kathmandu fallback (27.717245, 85.323960)
+- **JS:** `selectIssue(el, name)`, `useCurrentLocation()` (real GPS API), `submitGeoReport()` — validates issue type + outlet + description
+
+#### `support-route-transfer.html` — Route Transfer Request
+- Uses `data-inject` for drawer + bottom nav
+- Current routes list: 3 active routes (Balaju 18 outlets, Lazimpat 14, Thamel 22) with schedule
+- Transfer form: route selector, transfer-to salesperson, transfer type with conditional date fields
+- Temporary transfer shows start/end date pickers (`.rt-temp-dates.show` toggle)
+- Transfer history list
+- **JS:** `toggleTempDates()` — shows/hides temp date fields; `submitTransfer()` — validates all fields including temp dates, success toast + redirect
+
+#### `support-new-request.html` — New Support Ticket
+- Hardcoded drawer (not data-inject)
+- Full ticket form: subject, category dropdown (7 options), priority (Low/Medium/High/Urgent), related outlet, description
+- File attachment upload zone
+- Cancel + Submit Ticket buttons
+
+#### `support-ticket-detail.html` — Ticket Detail View
+- Hardcoded drawer (not data-inject)
+- Ticket header card: #1024, "GPS not updating", Open badge, submitted 2 days ago, App/Technical
+- Detail card: Priority (High), Category (App/Technical), Assigned To (IT Support), full description
+- Activity timeline with border-left + colored dots: Created (blue) → Assigned (info) → IT Support replied (warning)
+- Reply section: textarea, file attachment, Close Ticket + Send Reply buttons
+
+#### `manage-users.html` — User Management (DMS)
+- Search bar with custom `.mu-search` styles
+- User list with role management
+- Add/edit/remove user capabilities
+
+### 8.9 New Modules (v1.3)
+
+#### `schemes.html` — Schemes & Offers
+- 4 stats (Active 12, Expiring 3, Target Linked 5, Value ₹2.4L)
+- Filter tabs: All / Product / Value / Quantity / Combo
+- 8 scheme cards with colored left borders, progress bars, type badges, "Apply to Order"
+- Scheme detail bottom sheet: eligible products, T&C, usage stats
+- 3 target-linked incentive cards with SVG donut rings
+- **JS:** `filterSchemes()`, `openSchemeDetail()`, `closeSchemeDetail()`, `applyScheme()`
+
+#### `competitors.html` — Competitor Intelligence
+- 4 stats, search bar, filter tabs (All/Pricing/Products/Promotions/Shelf)
+- 10 competitor intel cards with brand logos, type badges, timestamps
+- Add Intel bottom sheet: brand selector, type chips, conditional price comparison
+- Detail bottom sheet with photo gallery, action items, "Flag as Urgent"
+- **JS:** search + tab filtering, `openIntelDetail()`, `submitIntel()`, `flagUrgent()`
+
+#### `geofence.html` — Geofence Store Check-in
+- Map with pulsing GPS dot, 6 store pins, 50m dashed radius circle
+- 3 in-range stores (CHECK IN enabled) + 3 out-of-range (disabled)
+- Check-in bottom sheet: purpose chips, selfie capture, GPS, notes
+- Success animation: green checkmark circle, card state update
+- Settings: radius selector, GPS toggle, photo requirement
+- **JS:** `checkIn()`, `openCheckinSheet()`, `confirmCheckin()`, `selectPurpose()`
+
+#### `chat.html` — In-App Messaging
+- 7 conversations (3 unread), search filtering, online status dots
+- Chat detail view: 10 message bubbles (sent/received), image placeholder
+- Typing indicator (3-dot bounce), read/delivered double ticks
+- Input bar: attachment, text, mic/send toggle, voice recording state
+- Quick reply chips, auto-scroll to bottom
+- **JS:** `openChat()`, `closeChat()`, `sendMessage()`, `filterConversations()`, `tapQuickReply()`
+
+#### `targets.html` — Targets & Incentives
+- Animated SVG donut hero (68%, ₹1,72,000 / ₹2,50,000, trend arrow)
+- 6 KPI target cards with incentive amounts and color-coded progress bars
+- 4 incentive slabs (Bronze/Silver/Gold/Platinum) — current slab highlighted
+- 3 milestone rewards (achieved/locked states with progress)
+- Monthly trend SVG bar chart (6 months with target line)
+- **JS:** `switchPeriod()`, `openTargetDetail()`, `closeTargetDetail()`
+
+#### `distributor.html` — Distributor Management
+- Hero card: company profile, license #, status badge, quick actions (Call/Email/Directions)
+- Credit utilization: progress bar (47%), available credit, color-coded
+- 5 stock allocation cards with status badges (In Stock/Low/Out)
+- 5 recent dispatch cards with status timeline
+- Dispatch detail + credit request bottom sheets
+- **JS:** `openDispatchDetail()`, `closeDispatchDetail()`, `openCreditRequest()`, `submitCreditRequest()`
+
+#### `gallery.html` — Photo Library
+- 4 stats, 7 filter chips, date-grouped photo grid (19 photos)
+- Grid/list view toggle
+- Photo detail bottom sheet: type badge, location, timestamp, GPS, linked data
+- Bulk selection mode: long-press triggers, floating action bar
+- **JS:** `filterPhotos()`, `openPhotoDetail()`, `toggleGridView()`, `toggleBulkSelect()`, `selectPhoto()`, `deletePhotos()`
 
 ---
 
@@ -788,11 +952,15 @@ Home → Orders (orders.html)
 - Draft EOD remarks
 - Odometer readings
 
-### 13.3 Features Not Yet Implemented
-- Push notifications
-- Offline data sync
-- Image upload (selfie, receipts, odometer photos)
-- Inter-page data flow (e.g., collecting from outstanding → collections)
+### 13.3 Features Status
+All originally planned features have been implemented:
+- ~~Push notifications~~ ✅ (simulated push banners, permission prompt)
+- ~~Offline data sync~~ ✅ (SyncQueue, background sync in sw.js, conflict resolution)
+- ~~Image upload~~ ✅ (camera capture simulation on attendance, expenses, odometer)
+- ~~Inter-page data flow~~ ✅ (outstanding→collections, party→take-order, login→session via localStorage)
+- ~~Form validation~~ ✅ (validateForm() in app.js)
+- ~~GPS/location~~ ✅ (check-in geolocation, geofence page)
+- ~~Real-time clock~~ ✅ (updateClock() on all pages)
 
 ---
 
@@ -842,10 +1010,168 @@ Live search + tab/chip filtering added to 3 key modules:
 - Bottom nav Profile item in `index.html` now links to `modules/profile.html`
 
 ### Project Audit (v1.2)
-- All 32 module pages confirmed complete with full UI content
+- All 32 module pages confirmed complete with full UI content (now 46 in v1.3)
 - Every page has: hero/info cards, stats, list items, forms, bottom sheets, and/or timelines
 - No placeholder or stub pages remain
 
 ---
 
-*Generated for Adera Sales v1.2.0 — March 2026*
+## 16. Recent Additions (v1.3)
+
+### New Module Pages (8 pages)
+
+#### `schemes.html` — Schemes & Offers
+- 4 stats (Active 12, Expiring 3, Target Linked 5, Value ₹2.4L)
+- Filter tabs: All / Product / Value / Quantity / Combo
+- 8 scheme cards with progress bars, type badges, "Apply to Order" buttons
+- Scheme detail bottom sheet with eligible products, T&C, usage stats
+- 3 target-linked incentive cards with SVG donut progress rings
+
+#### `competitors.html` — Competitor Intelligence
+- 4 stats (Reports 24, Brands 8, Price Alerts 5, This Week 7)
+- Search + filter tabs: All / Pricing / Products / Promotions / Shelf Space
+- 10 competitor intel cards (Amul, Britannia, Parle, Nestlé, ITC, Dabur, HUL, Marico, Godrej, Patanjali)
+- Add Intel bottom sheet with conditional price comparison fields
+- Intel detail bottom sheet with photo gallery and "Flag as Urgent"
+
+#### `geofence.html` — Geofence Store Check-in
+- Map section with pulsing GPS dot, 6 store pins, 50m radius circle
+- 3 in-range stores (green, CHECK IN enabled) + 3 out-of-range (grey, disabled)
+- Check-in bottom sheet: purpose chips, selfie capture, GPS, notes
+- Success animation with green checkmark, card state update
+- Geofence settings: radius selector, GPS toggle, photo requirement
+
+#### `chat.html` — In-App Messaging
+- 7 conversations (3 unread with badges), search filtering
+- Chat detail view with 10 message bubbles (sent/received)
+- Typing indicator (animated 3-dot), read/delivered ticks
+- Message input: text, attachment, voice recording simulation
+- Quick reply chips: "On my way", "Will do", "Noted", "Thanks", "Call me"
+
+#### `targets.html` — Targets & Incentives
+- Animated SVG donut hero (68% achievement, ₹1,72,000 / ₹2,50,000)
+- 6 KPI target cards with incentive amounts and progress bars
+- 4-tier incentive slab system (Bronze→Platinum) with current slab highlight
+- 3 milestone reward cards (achieved/locked states)
+- Monthly trend SVG bar chart (6 months)
+
+#### `distributor.html` — Distributor Management
+- Distributor profile hero card (Nepal Foods Pvt. Ltd)
+- Credit utilization section (47% of ₹5L, color-coded progress)
+- 5 stock allocation category cards with status badges
+- 5 recent dispatch cards with status timeline
+- Credit request + dispatch detail bottom sheets
+
+#### `gallery.html` — Photo Library
+- 4 stats (Total 47, Today 8, This Week 23, Storage 12.4 MB)
+- Filter chips: All / Selfies / Receipts / Odometer / Shelf / Products / Stores
+- Date-grouped photo grid (19 photos in 3 groups)
+- Grid/list view toggle
+- Photo detail bottom sheet + bulk selection mode with floating action bar
+
+### Interactive Features Added
+
+#### Push Notification System
+- `showPushNotification()` — slide-down banner with type icons (order/alert/success/info)
+- 10-notification demo pool, auto-fires every 30-45 seconds
+- Permission prompt bottom sheet on first visit (Allow/Not Now)
+- Saved to `localStorage.adera_push_permission`
+
+#### Offline Data Sync
+- `SyncQueue` — localStorage-based offline action queue
+- `showSyncBar()` — animated progress bar through pending items
+- `SyncConflict` — conflict resolution UI (Keep Mine / Keep Server / Merge)
+- Background Sync registration in sw.js, postMessage manual trigger
+- Sync queue bottom sheet on home page with seeded demo items
+
+#### Inter-Page Data Flow
+- Outstanding→Collections: `collectParty()` stores party/amount, auto-opens collect sheet
+- Party→Take Order: `orderForParty()` stores party name, auto-selects in dropdown
+- Login→Session: stores company/user/timestamp in `localStorage.adera_session`
+
+#### Image Upload Simulation
+- Attendance: selfie capture with flash animation + checkmark overlay
+- Expenses: receipt upload with progress bar (0→100%), thumbnail preview
+- Odometer: start/end photo capture with simulated odometer readout
+
+#### Error & Empty States
+- `showEmptyState()`, `showErrorState()`, `showOfflineState()` helpers
+- Reusable SVG icons (search, list, inbox, cart, alert, wifi-off)
+- `.offline-banner` on home page with auto online/offline detection
+
+#### Pull-to-Refresh
+- Touch-based PTR wired on orders, parties, collections, notes
+- Uses existing `.ptr-indicator` CSS + `simulateRefresh()` from app.js
+
+#### Swipe-to-Action Cards
+- Notes: swipe left = delete (red), swipe right = pin (green)
+- Orders: swipe left = archive (orange), swipe right = reorder (blue)
+- 80px snap threshold, touch event handling, toast feedback
+
+#### Animated SVG Charts (performance.html)
+- Weekly revenue bar chart (7 bars, blue gradient, staggered animation)
+- Daily orders bar chart (7 bars, green gradient)
+- Score ring count-up animation (0→73%)
+- Monthly trend sparkline/area chart (6 data points)
+- IntersectionObserver triggers animations on scroll
+
+#### Onboarding Walkthrough (index.html)
+- 4-step spotlight tutorial (CHECK-IN, module grid, drawer, bottom nav)
+- Dark overlay with spotlight cutout (box-shadow trick)
+- Tooltip bubbles with step counter and dots
+- Auto-starts on first visit, "?" button to replay
+- Saved to `localStorage.adera_onboarded`
+
+#### Contextual Tooltips
+- `CtxTooltip.show()` — dark tooltip with title, value, trend arrow
+- `bindTooltip()` — long-press (500ms) or click gesture binding
+- Wired on home page (6 stats) and performance page (6 KPIs)
+- Auto-close after 5s, outside-click dismissal
+
+#### Voice Notes
+- Notes page: record/play/delete in Add Note sheet with waveform visualization
+- Remarks page: floating mic button, recording panel, compact player bar
+- Animated waveform bars (20 bars), timer (M:SS), progress playback
+
+#### Haptic Micro-Animations
+- `hapticTap()`, `hapticPress()`, `hapticError()`, `hapticSuccess()`, `hapticBump()`
+- CSS keyframes: haptic-tap, error-shake, success-pop, count-bump, slide-bounce
+- Vibration API integration
+- Wired on home grid, check-in, take-order quantities, collections
+
+#### Bulk Actions
+- Multi-select mode on orders, notes, parties
+- "Select" button or long-press enters bulk mode
+- Floating dark action bar with count + Export/Delete/Assign/Archive/SMS buttons
+- Select All toggle, dynamic counter updates
+
+#### Quick Actions Bar (index.html)
+- 5 pill buttons: Voice Search, Barcode Scan, Quick Order, Day Summary, SOS
+- Voice: listening overlay with pulsing mic, simulated result
+- Barcode: scanner overlay with animated red scan line, product result
+- Quick Order: compact bottom sheet with party + product quantity controls
+- Day Summary: today's metrics with progress bars
+- SOS: red emergency sheet with 4 alert types
+
+#### App Update Banner (index.html)
+- Gradient "v2.0 Available" banner with dismiss/update
+- Changelog bottom sheet: 5 new features, 5 improvements, 4 bug fixes
+- Fake download progress bar (0→100% in 3s)
+- Saved to `localStorage.adera_update_dismissed`
+- **Auto-hide:** Banner auto-hides after 5 seconds if not interacted with
+- **Swipe-to-dismiss:** Swipe banner upward (>40px threshold) to dismiss; small drags snap back. Swipe handler skips touches on close/update buttons to avoid conflicts
+- **24-hour snooze:** Clicking the X button hides the banner for 24 hours (timestamp stored in `localStorage.adera_update_dismissed_at`); reappears after 24h unless the update is completed
+- **Close button:** 32×32px circular button with semi-transparent white background, inline in flex layout (no longer absolute-positioned to avoid `overflow:hidden` clipping)
+
+### CSS Component Additions (style.css)
+- Push banner: `.push-banner`, `.push-icon`, `.push-body`, `.push-actions`
+- Sync system: `.sync-bar`, `.sync-badge`, `.sync-queue-card`
+- Conflict resolution: `.conflict-card`, `.conflict-values`, `.conflict-btn`
+- Error/empty states: `.state-container`, `.state-icon`, `.offline-banner`
+- Contextual tooltips: `.ctx-tooltip`, `.tt-title`, `.tt-value`, `.tt-trend`
+- Bulk actions: `.bulk-bar`, `.bulk-checkbox`, `.bulk-select-all`
+- Haptic animations: `@keyframes haptic-tap/press/error-shake/success-pop/count-bump`
+
+---
+
+*Generated for Adera Sales v1.3.0 — March 2026*

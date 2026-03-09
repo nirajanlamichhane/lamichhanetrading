@@ -5,60 +5,181 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Configuration — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Search Bar ── */
+    .cfg-search {
+      position:relative; margin-bottom:14px;
+    }
+    .cfg-search input {
+      width:100%; padding:10px 14px 10px 38px; border-radius:12px; border:1.5px solid #e2e8f0;
+      font-size:13px; font-family:var(--font); background:#fff; color:#1a2540;
+      box-shadow:0 1px 4px rgba(48,102,190,.06); transition:border-color .2s;
+      box-sizing:border-box;
+    }
+    .cfg-search input:focus { outline:none; border-color:var(--primary); }
+    .cfg-search input::placeholder { color:#94a3b8; }
+    .cfg-search .cfg-search-icon {
+      position:absolute; left:12px; top:50%; transform:translateY(-50%);
+      width:16px; height:16px; color:#94a3b8; pointer-events:none;
+    }
+    .cfg-search .cfg-clear {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      width:20px; height:20px; border:none; background:none; cursor:pointer;
+      color:#94a3b8; display:none; padding:0;
+    }
+    .cfg-search .cfg-clear.show { display:block; }
+
+    /* ── Section Header ── */
+    .cfg-section {
+      font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;
+      letter-spacing:.8px; margin:18px 0 8px; display:flex; align-items:center; gap:8px;
+    }
+    .cfg-section:first-child { margin-top:0; }
+    .cfg-section::after {
+      content:''; flex:1; height:1px; background:#e2e8f0;
+    }
+
+    /* ── Config Item ── */
+    .cfg-item {
+      display:flex; align-items:center; gap:12px; padding:12px 14px;
+      background:#fff; border-radius:12px; margin-bottom:8px; cursor:pointer;
+      box-shadow:0 1px 4px rgba(48,102,190,.06); transition:transform .15s;
+    }
+    .cfg-item:active { transform:scale(.98); }
+    .cfg-item-icon {
+      width:38px; height:38px; border-radius:10px; display:flex;
+      align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .cfg-item-icon svg { width:18px; height:18px; }
+    .cfg-item-icon.ic-blue { background:#e8f0fe; color:#3066be; }
+    .cfg-item-icon.ic-green { background:#e8f5ed; color:#28a745; }
+    .cfg-item-icon.ic-orange { background:#fff3e8; color:#d97706; }
+    .cfg-item-icon.ic-purple { background:#f3e8ff; color:#7c3aed; }
+    .cfg-item-icon.ic-teal { background:#e8f8f5; color:#0d9488; }
+    .cfg-item-icon.ic-indigo { background:#eef2ff; color:#4f46e5; }
+    .cfg-item-icon.ic-pink { background:#fce8f3; color:#db2777; }
+    .cfg-item-icon.ic-red { background:#fee8e8; color:#e05252; }
+    .cfg-item-body { flex:1; min-width:0; }
+    .cfg-item-title { font-size:13px; font-weight:600; color:#1a2540; }
+    .cfg-item-sub { font-size:11px; color:#94a3b8; margin-top:1px; }
+    .cfg-item-chevron { width:16px; height:16px; color:#cbd5e1; flex-shrink:0; }
+
+    /* ── Toggle Switch ── */
+    .cfg-toggle {
+      position:relative; width:42px; height:24px; flex-shrink:0;
+    }
+    .cfg-toggle input { display:none; }
+    .cfg-toggle-track {
+      position:absolute; inset:0; background:#e2e8f0; border-radius:12px;
+      transition:background .2s; cursor:pointer;
+    }
+    .cfg-toggle-track::after {
+      content:''; position:absolute; top:2px; left:2px;
+      width:20px; height:20px; background:#fff; border-radius:50%;
+      box-shadow:0 1px 3px rgba(0,0,0,.15); transition:transform .2s;
+    }
+    .cfg-toggle input:checked + .cfg-toggle-track {
+      background:var(--primary);
+    }
+    .cfg-toggle input:checked + .cfg-toggle-track::after {
+      transform:translateX(18px);
+    }
+
+    /* ── Config Badge ── */
+    .cfg-badge {
+      padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;
+      flex-shrink:0;
+    }
+    .cfg-badge.active { background:#e8f5ed; color:#28a745; }
+    .cfg-badge.count { background:#e8f0fe; color:#3066be; }
+
+    /* ── Bottom Sheet ── */
+    .bs-overlay {
+      position:absolute; inset:0; background:rgba(26,39,68,.55);
+      z-index:400; opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .bs-overlay.open { opacity:1; pointer-events:all; }
+    .bs-sheet {
+      position:absolute; bottom:0; left:0; right:0;
+      background:var(--bg); border-radius:24px 24px 0 0;
+      z-index:410; transform:translateY(100%);
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+      max-height:85%; overflow-y:auto; scrollbar-width:none;
+    }
+    .bs-sheet::-webkit-scrollbar { display:none; }
+    .bs-sheet.open { transform:translateY(0); }
+    .bs-handle { width:40px; height:4px; background:#ccd5e0; border-radius:4px; margin:10px auto 0; }
+
+    .bs-header {
+      background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 60%,var(--primary-light) 100%);
+      border-radius:24px 24px 0 0; padding:20px 20px 24px; position:relative;
+    }
+    .bs-header .bs-handle { background:rgba(255,255,255,.35); margin-bottom:14px; }
+    .bs-close {
+      position:absolute; top:14px; right:14px;
+      width:32px; height:32px; border-radius:50%;
+      background:rgba(255,255,255,.15); border:none; color:#fff; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .bs-close svg { width:16px; height:16px; }
+    .bs-title { color:#fff; font-size:18px; font-weight:800; }
+    .bs-subtitle { color:rgba(255,255,255,.75); font-size:12px; margin-top:2px; }
+
+    .bs-body { padding:20px 16px 32px; }
+
+    /* ── Detail Row ── */
+    .cfg-detail-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid #e8f0fa;
+    }
+    .cfg-detail-label { font-size:12px; color:#64748b; }
+    .cfg-detail-value { font-size:13px; font-weight:600; color:#1a2540; }
+
+    /* ── Detail List ── */
+    .cfg-detail-list { margin:12px 0; }
+    .cfg-detail-list-item {
+      display:flex; align-items:center; gap:10px; padding:8px 0;
+      border-bottom:1px solid #f0f4fb;
+    }
+    .cfg-detail-dot { width:8px; height:8px; border-radius:50%; background:#3066be; flex-shrink:0; }
+    .cfg-detail-list-text { font-size:13px; color:#1a2540; font-weight:500; }
+
+    /* ── Detail Action Btn ── */
+    .cfg-detail-btn {
+      width:100%; padding:12px; border-radius:10px; border:none; cursor:pointer;
+      font-size:13px; font-weight:700; font-family:var(--font);
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      color:#fff; box-shadow:0 2px 8px rgba(48,102,190,.25);
+      margin-top:16px; transition:transform .15s;
+    }
+    .cfg-detail-btn:active { transform:scale(.97); }
+    .cfg-detail-btn.outline {
+      background:#fff; color:var(--primary); border:1.5px solid var(--primary);
+      box-shadow:none; margin-top:8px;
+    }
+
+    /* ── No Results ── */
+    .cfg-no-results {
+      text-align:center; padding:40px 20px; color:#94a3b8; display:none;
+    }
+    .cfg-no-results svg { width:48px; height:48px; margin-bottom:12px; color:#cbd5e1; }
+    .cfg-no-results p { font-size:13px; font-weight:600; margin:0; }
+    .cfg-no-results span { font-size:11px; display:block; margin-top:4px; }
+  </style>
 </head>
 <body>
 
-<p class="page-title">Adera Sales · Configuration</p>
+<div class="page-title">Adera Sales</div>
 
 <div class="phone-frame">
 
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+  <!-- Drawer (auto-injected) -->
+  <div id="drawer" data-inject="config"></div>
 
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <div class="drawer-avatar">👤</div>
-      <div class="drawer-name">Elon Musk</div>
-      <div class="drawer-role">Sales Representative · Kathmandu</div>
-      <button class="drawer-target-btn">🎯 Your Target</button>
-    </div>
-    <div class="drawer-section-title">Navigation</div>
-    <div class="drawer-item" onclick="goTo('../index.html')">
-      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <span class="drawer-item-label">Home</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('inventory.html')">
-      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
-      <span class="drawer-item-label">Inventory</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('salesforce.html')">
-      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-      <span class="drawer-item-label">Sales Force</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('reports.html')">
-      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <span class="drawer-item-label">Reports</span>
-    </div>
-    <div class="drawer-item active" onclick="closeDrawer()">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
-      <span class="drawer-item-label">Configuration</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('support.html')">
-      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-      <span class="drawer-item-label">Support</span>
-    </div>
-    <div class="drawer-divider"></div>
-    <div class="drawer-section-title">Actions</div>
-    <div class="drawer-item">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-      <span class="drawer-item-label">Logout</span>
-    </div>
-    <div class="drawer-footer">
-      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
-    </div>
-  </div>
-
+  <!-- Scrollable Screen -->
   <div class="screen-scroll">
 
+    <!-- Status Bar -->
     <div class="status-bar">
       <span class="time">9:41</span>
       <div class="status-icons">
@@ -68,6 +189,7 @@
       </div>
     </div>
 
+    <!-- Top Bar -->
     <div class="top-bar">
       <button class="icon-btn" onclick="goBack()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -75,150 +197,520 @@
       <div class="top-bar-title">Configuration</div>
       <button class="icon-btn" onclick="openDrawer()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
 
+    <!-- Content -->
     <div class="content" style="padding-top:14px;">
 
-      <!-- Sub-D -->
-      <div class="section-header">
-        <span class="section-title">Sub-D</span>
+      <!-- Search Bar -->
+      <div class="cfg-search">
+        <svg class="cfg-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="cfgSearchInput" placeholder="Search configuration..." oninput="searchConfig(this.value)">
+        <button class="cfg-clear" id="cfgClear" onclick="clearConfigSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
 
-      <div class="list-item">
-        <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Sub-Distributors</div>
-          <div class="list-item-subtitle">Manage sub-distributors</div>
+      <!-- No Results -->
+      <div class="cfg-no-results" id="cfgNoResults">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <p>No settings found</p>
+        <span>Try a different search term</span>
+      </div>
+
+      <!-- ═══ Sub-D Section ═══ -->
+      <div class="cfg-section" data-section="sub-d">Sub-D</div>
+
+      <div class="cfg-item" data-keywords="sub-distributors manage distributor" onclick="openConfigDetail(0)">
+        <div class="cfg-item-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-
-      <div class="list-item">
-        <div class="list-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Assortment</div>
-          <div class="list-item-subtitle">Product assortment config</div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Sub-Distributors</div>
+          <div class="cfg-item-sub">Manage sub-distributors</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="cfg-badge count">8</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <!-- Product Catalogue -->
-      <div class="section-header" style="margin-top:18px;">
-        <span class="section-title">Product Catalogue</span>
-      </div>
-
-      <div class="list-item">
-        <div class="list-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">SKU</div>
-          <div class="list-item-subtitle">Stock keeping units</div>
+      <div class="cfg-item" data-keywords="assortment product" onclick="openConfigDetail(1)">
+        <div class="cfg-item-icon ic-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-
-      <div class="list-item">
-        <div class="list-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Channel Assortment</div>
-          <div class="list-item-subtitle">Channel-wise products</div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Assortment</div>
+          <div class="cfg-item-sub">Product assortment config</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="cfg-badge count">145</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <!-- GTM -->
-      <div class="section-header" style="margin-top:18px;">
-        <span class="section-title">GTM (Go-To-Market)</span>
-      </div>
+      <!-- ═══ Product Catalogue Section ═══ -->
+      <div class="cfg-section" data-section="product-catalogue">Product Catalogue</div>
 
-      <div class="list-item">
-        <div class="list-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Classification</div>
-          <div class="list-item-subtitle">Outlet classification</div>
+      <div class="cfg-item" data-keywords="sku stock keeping units product" onclick="openConfigDetail(2)">
+        <div class="cfg-item-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-
-      <div class="list-item">
-        <div class="list-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Territory</div>
-          <div class="list-item-subtitle">Territory management</div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">SKU</div>
+          <div class="cfg-item-sub">Stock keeping units</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="cfg-badge count">342</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <div class="list-item">
-        <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Town</div>
-          <div class="list-item-subtitle">Town-level configuration</div>
+      <div class="cfg-item" data-keywords="channel assortment products" onclick="openConfigDetail(3)">
+        <div class="cfg-item-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-
-      <!-- User -->
-      <div class="section-header" style="margin-top:18px;">
-        <span class="section-title">User</span>
-      </div>
-
-      <div class="list-item">
-        <div class="list-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Accounts</div>
-          <div class="list-item-subtitle">User account management</div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Channel Assortment</div>
+          <div class="cfg-item-sub">Channel-wise products</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="cfg-badge count">5</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <!-- Presentation -->
-      <div class="section-header" style="margin-top:18px;">
-        <span class="section-title">Presentation</span>
-      </div>
+      <!-- ═══ GTM Section ═══ -->
+      <div class="cfg-section" data-section="gtm">GTM (Go-To-Market)</div>
 
-      <div class="list-item">
-        <div class="list-item-icon ic-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-        <div class="list-item-content">
-          <div class="list-item-title">Display Settings</div>
-          <div class="list-item-subtitle">Presentation configuration</div>
+      <div class="cfg-item" data-keywords="classification outlet type" onclick="openConfigDetail(4)">
+        <div class="cfg-item-icon ic-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Classification</div>
+          <div class="cfg-item-sub">Outlet classification</div>
+        </div>
+        <span class="cfg-badge count">6</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <div style="height:80px;"></div>
+      <div class="cfg-item" data-keywords="territory management area zone" onclick="openConfigDetail(5)">
+        <div class="cfg-item-icon ic-indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Territory</div>
+          <div class="cfg-item-sub">Territory management</div>
+        </div>
+        <span class="cfg-badge count">12</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <div class="cfg-item" data-keywords="town city level geography" onclick="openConfigDetail(6)">
+        <div class="cfg-item-icon ic-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Town</div>
+          <div class="cfg-item-sub">Town-level configuration</div>
+        </div>
+        <span class="cfg-badge count">24</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <!-- ═══ User Section ═══ -->
+      <div class="cfg-section" data-section="user">User</div>
+
+      <div class="cfg-item" data-keywords="accounts user management roles" onclick="openConfigDetail(7)">
+        <div class="cfg-item-icon ic-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Accounts</div>
+          <div class="cfg-item-sub">User account management</div>
+        </div>
+        <span class="cfg-badge count">15</span>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <!-- ═══ Presentation Section ═══ -->
+      <div class="cfg-section" data-section="presentation">Presentation</div>
+
+      <div class="cfg-item" data-keywords="display settings theme dark mode appearance" onclick="openConfigDetail(8)">
+        <div class="cfg-item-icon ic-pink">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Display Settings</div>
+          <div class="cfg-item-sub">Theme &amp; appearance</div>
+        </div>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <!-- ═══ App Settings Section ═══ -->
+      <div class="cfg-section" data-section="app-settings">App Settings</div>
+
+      <div class="cfg-item" data-keywords="notifications push alerts" onclick="event.stopPropagation();">
+        <div class="cfg-item-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Push Notifications</div>
+          <div class="cfg-item-sub">Order &amp; visit alerts</div>
+        </div>
+        <label class="cfg-toggle">
+          <input type="checkbox" id="toggleNotif" checked onchange="toggleSetting('notifications', this.checked)">
+          <div class="cfg-toggle-track"></div>
+        </label>
+      </div>
+
+      <div class="cfg-item" data-keywords="location gps tracking geofence" onclick="event.stopPropagation();">
+        <div class="cfg-item-icon ic-indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Location Tracking</div>
+          <div class="cfg-item-sub">GPS for check-in &amp; visits</div>
+        </div>
+        <label class="cfg-toggle">
+          <input type="checkbox" id="toggleLocation" checked onchange="toggleSetting('location', this.checked)">
+          <div class="cfg-toggle-track"></div>
+        </label>
+      </div>
+
+      <div class="cfg-item" data-keywords="offline sync data background" onclick="event.stopPropagation();">
+        <div class="cfg-item-icon ic-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Offline Sync</div>
+          <div class="cfg-item-sub">Background data sync</div>
+        </div>
+        <label class="cfg-toggle">
+          <input type="checkbox" id="toggleSync" checked onchange="toggleSetting('offline_sync', this.checked)">
+          <div class="cfg-toggle-track"></div>
+        </label>
+      </div>
+
+      <div class="cfg-item" data-keywords="auto order draft save" onclick="event.stopPropagation();">
+        <div class="cfg-item-icon ic-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Auto-Save Drafts</div>
+          <div class="cfg-item-sub">Save order drafts automatically</div>
+        </div>
+        <label class="cfg-toggle">
+          <input type="checkbox" id="toggleDrafts" onchange="toggleSetting('auto_drafts', this.checked)">
+          <div class="cfg-toggle-track"></div>
+        </label>
+      </div>
+
+      <!-- ═══ Data & Storage Section ═══ -->
+      <div class="cfg-section" data-section="data-storage">Data &amp; Storage</div>
+
+      <div class="cfg-item" data-keywords="cache clear storage data" onclick="clearCache()">
+        <div class="cfg-item-icon ic-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Clear Cache</div>
+          <div class="cfg-item-sub" id="cacheSize">App cache: 12.4 MB</div>
+        </div>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <div class="cfg-item" data-keywords="export data backup download" onclick="exportData()">
+        <div class="cfg-item-icon ic-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div class="cfg-item-body">
+          <div class="cfg-item-title">Export Data</div>
+          <div class="cfg-item-sub">Download app data backup</div>
+        </div>
+        <svg class="cfg-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav (auto-injected) -->
+    <div class="bottom-nav" data-inject="config"></div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- ═══ Detail Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="bsOverlay" onclick="closeDetail()"></div>
+  <div class="bs-sheet" id="bsSheet">
+    <div class="bs-header">
+      <div class="bs-handle"></div>
+      <button class="bs-close" onclick="closeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="bs-title" id="bsTitle">Configuration</div>
+      <div class="bs-subtitle" id="bsSubtitle">View details</div>
     </div>
-
-    <div class="bottom-nav">
-      <div class="nav-item" onclick="goTo('../index.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
-      </div>
-      <div class="nav-item" onclick="goTo('parties.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        <span>Parties</span>
-      </div>
-      <div class="nav-center-wrap" onclick="goTo('orders.html')">
-        <div class="nav-center">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </div>
-        <span>New</span>
-      </div>
-      <div class="nav-item" onclick="goTo('reports.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Reports</span>
-      </div>
-      <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </div>
-    </div>
-
+    <div class="bs-body" id="bsBody"></div>
   </div>
-</div>
+
+</div><!-- /phone-frame -->
 
 <script src="../js/app.js"></script>
+<script>
+  // ── Config Detail Data ──
+  var configItems = [
+    {
+      title: 'Sub-Distributors', subtitle: 'Manage distribution network',
+      rows: [
+        { label: 'Total Sub-Ds', value: '8' },
+        { label: 'Active', value: '6' },
+        { label: 'Inactive', value: '2' },
+        { label: 'Last Updated', value: 'Mar 7, 2026' }
+      ],
+      list: ['Himalayan Distributors Pvt. Ltd.', 'Nepal Valley Trading', 'Sagarmatha Supply Chain', 'Kathmandu FMCG Hub', 'Pokhara Distribution Co.', 'Lumbini Traders'],
+      listTitle: 'Active Sub-Distributors',
+      action: 'Manage Sub-Distributors'
+    },
+    {
+      title: 'Assortment', subtitle: 'Product assortment configuration',
+      rows: [
+        { label: 'Total Products', value: '145' },
+        { label: 'Categories', value: '12' },
+        { label: 'Must-Stock SKUs', value: '32' },
+        { label: 'Last Sync', value: 'Mar 9, 2026' }
+      ],
+      list: ['Dairy & Beverages (28 SKUs)', 'Snacks & Confectionery (22 SKUs)', 'Personal Care (18 SKUs)', 'Home Care (15 SKUs)', 'Packaged Foods (24 SKUs)'],
+      listTitle: 'Top Categories',
+      action: 'Edit Assortment'
+    },
+    {
+      title: 'SKU', subtitle: 'Stock keeping units management',
+      rows: [
+        { label: 'Total SKUs', value: '342' },
+        { label: 'Active', value: '298' },
+        { label: 'Discontinued', value: '44' },
+        { label: 'New This Month', value: '12' }
+      ],
+      list: ['Farm Fresh Milk 500ml (SKU-1021)', 'Premium Dark Chocolate 100g (SKU-2010)', 'Energy Drink 250ml (SKU-4010)', 'Organic Honey 500g (SKU-2015)', 'Protein Bar Choco 60g (SKU-5005)'],
+      listTitle: 'Recently Added SKUs',
+      action: 'View All SKUs'
+    },
+    {
+      title: 'Channel Assortment', subtitle: 'Channel-wise product mapping',
+      rows: [
+        { label: 'Channels', value: '5' },
+        { label: 'Mapped Products', value: '290' },
+        { label: 'Unmapped', value: '52' },
+        { label: 'Coverage', value: '85%' }
+      ],
+      list: ['General Trade (GT) — 180 SKUs', 'Modern Trade (MT) — 145 SKUs', 'E-Commerce — 98 SKUs', 'Wholesale — 210 SKUs', 'Institutional — 65 SKUs'],
+      listTitle: 'Channels',
+      action: 'Edit Channel Mapping'
+    },
+    {
+      title: 'Classification', subtitle: 'Outlet classification system',
+      rows: [
+        { label: 'Classifications', value: '6' },
+        { label: 'Total Outlets', value: '1,847' },
+        { label: 'Unclassified', value: '23' },
+        { label: 'Last Review', value: 'Mar 1, 2026' }
+      ],
+      list: ['A+ Premium (142 outlets)', 'A Standard (385 outlets)', 'B Growing (524 outlets)', 'C Regular (498 outlets)', 'D Small (275 outlets)', 'New / Unclassified (23 outlets)'],
+      listTitle: 'Classification Tiers',
+      action: 'Manage Classifications'
+    },
+    {
+      title: 'Territory', subtitle: 'Territory and zone management',
+      rows: [
+        { label: 'Territories', value: '12' },
+        { label: 'Zones', value: '4' },
+        { label: 'Sales Reps', value: '48' },
+        { label: 'Avg Outlets/Rep', value: '38' }
+      ],
+      list: ['Zone North — 3 territories, 12 reps', 'Zone South — 3 territories, 14 reps', 'Zone East — 3 territories, 10 reps', 'Zone West — 3 territories, 12 reps'],
+      listTitle: 'Zones',
+      action: 'View Territory Map'
+    },
+    {
+      title: 'Town', subtitle: 'Town-level geography config',
+      rows: [
+        { label: 'Towns', value: '24' },
+        { label: 'Districts', value: '8' },
+        { label: 'Active Routes', value: '56' },
+        { label: 'Coverage', value: '92%' }
+      ],
+      list: ['Kathmandu (8 routes)', 'Lalitpur (5 routes)', 'Bhaktapur (4 routes)', 'Pokhara (6 routes)', 'Biratnagar (5 routes)', 'Chitwan (4 routes)'],
+      listTitle: 'Major Towns',
+      action: 'Edit Town Config'
+    },
+    {
+      title: 'Accounts', subtitle: 'User account management',
+      rows: [
+        { label: 'Total Users', value: '15' },
+        { label: 'Active', value: '12' },
+        { label: 'Admins', value: '2' },
+        { label: 'Last Login', value: 'Mar 9, 2026' }
+      ],
+      list: ['Elon Musk — Sales Rep (Active)', 'Rajesh Kumar — Area Manager (Active)', 'Priya Sharma — Admin (Active)', 'Amit Patel — Sales Rep (Active)', 'Suman Thapa — Sales Rep (Inactive)'],
+      listTitle: 'Team Members',
+      action: 'Manage Users'
+    },
+    {
+      title: 'Display Settings', subtitle: 'Theme and appearance options',
+      rows: [
+        { label: 'Theme', value: 'Light' },
+        { label: 'Font Size', value: 'Medium' },
+        { label: 'Language', value: 'English' },
+        { label: 'Density', value: 'Comfortable' }
+      ],
+      list: ['Light Mode (Current)', 'Dark Mode (Coming Soon)', 'Auto (System Default)'],
+      listTitle: 'Available Themes',
+      action: 'Apply Changes'
+    }
+  ];
+
+  // ── Settings State ──
+  var settings = JSON.parse(localStorage.getItem('app_config') || '{}');
+
+  function initToggles() {
+    var toggleMap = {
+      'toggleNotif': 'notifications',
+      'toggleLocation': 'location',
+      'toggleSync': 'offline_sync',
+      'toggleDrafts': 'auto_drafts'
+    };
+    for (var id in toggleMap) {
+      var el = document.getElementById(id);
+      if (el && settings[toggleMap[id]] !== undefined) {
+        el.checked = settings[toggleMap[id]];
+      }
+    }
+  }
+
+  function toggleSetting(key, value) {
+    settings[key] = value;
+    localStorage.setItem('app_config', JSON.stringify(settings));
+    showToast((value ? 'Enabled' : 'Disabled') + ' ' + key.replace(/_/g, ' '), value ? 'success' : 'info');
+  }
+
+  // ── Search ──
+  function searchConfig(query) {
+    var clearBtn = document.getElementById('cfgClear');
+    clearBtn.classList.toggle('show', query.length > 0);
+
+    var q = query.toLowerCase().trim();
+    var items = document.querySelectorAll('.cfg-item');
+    var sections = document.querySelectorAll('.cfg-section');
+    var visible = 0;
+
+    items.forEach(function(item) {
+      var title = item.querySelector('.cfg-item-title');
+      var sub = item.querySelector('.cfg-item-sub');
+      var keywords = item.getAttribute('data-keywords') || '';
+      var text = (title ? title.textContent : '') + ' ' + (sub ? sub.textContent : '') + ' ' + keywords;
+      var match = !q || text.toLowerCase().indexOf(q) !== -1;
+      item.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+
+    // Show/hide section headers based on visible children
+    sections.forEach(function(sec) {
+      var next = sec.nextElementSibling;
+      var hasVisible = false;
+      while (next && !next.classList.contains('cfg-section')) {
+        if (next.classList.contains('cfg-item') && next.style.display !== 'none') {
+          hasVisible = true;
+        }
+        next = next.nextElementSibling;
+      }
+      sec.style.display = hasVisible ? '' : 'none';
+    });
+
+    document.getElementById('cfgNoResults').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function clearConfigSearch() {
+    var input = document.getElementById('cfgSearchInput');
+    input.value = '';
+    searchConfig('');
+    input.focus();
+  }
+
+  // ── Open Detail Sheet ──
+  function openConfigDetail(index) {
+    var c = configItems[index];
+    if (!c) return;
+
+    document.getElementById('bsTitle').textContent = c.title;
+    document.getElementById('bsSubtitle').textContent = c.subtitle;
+
+    var html = '';
+
+    // Info rows
+    for (var i = 0; i < c.rows.length; i++) {
+      html += '<div class="cfg-detail-row">' +
+        '<span class="cfg-detail-label">' + c.rows[i].label + '</span>' +
+        '<span class="cfg-detail-value">' + c.rows[i].value + '</span>' +
+        '</div>';
+    }
+
+    // List
+    if (c.list && c.list.length) {
+      html += '<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin:16px 0 8px;">' + c.listTitle + '</div>';
+      html += '<div class="cfg-detail-list">';
+      for (var j = 0; j < c.list.length; j++) {
+        html += '<div class="cfg-detail-list-item">' +
+          '<div class="cfg-detail-dot"></div>' +
+          '<div class="cfg-detail-list-text">' + c.list[j] + '</div>' +
+          '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Action buttons
+    if (c.action === 'Manage Users') {
+      html += '<button class="cfg-detail-btn" onclick="closeDetail(); goTo(\'manage-users.html\')">' + c.action + '</button>';
+    } else {
+      html += '<button class="cfg-detail-btn" onclick="closeDetail(); showToast(\'' + c.action + ' — Coming with backend\', \'info\')">' + c.action + '</button>';
+    }
+    html += '<button class="cfg-detail-btn outline" onclick="closeDetail()">Close</button>';
+
+    document.getElementById('bsBody').innerHTML = html;
+
+    document.getElementById('bsOverlay').classList.add('open');
+    document.getElementById('bsSheet').classList.add('open');
+  }
+
+  function closeDetail() {
+    document.getElementById('bsSheet').classList.remove('open');
+    document.getElementById('bsOverlay').classList.remove('open');
+  }
+
+  // ── Clear Cache ──
+  function clearCache() {
+    showToast('Clearing cache...', 'info');
+    setTimeout(function() {
+      document.getElementById('cacheSize').textContent = 'App cache: 0 MB';
+      showToast('Cache cleared successfully!', 'success');
+    }, 800);
+  }
+
+  // ── Export Data ──
+  function exportData() {
+    var data = {
+      exported: new Date().toISOString(),
+      app: 'Adera Sales v1.3.0',
+      settings: settings,
+      bookmarks: JSON.parse(localStorage.getItem('scheme_bookmarks') || '[]')
+    };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'adera-sales-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Data exported successfully!', 'success');
+  }
+
+  // ── Init ──
+  initToggles();
+</script>
 </body>
 </html>

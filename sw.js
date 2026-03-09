@@ -1,10 +1,10 @@
-const CACHE_NAME = "cache-v4";
+const CACHE_NAME = "cache-v6";
 const SYNC_STORE = "adera_offline_requests";
 const urlsToCache = [
   "/index.html",
   "/css/style.css",
   "/js/app.js",
-  // Module pages (39 total)
+  // Module pages (65 total)
   "/modules/parties.html",
   "/modules/orders.html",
   "/modules/take-order.html",
@@ -44,6 +44,32 @@ const urlsToCache = [
   "/modules/targets.html",
   "/modules/distributor.html",
   "/modules/gallery.html",
+  "/modules/support-category.html",
+  "/modules/support-deboard.html",
+  "/modules/support-geolocation.html",
+  "/modules/support-new-request.html",
+  "/modules/support-route-transfer.html",
+  "/modules/support-ticket-detail.html",
+  "/modules/manage-users.html",
+  "/modules/report-coverage.html",
+  "/modules/report-dse-productivity.html",
+  "/modules/sf-distributor-target.html",
+  "/modules/report-net-sales.html",
+  "/modules/report-order-summary.html",
+  "/modules/report-product-sales.html",
+  "/modules/sf-call-roster.html",
+  "/modules/sf-campaigns.html",
+  "/modules/sf-fundamental-targets.html",
+  "/modules/sf-posms.html",
+  "/modules/sf-routes.html",
+  "/modules/sf-sales-targets.html",
+  "/modules/sf-sbd-target.html",
+  "/modules/sf-subd-replenishment.html",
+  "/modules/report-goods-received.html",
+  "/modules/report-merchandise.html",
+  "/modules/report-order-analysis.html",
+  "/modules/report-time-route.html",
+  "/modules/sf-cluster-tools.html",
 ];
 
 self.addEventListener("install", event => {

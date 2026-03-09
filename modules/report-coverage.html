@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Coverage Report — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .progress-row { display:flex; align-items:center; gap:10px; }
+    .progress-bar-wrap { flex:1; background:#e8f0fa; border-radius:20px; height:7px; overflow:hidden; }
+    .progress-bar-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#3066be,#60a5fa); transition:width .5s; }
+    .progress-pct { font-size:13px; font-weight:700; color:#1a2540; min-width:38px; text-align:right; }
+  </style>
+</head>
+<body>
+
+<p class="page-title">Adera Sales · Coverage Report</p>
+
+<div class="phone-frame">
+
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👤</div>
+      <div class="drawer-name">Elon Musk</div>
+      <div class="drawer-role">Sales Representative · Kathmandu</div>
+    </div>
+    <div class="drawer-section-title">Navigation</div>
+    <div class="drawer-item" onclick="goTo('../index.html')">
+      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="drawer-item-label">Home</span>
+    </div>
+    <div class="drawer-item" onclick="goTo('reports.html')">
+      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <span class="drawer-item-label">Reports</span>
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
+    </div>
+  </div>
+
+  <div class="screen-scroll">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Coverage Report</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Info Card -->
+      <div class="info-card">
+        <div class="info-card-title">Outlet Coverage</div>
+        <div class="info-card-value">85% Coverage Rate</div>
+        <div class="info-card-subtitle">156 of 184 outlets visited this week</div>
+      </div>
+
+      <!-- Coverage Stats -->
+      <div class="section-header" style="margin-top:18px;">
+        <span class="section-title">Coverage Summary</span>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-card-row">
+          <span class="summary-card-label">Total Outlets</span>
+          <span class="summary-card-value">184</span>
+        </div>
+        <div class="summary-card-row">
+          <span class="summary-card-label">Visited</span>
+          <span class="summary-card-value" style="color:#28a745;">156</span>
+        </div>
+        <div class="summary-card-row">
+          <span class="summary-card-label">Not Visited</span>
+          <span class="summary-card-value" style="color:#e05252;">28</span>
+        </div>
+        <div class="summary-card-row">
+          <span class="summary-card-label">Coverage %</span>
+          <span class="summary-card-value" style="color:#3066be;">85%</span>
+        </div>
+      </div>
+
+      <!-- Top Covered Areas -->
+      <div class="section-header" style="margin-top:18px;">
+        <span class="section-title">Top Covered Areas</span>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Balaju</div>
+          <div style="margin-top:6px;" class="progress-row">
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:95%;"></div></div>
+            <span class="progress-pct">95%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Lazimpat</div>
+          <div style="margin-top:6px;" class="progress-row">
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:88%;"></div></div>
+            <span class="progress-pct">88%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Thamel</div>
+          <div style="margin-top:6px;" class="progress-row">
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:82%;"></div></div>
+            <span class="progress-pct">82%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Ason</div>
+          <div style="margin-top:6px;" class="progress-row">
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:78%;"></div></div>
+            <span class="progress-pct">78%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Naxal</div>
+          <div style="margin-top:6px;" class="progress-row">
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:72%;"></div></div>
+            <span class="progress-pct">72%</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:80px;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('../index.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="goTo('parties.html')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Parties</span>
+      </div>
+      <div class="nav-center-wrap" onclick="goTo('orders.html')">
+        <div class="nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>New</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+</body>
+</html>

@@ -5,61 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Support — Adera Sales</title>
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .sp-search { position:relative; margin-bottom:14px; }
+    .sp-search input {
+      width:100%; padding:10px 14px 10px 38px; border-radius:12px; border:1.5px solid #e2e8f0;
+      font-size:13px; font-family:var(--font); background:#fff; color:#1a2540;
+      box-shadow:0 1px 4px rgba(48,102,190,.06); box-sizing:border-box;
+    }
+    .sp-search input:focus { outline:none; border-color:var(--primary); }
+    .sp-search input::placeholder { color:#94a3b8; }
+    .sp-search .sp-icon {
+      position:absolute; left:12px; top:50%; transform:translateY(-50%);
+      width:16px; height:16px; color:#94a3b8; pointer-events:none;
+    }
+    .sp-search .sp-clear {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      width:20px; height:20px; border:none; background:none; cursor:pointer;
+      color:#94a3b8; display:none; padding:0;
+    }
+    .sp-search .sp-clear.show { display:block; }
+    .sp-no-results {
+      text-align:center; padding:40px 20px; display:none;
+    }
+    .sp-no-results svg { width:48px; height:48px; color:#cbd5e1; margin-bottom:12px; }
+    .sp-no-results p { font-size:14px; font-weight:700; color:#64748b; margin:0 0 4px; }
+    .sp-no-results span { font-size:12px; color:#94a3b8; }
+  </style>
 </head>
 <body>
 
-<p class="page-title">Adera Sales · Support</p>
+<div class="page-title">Adera Sales</div>
 
 <div class="phone-frame">
 
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
-
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <div class="drawer-avatar">👤</div>
-      <div class="drawer-name">Elon Musk</div>
-      <div class="drawer-role">Sales Representative · Kathmandu</div>
-      <button class="drawer-target-btn">🎯 Your Target</button>
-    </div>
-    <div class="drawer-section-title">Navigation</div>
-    <div class="drawer-item" onclick="goTo('../index.html')">
-      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <span class="drawer-item-label">Home</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('orders.html')">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
-      <span class="drawer-item-label">Orders</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('inventory.html')">
-      <div class="drawer-item-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
-      <span class="drawer-item-label">Inventory</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('salesforce.html')">
-      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-      <span class="drawer-item-label">Sales Force</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('reports.html')">
-      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <span class="drawer-item-label">Reports</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('config.html')">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06"/></svg></div>
-      <span class="drawer-item-label">Configuration</span>
-    </div>
-    <div class="drawer-item active" onclick="closeDrawer()">
-      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-      <span class="drawer-item-label">Support</span>
-    </div>
-    <div class="drawer-divider"></div>
-    <div class="drawer-section-title">Actions</div>
-    <div class="drawer-item">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-      <span class="drawer-item-label">Logout</span>
-    </div>
-    <div class="drawer-footer">
-      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
-    </div>
-  </div>
+  <div id="drawer" data-inject="support"></div>
 
   <div class="screen-scroll">
 
@@ -79,26 +58,40 @@
       <div class="top-bar-title">Support</div>
       <button class="icon-btn" onclick="openDrawer()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
 
     <div class="content" style="padding-top:14px;">
 
-      <!-- Help Card -->
       <div class="info-card" style="margin-bottom:16px;">
         <div class="info-card-label">Need Help?</div>
         <div class="info-card-value" style="font-size:20px;">Support Center</div>
         <div class="info-card-sub">Submit a request or check existing tickets</div>
       </div>
 
+      <!-- Search -->
+      <div class="sp-search">
+        <svg class="sp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="spSearch" placeholder="Search support..." oninput="searchSupport(this.value)">
+        <button class="sp-clear" id="spClear" onclick="clearSPSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="sp-no-results" id="spNoResults">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <p>No results found</p>
+        <span>Try a different search term</span>
+      </div>
+
       <!-- Requests -->
-      <div class="section-header">
+      <div class="section-header" data-sp-section>
         <span class="section-title">Requests</span>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="category issue categorization" onclick="goTo('support-category.html')">
         <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">Category</div>
@@ -107,7 +100,7 @@
         <span class="badge badge-warning">3 Open</span>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="deboard de-board outlet removal" onclick="goTo('support-deboard.html')">
         <div class="list-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="23" y2="8"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">De-Board Outlet</div>
@@ -116,7 +109,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="geolocation location gps map" onclick="goTo('support-geolocation.html')">
         <div class="list-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">Geolocation</div>
@@ -125,7 +118,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="route transfer reassignment" onclick="goTo('support-route-transfer.html')">
         <div class="list-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">Route Transfer</div>
@@ -135,11 +128,11 @@
       </div>
 
       <!-- Recent Tickets -->
-      <div class="section-header" style="margin-top:18px;">
+      <div class="section-header" style="margin-top:18px;" data-sp-section>
         <span class="section-title">Recent Tickets</span>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="gps not updating technical app" onclick="goTo('support-ticket-detail.html')">
         <div class="list-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">GPS not updating</div>
@@ -148,7 +141,7 @@
         <span class="badge badge-warning">Open</span>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="outlet data mismatch resolved" onclick="goTo('support-ticket-detail.html')">
         <div class="list-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">Outlet data mismatch</div>
@@ -157,7 +150,7 @@
         <span class="badge badge-success">Resolved</span>
       </div>
 
-      <div class="list-item">
+      <div class="list-item" data-sp-item data-keywords="route change request progress" onclick="goTo('support-ticket-detail.html')">
         <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div class="list-item-content">
           <div class="list-item-title">Route change request</div>
@@ -167,8 +160,8 @@
       </div>
 
       <!-- Submit Button -->
-      <div style="margin-top:20px;">
-        <button class="btn btn-primary btn-block">
+      <div style="margin-top:20px;" id="spSubmitBtn">
+        <button class="btn btn-primary btn-block" onclick="goTo('support-new-request.html')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Submit New Request
         </button>
@@ -177,34 +170,50 @@
       <div style="height:80px;"></div>
     </div>
 
-    <div class="bottom-nav">
-      <div class="nav-item" onclick="goTo('../index.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
-      </div>
-      <div class="nav-item" onclick="goTo('parties.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        <span>Parties</span>
-      </div>
-      <div class="nav-center-wrap" onclick="goTo('orders.html')">
-        <div class="nav-center">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </div>
-        <span>New</span>
-      </div>
-      <div class="nav-item" onclick="goTo('reports.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Reports</span>
-      </div>
-      <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </div>
-    </div>
+    <div class="bottom-nav" data-inject="support"></div>
 
   </div>
 </div>
 
 <script src="../js/app.js"></script>
+<script>
+  function searchSupport(val) {
+    var q = val.trim().toLowerCase();
+    document.getElementById('spClear').classList.toggle('show', val.length > 0);
+    var items = document.querySelectorAll('[data-sp-item]');
+    var sections = document.querySelectorAll('[data-sp-section]');
+    var visible = 0;
+
+    for (var i = 0; i < items.length; i++) {
+      var el = items[i];
+      var text = (el.textContent + ' ' + (el.getAttribute('data-keywords') || '')).toLowerCase();
+      var show = !q || text.indexOf(q) !== -1;
+      el.style.display = show ? '' : 'none';
+      if (show) visible++;
+    }
+
+    // Show/hide section headers based on visible children
+    for (var j = 0; j < sections.length; j++) {
+      var sec = sections[j];
+      var next = sec.nextElementSibling;
+      var hasVisible = false;
+      while (next && next.hasAttribute('data-sp-item')) {
+        if (next.style.display !== 'none') hasVisible = true;
+        next = next.nextElementSibling;
+      }
+      sec.style.display = hasVisible ? '' : 'none';
+    }
+
+    document.getElementById('spNoResults').style.display = visible === 0 ? 'block' : 'none';
+    document.getElementById('spSubmitBtn').style.display = visible === 0 ? 'none' : '';
+  }
+
+  function clearSPSearch() {
+    var input = document.getElementById('spSearch');
+    input.value = '';
+    searchSupport('');
+    input.focus();
+  }
+</script>
 </body>
 </html>

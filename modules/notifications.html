@@ -192,59 +192,11 @@
 </head>
 <body>
 
-<p class="page-title">Adera Sales · Notifications</p>
+<div class="page-title">Adera Sales</div>
 
 <div class="phone-frame">
 
-  <!-- Drawer Overlay -->
-  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
-
-  <!-- Drawer -->
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <div class="drawer-avatar">👤</div>
-      <div class="drawer-name">Elon Musk</div>
-      <div class="drawer-role">Sales Representative · Kathmandu</div>
-      <button class="drawer-target-btn">🎯 Your Target</button>
-    </div>
-    <div class="drawer-section-title">Navigation</div>
-    <div class="drawer-item" onclick="goTo('../index.html')">
-      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <span class="drawer-item-label">Home</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('../modules/parties.html')">
-      <div class="drawer-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
-      <span class="drawer-item-label">Parties</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('../modules/orders.html')">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
-      <span class="drawer-item-label">Orders</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('../modules/collections.html')">
-      <div class="drawer-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-      <span class="drawer-item-label">Collections</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('../modules/attendance.html')">
-      <div class="drawer-item-icon ic-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-      <span class="drawer-item-label">Attendance</span>
-    </div>
-    <div class="drawer-item" onclick="goTo('../modules/performance.html')">
-      <div class="drawer-item-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <span class="drawer-item-label">Performance</span>
-    </div>
-    <div class="drawer-item active" onclick="closeDrawer()">
-      <div class="drawer-item-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-      <span class="drawer-item-label">Notifications</span>
-    </div>
-    <div class="drawer-item">
-      <div class="drawer-item-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-      <span class="drawer-item-label">Logout</span>
-    </div>
-
-    <div class="drawer-footer">
-      <div class="drawer-version">ver 1.0.0 · Adera Sales</div>
-    </div>
-  </div>
+  <div id="drawer" data-inject="notifications"></div>
 
   <!-- Scrollable Screen -->
   <div class="screen-scroll">
@@ -310,7 +262,7 @@
       </div>
 
       <!-- 1. Order Confirmed -->
-      <div class="notif-card unread" data-type="orders" onclick="openNotifDetail(0)">
+      <div class="notif-card unread" data-type="orders" data-idx="0" onclick="openNotifDetail(0)">
         <div class="notif-icon ic-blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
         </div>
@@ -326,7 +278,7 @@
       </div>
 
       <!-- 2. Payment Received -->
-      <div class="notif-card unread" data-type="orders" onclick="openNotifDetail(1)">
+      <div class="notif-card unread" data-type="orders" data-idx="1" onclick="openNotifDetail(1)">
         <div class="notif-icon ic-green">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
         </div>
@@ -342,7 +294,7 @@
       </div>
 
       <!-- 3. Approval Required -->
-      <div class="notif-card unread" data-type="approvals" onclick="openNotifDetail(2)">
+      <div class="notif-card unread" data-type="approvals" data-idx="2" onclick="openNotifDetail(2)">
         <div class="notif-icon ic-orange">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
@@ -358,7 +310,7 @@
       </div>
 
       <!-- 4. Route Updated -->
-      <div class="notif-card unread" data-type="system" onclick="openNotifDetail(3)">
+      <div class="notif-card unread" data-type="system" data-idx="3" onclick="openNotifDetail(3)">
         <div class="notif-icon ic-blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
         </div>
@@ -374,7 +326,7 @@
       </div>
 
       <!-- 5. Target Alert -->
-      <div class="notif-card unread" data-type="system" onclick="openNotifDetail(4)">
+      <div class="notif-card unread" data-type="system" data-idx="4" onclick="openNotifDetail(4)">
         <div class="notif-icon ic-purple">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </div>
@@ -390,7 +342,7 @@
       </div>
 
       <!-- 6. Stock Alert -->
-      <div class="notif-card unread" data-type="system" onclick="openNotifDetail(5)">
+      <div class="notif-card unread" data-type="system" data-idx="5" onclick="openNotifDetail(5)">
         <div class="notif-icon ic-red">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
@@ -406,7 +358,7 @@
       </div>
 
       <!-- 7. Visit Reminder (read) -->
-      <div class="notif-card" data-type="system" onclick="openNotifDetail(6)">
+      <div class="notif-card" data-type="system" data-idx="6" onclick="openNotifDetail(6)">
         <div class="notif-icon ic-teal">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
         </div>
@@ -421,7 +373,7 @@
       </div>
 
       <!-- 8. New Party (read) -->
-      <div class="notif-card" data-type="system" onclick="openNotifDetail(7)">
+      <div class="notif-card" data-type="system" data-idx="7" onclick="openNotifDetail(7)">
         <div class="notif-icon ic-indigo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </div>
@@ -442,7 +394,7 @@
       </div>
 
       <!-- 9. Order Delivered -->
-      <div class="notif-card" data-type="orders" onclick="openNotifDetail(8)">
+      <div class="notif-card" data-type="orders" data-idx="8" onclick="openNotifDetail(8)">
         <div class="notif-icon ic-green">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
@@ -457,7 +409,7 @@
       </div>
 
       <!-- 10. Leave Approved -->
-      <div class="notif-card" data-type="approvals" onclick="openNotifDetail(9)">
+      <div class="notif-card" data-type="approvals" data-idx="9" onclick="openNotifDetail(9)">
         <div class="notif-icon ic-teal">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
         </div>
@@ -472,7 +424,7 @@
       </div>
 
       <!-- 11. EOD Reminder -->
-      <div class="notif-card" data-type="system" onclick="openNotifDetail(10)">
+      <div class="notif-card" data-type="system" data-idx="10" onclick="openNotifDetail(10)">
         <div class="notif-icon ic-orange">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
@@ -487,7 +439,7 @@
       </div>
 
       <!-- 12. Collection Due -->
-      <div class="notif-card" data-type="orders" onclick="openNotifDetail(11)">
+      <div class="notif-card" data-type="orders" data-idx="11" onclick="openNotifDetail(11)">
         <div class="notif-icon ic-red">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         </div>
@@ -508,7 +460,7 @@
       </div>
 
       <!-- 13. Performance Review -->
-      <div class="notif-card" data-type="system" onclick="openNotifDetail(12)">
+      <div class="notif-card" data-type="system" data-idx="12" onclick="openNotifDetail(12)">
         <div class="notif-icon ic-purple">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
@@ -523,7 +475,7 @@
       </div>
 
       <!-- 14. System Update -->
-      <div class="notif-card" data-type="system" onclick="openNotifDetail(13)">
+      <div class="notif-card" data-type="system" data-idx="13" onclick="openNotifDetail(13)">
         <div class="notif-icon ic-grey">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </div>
@@ -538,7 +490,7 @@
       </div>
 
       <!-- 15. Welcome -->
-      <div class="notif-card" data-type="system" onclick="openNotifDetail(14)">
+      <div class="notif-card" data-type="system" data-idx="14" onclick="openNotifDetail(14)">
         <div class="notif-icon ic-blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
         </div>
@@ -555,31 +507,7 @@
       <div style="height:90px;"></div>
     </div><!-- /content -->
 
-    <!-- Bottom Nav -->
-    <div class="bottom-nav">
-      <div class="nav-item" onclick="goTo('../index.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Home</span>
-      </div>
-      <div class="nav-item" onclick="goTo('../modules/parties.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-        <span>Parties</span>
-      </div>
-      <div class="nav-center-wrap">
-        <div class="nav-center" onclick="showToast('Create new order','info')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </div>
-        <span>New</span>
-      </div>
-      <div class="nav-item" onclick="goTo('../modules/performance.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Reports</span>
-      </div>
-      <div class="nav-item" onclick="goTo('../modules/profile.html')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </div>
-    </div>
+    <div class="bottom-nav" data-inject="notifications"></div>
 
   </div><!-- /screen-scroll -->
 
@@ -746,13 +674,33 @@
       <div class="ns-quiet-time">10:00 PM - 7:00 AM</div>
     </div>
 
-    <button class="ns-save" onclick="closeSettings(); showToast('Settings saved successfully','success')">Save Settings</button>
+    <button class="ns-save" onclick="saveToggles(); closeSettings(); showToast('Settings saved successfully','success')">Save Settings</button>
   </div>
 
 </div><!-- /phone-frame -->
 
 <script src="../js/app.js"></script>
 <script>
+  // ── Action → page navigation map ──
+  var actionRoutes = {
+    'View Order': 'orders.html',
+    'View Collection': 'collections.html',
+    'Review': 'approvals.html',
+    'View Route': 'route.html',
+    'View Target': '../index.html',
+    'View Stock': 'stock.html',
+    'View Visit': 'visits.html',
+    'Reschedule': 'visits.html',
+    'View Party': 'parties.html',
+    'View Leave': 'leaves.html',
+    'Submit EOD': 'eod.html',
+    'View Outstanding': 'outstanding.html',
+    'Call Party': 'parties.html',
+    'View Report': 'performance.html',
+    'View Changelog': '../index.html',
+    'Setup Profile': 'profile.html'
+  };
+
   // ── Notification data ──
   const notifData = [
     { title:'Order Confirmed', desc:'Order #ORD-2847 has been confirmed by Sharma Traders. The order contains 12 items with a total value of ₹18,750.', time:'Today at 9:39 AM', details:[{l:'Order Number',v:'#ORD-2847'},{l:'Amount',v:'₹18,750'},{l:'Party Name',v:'Sharma Traders'}], actions:['View Order','Mark Read','Dismiss'] },
@@ -795,8 +743,12 @@
     });
   }
 
+  // Track currently open notification index
+  var _currentNotifIdx = -1;
+
   // ── Notification Detail ──
   function openNotifDetail(idx) {
+    _currentNotifIdx = idx;
     const n = notifData[idx];
     document.getElementById('ndTitle').textContent = n.title;
     document.getElementById('ndDesc').textContent = n.desc;
@@ -806,24 +758,121 @@
     detailsEl.innerHTML = n.details.map(d =>
       '<div class="nd-detail-row"><div class="nd-detail-label">'+d.l+'</div><div class="nd-detail-value">'+d.v+'</div></div>'
     ).join('');
-    // Actions
+    // Actions — wire up real handlers
     const actionsEl = document.getElementById('ndActions');
     actionsEl.innerHTML = n.actions.map((a, i) => {
       const cls = i === 0 ? 'primary' : (a === 'Dismiss' ? 'outline' : 'secondary');
-      return '<button class="nd-btn '+cls+'" onclick="closeNotifDetail(); showToast(\''+a+'\',\''+(i===0?'info':'success')+'\')">'+a+'</button>';
+      return '<button class="nd-btn '+cls+'" onclick="handleNotifAction(\''+a.replace(/'/g,"\\'")+'\','+idx+')">'+a+'</button>';
     }).join('');
     document.getElementById('ndOverlay').classList.add('show');
     document.getElementById('ndSheet').classList.add('show');
   }
+
   function closeNotifDetail() {
     document.getElementById('ndOverlay').classList.remove('show');
     document.getElementById('ndSheet').classList.remove('show');
+    _currentNotifIdx = -1;
+  }
+
+  // ── Handle notification action buttons ──
+  function handleNotifAction(action, idx) {
+    var card = document.querySelector('.notif-card[data-idx="'+idx+'"]');
+
+    if (action === 'Mark Read') {
+      closeNotifDetail();
+      markCardAsRead(card, idx);
+      showToast('Marked as read', 'success');
+      return;
+    }
+
+    if (action === 'Dismiss') {
+      closeNotifDetail();
+      dismissCard(card, idx);
+      showToast('Notification dismissed', 'info');
+      return;
+    }
+
+    // Navigation actions
+    var route = actionRoutes[action];
+    if (route) {
+      closeNotifDetail();
+      markCardAsRead(card, idx);
+      showToast('Opening ' + action.replace('View ','') + '...', 'info');
+      setTimeout(function() { goTo(route); }, 300);
+      return;
+    }
+
+    // Fallback
+    closeNotifDetail();
+    showToast(action, 'info');
+  }
+
+  // ── Mark a single card as read ──
+  function markCardAsRead(card, idx) {
+    if (!card || !card.classList.contains('unread')) return;
+    card.classList.remove('unread');
+    var dot = card.querySelector('.notif-dot');
+    if (dot) dot.remove();
+    updateUnreadCount();
+  }
+
+  // ── Dismiss (remove) a card with animation ──
+  function dismissCard(card, idx) {
+    if (!card) return;
+    var wasUnread = card.classList.contains('unread');
+    card.style.transition = 'all .3s ease';
+    card.style.transform = 'translateX(100%)';
+    card.style.opacity = '0';
+    card.style.maxHeight = card.offsetHeight + 'px';
+    setTimeout(function() {
+      card.style.maxHeight = '0';
+      card.style.padding = '0';
+      card.style.marginBottom = '0';
+      card.style.overflow = 'hidden';
+    }, 200);
+    setTimeout(function() {
+      card.remove();
+      if (wasUnread) updateUnreadCount();
+      updateSectionCounts();
+    }, 500);
+  }
+
+  // ── Update the unread badge count in stats strip ──
+  function updateUnreadCount() {
+    var unreadCards = document.querySelectorAll('.notif-card.unread');
+    var statEl = document.querySelector('.n-stat.blue .n-stat-val');
+    if (statEl) statEl.textContent = unreadCards.length;
+  }
+
+  // ── Update section notification counts ──
+  function updateSectionCounts() {
+    document.querySelectorAll('.notif-section').forEach(function(sec) {
+      var count = 0;
+      var next = sec.nextElementSibling;
+      while (next && !next.classList.contains('notif-section')) {
+        if (next.classList.contains('notif-card')) count++;
+        next = next.nextElementSibling;
+      }
+      var countEl = sec.querySelector('.notif-section-count');
+      if (countEl) {
+        if (count === 0) {
+          sec.style.display = 'none';
+        } else {
+          countEl.textContent = count + ' notification' + (count !== 1 ? 's' : '');
+        }
+      }
+    });
+    // Update total stat
+    var totalCards = document.querySelectorAll('.notif-card').length;
+    var totalStat = document.querySelector('.n-stat.purple .n-stat-val');
+    if (totalStat) totalStat.textContent = totalCards;
   }
 
   // ── Settings ──
   function openSettings() {
     document.getElementById('nsOverlay').classList.add('show');
     document.getElementById('nsSheet').classList.add('show');
+    restoreToggles();
   }
   function closeSettings() {
     document.getElementById('nsOverlay').classList.remove('show');
@@ -837,59 +886,128 @@
       const dot = card.querySelector('.notif-dot');
       if (dot) dot.remove();
     });
-    document.querySelector('.n-stat.blue .n-stat-val').textContent = '0';
+    updateUnreadCount();
     showToast('All notifications marked as read', 'success');
   }
 
   // ── Push Notification Permission ──
   function requestPushPermission() {
-    if (!('Notification' in window)) {
-      showToast('Push notifications not supported in this browser', 'warning');
+    var btn = document.getElementById('pushToggleBtn');
+
+    // If already enabled, toggle off
+    if (AppState.get('push_enabled', false)) {
+      AppState.set('push_enabled', false);
+      stopPushNotifications();
+      updatePushUI();
+      showToast('Push notifications paused', 'info');
       return;
     }
-    if (Notification.permission === 'granted') {
-      showToast('Notifications already enabled!', 'success');
-      sendTestNotification();
-      return;
+
+    // Show requesting state
+    if (btn) {
+      btn.textContent = 'Requesting...';
+      btn.style.opacity = '0.7';
     }
-    if (Notification.permission === 'denied') {
-      showToast('Notifications blocked. Enable in browser settings.', 'error');
-      return;
+
+    // Try real Notification API if available, otherwise simulate
+    if ('Notification' in window && Notification.permission !== 'denied' && window.location.protocol !== 'file:') {
+      Notification.requestPermission().then(function(perm) {
+        if (perm === 'granted') {
+          enablePushNotifications();
+          sendTestNotification();
+        } else {
+          // Fallback to simulated mode
+          enablePushNotifications();
+        }
+      });
+    } else {
+      // Simulated mode for file:// or unsupported browsers
+      setTimeout(function() { enablePushNotifications(); }, 500);
     }
-    Notification.requestPermission().then(function(perm) {
-      if (perm === 'granted') {
-        showToast('Notifications enabled!', 'success');
-        AppState.set('push_enabled', true);
-        sendTestNotification();
-        updatePushUI();
-      } else {
-        showToast('Notification permission denied', 'warning');
-      }
-    });
+  }
+
+  function enablePushNotifications() {
+    AppState.set('push_enabled', true);
+    updatePushUI();
+    setTimeout(function() { simulatePushNotifications(); }, 3000);
+    showToast('Push notifications enabled!', 'success');
   }
 
   function sendTestNotification() {
-    if (Notification.permission === 'granted') {
-      new Notification('Adera Sales', {
-        body: 'Push notifications are now active!',
-        icon: '../css/icon-192.png',
-        tag: 'adera-test'
-      });
-    }
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Adera Sales', {
+          body: 'Push notifications are now active!',
+          icon: '../css/icon-192.png',
+          tag: 'adera-test'
+        });
+      }
+    } catch(e) {}
   }
 
   function updatePushUI() {
     var btn = document.getElementById('pushToggleBtn');
     if (!btn) return;
-    if ('Notification' in window && Notification.permission === 'granted') {
+    var enabled = AppState.get('push_enabled', false);
+
+    btn.style.opacity = '1';
+
+    if (enabled) {
       btn.textContent = 'Enabled';
       btn.style.background = '#e8f5ed';
       btn.style.color = '#28a745';
+      btn.title = 'Tap to disable';
+    } else {
+      btn.textContent = 'Enable';
+      btn.style.background = 'rgba(255,255,255,.25)';
+      btn.style.color = '#fff';
     }
   }
 
+  // ── Toggle State Persistence ──
+  var _toggleKeys = ['orders','payments','approvals','stock','visits','targets','system'];
+
+  function saveToggles() {
+    var toggles = document.querySelectorAll('.ns-group .toggle');
+    var state = {};
+    toggles.forEach(function(t, i) {
+      if (_toggleKeys[i]) state[_toggleKeys[i]] = t.classList.contains('on');
+    });
+    // Quiet hours toggle
+    var quietToggle = document.querySelector('.ns-quiet .toggle');
+    if (quietToggle) state.quiet = quietToggle.classList.contains('on');
+    AppState.set('notif_settings', state);
+  }
+
+  function restoreToggles() {
+    var state = AppState.get('notif_settings', null);
+    if (!state) return;
+    var toggles = document.querySelectorAll('.ns-group .toggle');
+    toggles.forEach(function(t, i) {
+      if (_toggleKeys[i] && state[_toggleKeys[i]] !== undefined) {
+        if (state[_toggleKeys[i]]) t.classList.add('on');
+        else t.classList.remove('on');
+      }
+    });
+    var quietToggle = document.querySelector('.ns-quiet .toggle');
+    if (quietToggle && state.quiet !== undefined) {
+      if (state.quiet) quietToggle.classList.add('on');
+      else quietToggle.classList.remove('on');
+    }
+  }
+
+  // Wire up all toggles to persist on click
+  document.querySelectorAll('.ns-group .toggle, .ns-quiet .toggle').forEach(function(t) {
+    t.addEventListener('click', function() { setTimeout(saveToggles, 50); });
+  });
+
   // Check push state on load
   updatePushUI();
+
+  // Auto-start in-app push demo if previously enabled
+  if (AppState.get('push_enabled', false)) {
+    setTimeout(function() { simulatePushNotifications(); }, 5000);
+  }
 </script>
 
 </body>

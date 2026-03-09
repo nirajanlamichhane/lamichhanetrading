@@ -11,11 +11,11 @@
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 9998;
-  pointer-events: auto;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-.onboard-overlay.active { opacity: 1; }
+.onboard-overlay.active { opacity: 1; pointer-events: auto; }
 .onboard-overlay.hiding { opacity: 0; }
 
 .onboard-spotlight {
@@ -157,14 +157,14 @@
 .onboard-help-btn:hover { transform: scale(1.1); }
 
 /* ── App Update Banner ── */
-.update-banner { background:linear-gradient(135deg,#3066be,#6366f1); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transform:translateY(-100%); transition:transform .4s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; }
+.update-banner { background:linear-gradient(135deg,#3066be,#6366f1); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transform:translateY(-100%); transition:transform .4s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; touch-action:pan-y; }
 .update-banner.show { transform:translateY(0); }
 .update-banner .ub-icon { width:36px; height:36px; background:rgba(255,255,255,.2); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
 .update-banner .ub-text { flex:1; }
 .update-banner .ub-title { font-size:13px; font-weight:700; }
 .update-banner .ub-desc { font-size:11px; opacity:.8; }
 .update-banner .ub-btn { padding:6px 16px; background:#fff; color:#3066be; border-radius:20px; font-size:12px; font-weight:700; border:none; cursor:pointer; }
-.update-banner .ub-close { position:absolute; top:4px; right:6px; background:none; border:none; color:rgba(255,255,255,.6); font-size:16px; cursor:pointer; line-height:1; }
+.update-banner .ub-close { position:relative; top:auto; right:auto; flex-shrink:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:20px; cursor:pointer; line-height:1; border-radius:50%; z-index:10; pointer-events:auto; -webkit-tap-highlight-color:transparent; }
 
 /* ── Changelog Bottom Sheet ── */
 .changelog-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:1000; opacity:0; pointer-events:none; transition:opacity .3s ease; }
@@ -1004,7 +1004,7 @@
     <div class="ds-row"><div class="ds-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="ds-info"><div class="ds-label">Revenue</div><div class="ds-value">&#8377;48,200</div><div class="ds-bar"><div class="ds-bar-fill" style="width:68%;background:#f59e0b"></div></div></div></div>
     <div class="ds-row"><div class="ds-icon" style="background:#e8efec"><svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="ds-info"><div class="ds-label">Collections</div><div class="ds-value">&#8377;32,450</div><div class="ds-bar"><div class="ds-bar-fill" style="width:45%;background:var(--success)"></div></div></div></div>
     <div class="ds-row"><div class="ds-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="ds-info"><div class="ds-label">New Parties</div><div class="ds-value">1</div><div class="ds-bar"><div class="ds-bar-fill" style="width:20%;background:#8b5cf6"></div></div></div></div>
-    <button class="ds-eod-btn" onclick="qaCloseDaySummary();goTo('eod.html')">View Full EOD Report</button>
+    <button class="ds-eod-btn" onclick="qaCloseDaySummary();goTo('modules/eod.html')">View Full EOD Report</button>
   </div>
 
   <!-- SOS Bottom Sheet -->
@@ -1287,8 +1287,9 @@
   }
 
   function dismissPushPermission() {
-    localStorage.setItem('adera_push_permission', 'denied');
+    localStorage.setItem('adera_push_permission', 'dismissed');
     closePushPermSheet();
+    showToast('You can enable notifications later from Settings', 'info');
   }
 
   function closePushPermSheet() {
@@ -1309,8 +1310,8 @@
   window.allowPushPermission = allowPushPermission;
   window.dismissPushPermission = dismissPushPermission;
 
-  if (!permStatus) {
-    // First visit: show permission prompt after 3s
+  if (!permStatus || permStatus === 'dismissed') {
+    // First visit or previously dismissed: show permission prompt after 3s
     setTimeout(function() {
       showPushPermSheet();
     }, 3000);
@@ -1320,7 +1321,6 @@
       simulatePushNotifications();
     }, 5000);
   }
-  // If 'denied', do nothing
 })();
 </script>
 
@@ -1425,20 +1425,78 @@
   var updateBtn = document.getElementById('clUpdateBtn');
   var updating = false;
 
-  // Show banner after 2s if not dismissed for this version
+  var autoHideTimer = null;
+
+  var DISMISS_TIME_KEY = 'adera_update_dismissed_at';
+  var DISMISS_24H = 24 * 60 * 60 * 1000;
+
+  // Show banner after 2s if not dismissed for this version or within 24h
   function maybeShowBanner() {
     if (localStorage.getItem(LS_KEY) === UPDATE_VERSION) return;
+    var dismissedAt = parseInt(localStorage.getItem(DISMISS_TIME_KEY) || '0', 10);
+    if (dismissedAt && (Date.now() - dismissedAt < DISMISS_24H)) return;
     setTimeout(function() {
-      if (banner) banner.classList.add('show');
+      if (banner) {
+        banner.style.display = '';
+        banner.classList.add('show');
+        autoHideTimer = setTimeout(function() {
+          if (banner) {
+            banner.classList.remove('show');
+            banner.addEventListener('transitionend', function handler() {
+              banner.removeEventListener('transitionend', handler);
+              banner.style.display = 'none';
+            });
+          }
+        }, 5000);
+      }
     }, 2000);
   }
 
-  // Dismiss banner
+  // Dismiss banner — hide for 24 hours
   window.dismissUpdateBanner = function(e) {
     if (e) { e.stopPropagation(); e.preventDefault(); }
-    localStorage.setItem(LS_KEY, UPDATE_VERSION);
-    if (banner) banner.classList.remove('show');
+    if (autoHideTimer) clearTimeout(autoHideTimer);
+    localStorage.setItem(DISMISS_TIME_KEY, String(Date.now()));
+    if (banner) {
+      banner.classList.remove('show');
+      banner.style.transform = '';
+      banner.addEventListener('transitionend', function handler() {
+        banner.removeEventListener('transitionend', handler);
+        banner.style.display = 'none';
+      });
+    }
   };
+
+  // Swipe-up to dismiss
+  (function() {
+    if (!banner) return;
+    var startY = 0, currentY = 0, dragging = false;
+    banner.addEventListener('touchstart', function(e) {
+      if (e.target.closest('.ub-close') || e.target.closest('.ub-btn')) return;
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      dragging = true;
+      banner.style.transition = 'none';
+    }, { passive: true });
+    banner.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      currentY = e.touches[0].clientY;
+      var dy = currentY - startY;
+      if (dy < 0) banner.style.transform = 'translateY(' + dy + 'px)';
+    }, { passive: true });
+    banner.addEventListener('touchend', function() {
+      if (!dragging) return;
+      dragging = false;
+      banner.style.transition = '';
+      var dy = currentY - startY;
+      if (dy < -40) {
+        banner.style.transform = '';
+        dismissUpdateBanner();
+      } else {
+        banner.style.transform = '';
+      }
+    });
+  })();
 
   // Open changelog sheet
   window.openChangelog = function(e) {
@@ -1493,6 +1551,97 @@
     maybeShowBanner();
   }
 })();
+</script>
+
+<script>
+// ── Quick Actions Logic ──
+var qoQtyArr = [0,0,0];
+var qoPrices = [275, 90, 28];
+
+function qaVoice() {
+  var ov = document.getElementById('qaVoiceOverlay');
+  var ct = document.getElementById('qaVoiceContent');
+  ct.innerHTML = '<div class="voice-mic-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div><div class="voice-label">Listening...</div><div class="voice-sub">Say a store name or product</div><button class="voice-cancel" onclick="qaCloseVoice()">Cancel</button>';
+  ov.classList.add('active');
+  setTimeout(function() {
+    if (!ov.classList.contains('active')) return;
+    ct.innerHTML = '<div class="voice-result"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div class="voice-result-text">Showing results for<br><strong>\'Krishna Store\'</strong></div></div><button class="voice-cancel" style="margin-top:24px" onclick="qaCloseVoice()">Dismiss</button>';
+    setTimeout(function() {
+      qaCloseVoice();
+      showToast('Showing results for \'Krishna Store\'', 'success');
+    }, 1800);
+  }, 2000);
+}
+function qaCloseVoice() { document.getElementById('qaVoiceOverlay').classList.remove('active'); }
+
+function qaScan() {
+  var ov = document.getElementById('qaScanOverlay');
+  var ct = document.getElementById('qaScanContent');
+  ct.innerHTML = '<div class="scan-viewfinder"><div class="scan-corner tl"></div><div class="scan-corner tr"></div><div class="scan-corner bl"></div><div class="scan-corner br"></div><div class="scan-line"></div></div><div class="scan-text">Point at barcode</div><button class="voice-cancel" style="margin-top:24px" onclick="qaCloseScan()">Cancel</button>';
+  ov.classList.add('active');
+  setTimeout(function() {
+    if (!ov.classList.contains('active')) return;
+    ct.innerHTML = '<div class="scan-result"><div class="scan-result-title">Product Found</div><div class="scan-result-product">Amul Butter 500g</div><div class="scan-result-price">\u20B9275</div><button class="scan-add-btn" onclick="qaCloseScan();showToast(\'Added to cart\',\'success\')">Add to Order</button><br><button class="scan-dismiss" onclick="qaCloseScan()">Dismiss</button></div>';
+  }, 2500);
+}
+function qaCloseScan() { document.getElementById('qaScanOverlay').classList.remove('active'); }
+
+function qaQuickOrder() {
+  qoQtyArr = [0,0,0];
+  for(var i=0;i<3;i++) document.getElementById('qoQty'+i).textContent='0';
+  document.getElementById('qoTotal').innerHTML='\u20B90';
+  document.getElementById('qoPartyInput').value='';
+  document.querySelectorAll('.qo-party-chip').forEach(function(c){c.classList.remove('selected')});
+  document.getElementById('qaQuickOrderBackdrop').classList.add('active');
+  document.getElementById('qaQuickOrderSheet').classList.add('active');
+}
+function qaCloseQuickOrder() {
+  document.getElementById('qaQuickOrderBackdrop').classList.remove('active');
+  document.getElementById('qaQuickOrderSheet').classList.remove('active');
+}
+function qoSelectParty(el, name) {
+  document.querySelectorAll('.qo-party-chip').forEach(function(c){c.classList.remove('selected')});
+  el.classList.add('selected');
+  document.getElementById('qoPartyInput').value = name;
+}
+function qoQty(idx, delta) {
+  qoQtyArr[idx] = Math.max(0, qoQtyArr[idx] + delta);
+  document.getElementById('qoQty'+idx).textContent = qoQtyArr[idx];
+  var total = 0;
+  for(var i=0;i<3;i++) total += qoQtyArr[i] * qoPrices[i];
+  document.getElementById('qoTotal').innerHTML = '\u20B9' + total.toLocaleString('en-IN');
+}
+function qoPlace() {
+  qaCloseQuickOrder();
+  showToast('Quick order placed!', 'success');
+}
+
+function qaDaySummary() {
+  document.getElementById('qaDaySummaryBackdrop').classList.add('active');
+  document.getElementById('qaDaySummarySheet').classList.add('active');
+}
+function qaCloseDaySummary() {
+  document.getElementById('qaDaySummaryBackdrop').classList.remove('active');
+  document.getElementById('qaDaySummarySheet').classList.remove('active');
+}
+
+function qaSOS() {
+  document.querySelectorAll('.sos-option').forEach(function(o){o.classList.remove('selected')});
+  document.getElementById('qaSOSBackdrop').classList.add('active');
+  document.getElementById('qaSOSSheet').classList.add('active');
+}
+function qaCloseSOS() {
+  document.getElementById('qaSOSBackdrop').classList.remove('active');
+  document.getElementById('qaSOSSheet').classList.remove('active');
+}
+function sosSelect(el) {
+  document.querySelectorAll('.sos-option').forEach(function(o){o.classList.remove('selected')});
+  el.classList.add('selected');
+}
+function sosSend() {
+  qaCloseSOS();
+  showToast('Emergency alert sent to manager', 'warning');
+}
 </script>
 </body>
 </html>

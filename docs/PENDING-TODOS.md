@@ -1,69 +1,62 @@
 # Adera Sales — Pending TODOs
 
 **Scanned:** March 8, 2026
-**Project Version:** 1.2.0
+**Last Updated:** March 9, 2026
+**Project Version:** 1.3.0
 
 ---
 
-## 1. Features Not Yet Implemented (from implementation.md)
+## 1. Features ✅ ALL DONE
 
-| # | Feature | Priority | Affected Files |
-|---|---------|----------|----------------|
-| 1 | ~~Push notifications~~ | ~~High~~ | ~~app.js, notifications.html~~ ✅ DONE (Notification API permission request, push enable banner in settings, test notification on enable) |
-| 2 | ~~Offline data sync~~ | ~~High~~ | ~~sw.js, app.js~~ ✅ DONE (IndexedDB-backed request queue in sw.js, Background Sync API, auto-sync on reconnect, SW client messaging, synthetic 202 responses when offline) |
-| 3 | ~~Image upload (selfie, receipts, odometer photos)~~ | ~~High~~ | ~~attendance.html, expenses.html, odometer.html~~ ✅ DONE (camera capture with `<input capture>` on attendance selfie + odometer start/end photos) |
-| 4 | ~~GPS/location services integration~~ | ~~High~~ | ~~attendance.html, route.html, odometer.html~~ ✅ DONE (parties.html GPS capture, app.js check-in geolocation) |
-| 5 | ~~Real-time clock on all pages~~ | ~~Low~~ | ~~All module pages~~ ✅ DONE |
-| 6 | ~~Inter-page data flow (e.g., outstanding → collections)~~ | ~~Medium~~ | ~~outstanding.html, collections.html, parties.html~~ ✅ DONE (collectParty() saves to localStorage, collections.html auto-opens Collect sheet) |
-| 7 | ~~Form validation~~ | ~~Medium~~ | ~~All pages with forms~~ ✅ DONE (validateForm() in app.js + login, expenses, leaves, notes, odometer) |
-
----
-
-## 2. ~~Service Worker (sw.js) — Incomplete~~ ✅ DONE
-
-~~- **Current state:** Basic cache-first shell only~~
-~~- **Missing:** No caching strategy for module pages (32 pages not listed in `urlsToCache`)~~
-~~- **Missing:** No network-first strategy for API calls~~
-~~- **Missing:** References non-existent `sidebar.html` in cache list~~
-~~- **Comment in code:** `// add all module pages here` (line 8) — never completed~~
-
-**Resolved:** sw.js updated to v4 — all 39 module pages cached, sidebar.html removed, network-first for `/api/` calls, cache-first for static assets, old cache cleanup on activate, IndexedDB offline request queue, Background Sync API.
+| # | Feature | Priority | Status |
+|---|---------|----------|--------|
+| 1 | ~~Push notifications~~ | ~~High~~ | ✅ Notification API permission, push banner in settings, test notification |
+| 2 | ~~Offline data sync~~ | ~~High~~ | ✅ IndexedDB request queue in sw.js v4, Background Sync API, auto-sync on reconnect, SW client messaging, synthetic 202 offline responses |
+| 3 | ~~Image upload~~ | ~~High~~ | ✅ Camera capture with `<input capture>` on attendance selfie + odometer photos |
+| 4 | ~~GPS/location services~~ | ~~High~~ | ✅ parties.html GPS capture, app.js check-in geolocation |
+| 5 | ~~Real-time clock~~ | ~~Low~~ | ✅ updateClock() in app.js, runs on all pages |
+| 6 | ~~Inter-page data flow~~ | ~~Medium~~ | ✅ collectParty() localStorage bus, collections.html auto-opens Collect sheet |
+| 7 | ~~Form validation~~ | ~~Medium~~ | ✅ validateForm() in app.js + login, expenses, leaves, notes, odometer |
 
 ---
 
-## 3. Structural Issues
+## 2. ~~Service Worker (sw.js)~~ ✅ DONE
 
-| # | Issue | Details |
-|---|-------|---------|
-| 1 | ~~`sidebar.html` missing~~ | ~~Referenced in `project structure.txt` and `sw.js`~~ ✅ Fixed — removed from sw.js |
-| 2 | ~~`project structure.txt` outdated~~ | ~~Lists only 25 modules~~ ✅ Fixed — updated to list all 39 module pages, sw.js v4 caches all |
-| 3 | ~~`performance.txt` is a template stub~~ | ✅ Fixed — file already removed |
-| 4 | ~~`!-- mock.html` — odd filename~~ | ✅ Fixed — file already removed |
+**Resolved:** sw.js v6 — all 65 module pages cached, network-first for `/api/` calls, cache-first for static assets, old cache cleanup on activate, IndexedDB offline request queue, Background Sync API, manual sync via postMessage.
 
 ---
 
-## 4. State Persistence TODOs (from implementation.md)
+## 3. ~~Structural Issues~~ ✅ ALL FIXED
 
-These need localStorage or backend implementation:
-
-- [x] Check-in/out status & timestamps ✅ (AppState + performCheckin in app.js)
-- [x] Cart items (between take-order.html → cart.html) ✅ (addToCart/getCart/saveCart in app.js)
-- [x] Filter/tab selections per page ✅ (saveFilterState/getFilterState in app.js)
-- [x] Draft EOD remarks ✅ (saveDraft/getDraft/clearDraft in app.js)
-- [x] Odometer readings ✅ (AppState localStorage with seed data, dynamic rendering, live distance calc)
+| # | Issue | Resolution |
+|---|-------|------------|
+| 1 | ~~`sidebar.html` missing~~ | ✅ Removed from sw.js |
+| 2 | ~~`project structure.txt` outdated~~ | ✅ Updated — lists all 46 module pages, sw.js v4 caches all |
+| 3 | ~~`performance.txt` stub~~ | ✅ File removed |
+| 4 | ~~`!-- mock.html` odd filename~~ | ✅ File removed |
 
 ---
 
-## 5. Production Migration TODOs
+## 4. ~~State Persistence~~ ✅ ALL DONE
+
+- [x] Check-in/out status & timestamps — AppState + performCheckin in app.js
+- [x] Cart items (take-order → cart) — addToCart/getCart/saveCart in app.js
+- [x] Filter/tab selections per page — saveFilterState/getFilterState in app.js
+- [x] Draft EOD remarks — saveDraft/getDraft/clearDraft in app.js
+- [x] Odometer readings — AppState localStorage with seed data, dynamic rendering
+
+---
+
+## 5. Production Migration TODOs (Future — Backend Required)
 
 ### Shared Components to Extract
 - [ ] `TopBar` — reusable header with back/menu/title/actions
-- [ ] `BottomNav` — global navigation component
-- [ ] `Drawer` — side navigation with user profile
-- [ ] `BottomSheet` — reusable slide-up sheet
+- [ ] `BottomNav` — global navigation component (currently `injectBottomNav()` in app.js)
+- [ ] `Drawer` — side navigation with user profile (currently `injectDrawer()` in app.js)
+- [ ] `BottomSheet` — reusable slide-up sheet pattern
 - [ ] `StatCard`, `KPICard`, `InfoCard` — data display components
 - [ ] `TabBar`, `ChipGroup` — filter components
-- [ ] `Toast` — notification system
+- [ ] `Toast` — notification system (currently `showToast()` in app.js)
 
 ### Data to Extract
 - [ ] All hardcoded mock data (orders, parties, collections, etc.) → JSON/API
@@ -71,7 +64,7 @@ These need localStorage or backend implementation:
 - [ ] Stats and KPIs → computed from real data
 
 ### API Endpoints Needed (23 endpoints)
-- [ ] `/auth/login` POST — Login screen
+- [ ] `/auth/login` POST — login.html
 - [ ] `/auth/checkin` POST — attendance.html
 - [ ] `/parties` GET — parties.html
 - [ ] `/parties/:id` GET — Party detail
@@ -97,19 +90,44 @@ These need localStorage or backend implementation:
 
 ---
 
-## 6. Code-Level TODOs
+## 6. ~~Code-Level TODOs~~ ✅ ALL DONE
 
-| # | File | Issue |
-|---|------|-------|
-| 1 | ~~`sw.js:8`~~ | ~~Comment: `// add all module pages here` — cache list incomplete~~ ✅ DONE |
-| 2 | ~~`index.html`~~ | ~~CHECK-IN button is placeholder (no action)~~ ✅ DONE — functional with GPS, localStorage, check-out |
-| 3 | ~~All modules~~ | ~~Map placeholders need real map integration (Google Maps / Leaflet)~~ ✅ DONE — Leaflet OSM map in route.html with numbered stop markers, route polyline, and fitBounds |
-| 4 | ~~`login.html`~~ | ~~Social login buttons (Google/Microsoft) are visual only~~ ✅ DONE — socialLogin() with loading spinner, session save, and redirect |
-| 5 | ~~All forms~~ | ~~No client-side validation implemented~~ ✅ DONE — validateForm() in app.js, all form pages validated |
-| 6 | ~~All pages~~ | ~~No error/empty states for failed API loads~~ ✅ DONE — showEmptyState() and showErrorState() utilities in app.js |
+| # | File | Resolution |
+|---|------|------------|
+| 1 | ~~sw.js~~ | ✅ Cache list complete (66 pages — index + 65 modules) |
+| 2 | ~~index.html~~ | ✅ CHECK-IN functional with GPS, localStorage, check-out |
+| 3 | ~~route.html~~ | ✅ Leaflet OSM map with numbered stop markers, route polyline, fitBounds |
+| 4 | ~~login.html~~ | ✅ socialLogin() with loading spinner, session save, redirect |
+| 5 | ~~All forms~~ | ✅ validateForm() in app.js, all form pages validated |
+| 6 | ~~All pages~~ | ✅ showEmptyState() and showErrorState() utilities in app.js |
 
 ---
 
-**Total pending items: 29** (27 resolved)
+## 7. Additional Systems Built (Beyond Original TODOs)
 
-*Auto-generated by project scan*
+| System | Details |
+|--------|---------|
+| SyncQueue | localStorage-based offline queue with simulated sync, progress bar, badge count |
+| SyncConflict | Conflict resolution UI — Keep Mine / Keep Server / Merge |
+| Push Notifications | In-app push banner system with demo pool (10 notifications, 30-45s interval) |
+| Contextual Tooltips | Long-press tooltip system with auto-positioning |
+| Haptic Animations | hapticTap, hapticPress, hapticError, hapticSuccess, hapticBump helpers |
+| Skeleton Loading | showSkeleton/hideSkeleton for loading states |
+| Pull-to-Refresh | simulateRefresh() with PTR indicator animation |
+| Offline Banner | initOfflineBanner() with online/offline event listeners |
+
+---
+
+## Summary
+
+| Category | Total | Resolved | Pending |
+|----------|-------|----------|---------|
+| Features | 7 | 7 | 0 |
+| Service Worker | 4 | 4 | 0 |
+| Structural Issues | 4 | 4 | 0 |
+| State Persistence | 5 | 5 | 0 |
+| Code-Level TODOs | 6 | 6 | 0 |
+| Production Migration | 33 | 0 | 33 |
+| **Total** | **59** | **26** | **33** |
+
+**All frontend mockup work is complete.** Remaining 33 items are production migration tasks requiring a backend (component extraction, data extraction, 23 API endpoints).

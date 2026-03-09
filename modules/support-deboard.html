@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>De-Board Outlet — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="page-title">Adera Sales</div>
+
+<div class="phone-frame">
+
+  <div id="drawer" data-inject="support-deboard"></div>
+
+  <div class="screen-scroll">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">De-Board Outlet</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="content" style="padding-top:14px;">
+
+      <div class="info-card" style="margin-bottom:16px;">
+        <div class="info-card-label">Outlet Removal</div>
+        <div class="info-card-value" style="font-size:20px;">De-Board Request</div>
+        <div class="info-card-sub">Submit a request to remove an outlet from your route</div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">Request Details</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Outlet Name</label>
+        <select class="form-control" id="dbOutlet" onchange="autoFillCode()">
+          <option value="">Select outlet...</option>
+          <option value="OUT-001">Hari General Store — Balaju</option>
+          <option value="OUT-002">Shrestha Mart — Lazimpat</option>
+          <option value="OUT-003">Nepal Traders — Ason</option>
+          <option value="OUT-004">Pokhara Supplies — Naxal</option>
+          <option value="OUT-005">Everest Shop — Thamel</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Outlet Code</label>
+        <input type="text" class="form-control" id="dbCode" placeholder="Auto-filled after selection" readonly>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reason for De-boarding</label>
+        <select class="form-control" id="dbReason">
+          <option value="">Select reason...</option>
+          <option>Outlet permanently closed</option>
+          <option>Outlet relocated outside area</option>
+          <option>Duplicate outlet entry</option>
+          <option>Non-responsive / inactive</option>
+          <option>Credit risk / bad debt</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Additional Details</label>
+        <textarea class="form-control" rows="3" id="dbDetails" placeholder="Provide additional context..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Attach Photo (optional)</label>
+        <div style="border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;color:var(--text-secondary);cursor:pointer;" onclick="showToast('Photo upload requires backend integration', 'info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:.5;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:13px;">Tap to upload photo</span>
+        </div>
+      </div>
+
+      <!-- Previous Requests -->
+      <div class="section-header" style="margin-top:18px;">
+        <span class="section-title">Previous Requests</span>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">Ram Store — Kalanki</div>
+          <div class="list-item-subtitle">Permanently closed - Approved</div>
+        </div>
+        <span class="badge badge-success">Done</span>
+      </div>
+
+      <div class="list-item">
+        <div class="list-item-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="list-item-content">
+          <div class="list-item-title">City Mart — Putalisadak</div>
+          <div class="list-item-subtitle">Inactive outlet - Pending review</div>
+        </div>
+        <span class="badge badge-primary">Pending</span>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button class="btn btn-primary btn-block" onclick="submitDeBoard()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+          Submit De-Board Request
+        </button>
+      </div>
+
+      <div style="height:80px;"></div>
+    </div>
+
+    <div class="bottom-nav" data-inject="support-deboard"></div>
+
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  function autoFillCode() {
+    var sel = document.getElementById('dbOutlet');
+    document.getElementById('dbCode').value = sel.value || '';
+  }
+
+  function submitDeBoard() {
+    var outlet = document.getElementById('dbOutlet').value;
+    var reason = document.getElementById('dbReason').value;
+    var details = document.getElementById('dbDetails').value.trim();
+
+    if (!outlet) { showToast('Please select an outlet', 'error'); return; }
+    if (!reason) { showToast('Please select a reason', 'error'); return; }
+
+    showToast('De-board request submitted successfully', 'success');
+    setTimeout(function() { goTo('support.html'); }, 800);
+  }
+</script>
+</body>
+</html>

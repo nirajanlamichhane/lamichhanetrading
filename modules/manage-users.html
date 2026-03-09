@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Manage Users — Adera Sales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Search Bar ── */
+    .mu-search {
+      position:relative; margin-bottom:14px;
+    }
+    .mu-search input {
+      width:100%; padding:10px 14px 10px 38px; border-radius:12px; border:1.5px solid #e2e8f0;
+      font-size:13px; font-family:var(--font); background:#fff; color:#1a2540;
+      box-shadow:0 1px 4px rgba(48,102,190,.06); transition:border-color .2s;
+      box-sizing:border-box;
+    }
+    .mu-search input:focus { outline:none; border-color:var(--primary); }
+    .mu-search input::placeholder { color:#94a3b8; }
+    .mu-search .mu-search-icon {
+      position:absolute; left:12px; top:50%; transform:translateY(-50%);
+      width:16px; height:16px; color:#94a3b8; pointer-events:none;
+    }
+    .mu-search .mu-clear {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      width:20px; height:20px; border:none; background:none; cursor:pointer;
+      color:#94a3b8; display:none; padding:0;
+    }
+    .mu-search .mu-clear.show { display:block; }
+
+    /* ── Stats Row ── */
+    .mu-stats {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;
+    }
+    .mu-stat {
+      background:#fff; border-radius:12px; padding:12px 10px; text-align:center;
+      box-shadow:0 1px 4px rgba(48,102,190,.06);
+    }
+    .mu-stat-val {
+      font-size:22px; font-weight:800; color:var(--primary);
+    }
+    .mu-stat-val.green { color:#16a34a; }
+    .mu-stat-val.amber { color:#f59e0b; }
+    .mu-stat-label {
+      font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:.6px;
+      font-weight:700; margin-top:2px;
+    }
+
+    /* ── Filter Tabs ── */
+    .mu-tabs {
+      display:flex; gap:8px; margin-bottom:14px; overflow-x:auto;
+      scrollbar-width:none; -ms-overflow-style:none;
+    }
+    .mu-tabs::-webkit-scrollbar { display:none; }
+    .mu-tab {
+      padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600;
+      font-family:var(--font); border:1.5px solid #e2e8f0; background:#fff;
+      color:#64748b; cursor:pointer; white-space:nowrap; transition:all .2s;
+    }
+    .mu-tab.active {
+      background:var(--primary); color:#fff; border-color:var(--primary);
+    }
+
+    /* ── User Card ── */
+    .mu-card {
+      display:flex; align-items:center; gap:12px; padding:14px;
+      background:#fff; border-radius:14px; margin-bottom:10px; cursor:pointer;
+      box-shadow:0 1px 4px rgba(48,102,190,.06); transition:transform .15s;
+      position:relative;
+    }
+    .mu-card:active { transform:scale(.98); }
+    .mu-avatar {
+      width:44px; height:44px; border-radius:50%; display:flex;
+      align-items:center; justify-content:center; font-size:18px;
+      font-weight:700; color:#fff; flex-shrink:0;
+    }
+    .mu-card-body { flex:1; min-width:0; }
+    .mu-card-name {
+      font-size:14px; font-weight:700; color:#1a2540;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .mu-card-role {
+      font-size:12px; color:#64748b; margin-top:1px;
+    }
+    .mu-card-meta {
+      font-size:10px; color:#94a3b8; margin-top:3px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .mu-status {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    .mu-status.active { background:#dcfce7; color:#16a34a; }
+    .mu-status.inactive { background:#fef3c7; color:#d97706; }
+    .mu-status.suspended { background:#fee2e2; color:#dc2626; }
+    .mu-status-dot {
+      width:6px; height:6px; border-radius:50%;
+    }
+    .mu-status.active .mu-status-dot { background:#16a34a; }
+    .mu-status.inactive .mu-status-dot { background:#d97706; }
+    .mu-status.suspended .mu-status-dot { background:#dc2626; }
+    .mu-card-chevron {
+      width:18px; height:18px; color:#c8d0da; flex-shrink:0;
+    }
+
+    /* ── No Results ── */
+    .mu-no-results {
+      text-align:center; padding:40px 20px; display:none;
+    }
+    .mu-no-results svg { width:48px; height:48px; color:#cbd5e1; margin-bottom:12px; }
+    .mu-no-results p { font-size:14px; font-weight:700; color:#64748b; margin:0 0 4px; }
+    .mu-no-results span { font-size:12px; color:#94a3b8; }
+
+    /* ── FAB ── */
+    .mu-fab {
+      position:absolute; bottom:90px; right:20px;
+      width:52px; height:52px; border-radius:18px; border:none;
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      color:#fff; box-shadow:var(--shadow-md);
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      z-index:300; transition:transform .2s;
+    }
+    .mu-fab:hover { transform:scale(1.08); }
+    .mu-fab:active { transform:scale(.9); }
+    .mu-fab svg { width:24px; height:24px; }
+
+    /* ── Bottom Sheet Detail ── */
+    .mu-detail-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid #f1f5f9;
+    }
+    .mu-detail-row:last-child { border-bottom:none; }
+    .mu-detail-label { font-size:12px; color:#94a3b8; font-weight:600; }
+    .mu-detail-value { font-size:13px; color:#1a2540; font-weight:600; text-align:right; }
+
+    .mu-detail-header {
+      display:flex; align-items:center; gap:14px; margin-bottom:16px;
+      padding-bottom:14px; border-bottom:1px solid #f1f5f9;
+    }
+    .mu-detail-avatar {
+      width:56px; height:56px; border-radius:50%; display:flex;
+      align-items:center; justify-content:center; font-size:24px;
+      font-weight:700; color:#fff; flex-shrink:0;
+    }
+    .mu-detail-name { font-size:17px; font-weight:800; color:#1a2540; }
+    .mu-detail-role { font-size:12px; color:#64748b; margin-top:2px; }
+
+    .mu-action-row {
+      display:flex; gap:8px; margin-top:16px;
+    }
+    .mu-action-btn {
+      flex:1; padding:11px 0; border-radius:12px; font-size:13px;
+      font-weight:700; font-family:var(--font); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:6px;
+      transition:transform .15s; border:none;
+    }
+    .mu-action-btn:active { transform:scale(.97); }
+    .mu-action-btn.primary {
+      background:var(--primary); color:#fff;
+    }
+    .mu-action-btn.danger {
+      background:#fee2e2; color:#dc2626; border:1.5px solid #fecaca;
+    }
+    .mu-action-btn.outline {
+      background:#fff; color:#64748b; border:1.5px solid #e2e8f0;
+    }
+
+    /* ── Invite Sheet ── */
+    .mu-form-group {
+      margin-bottom:14px;
+    }
+    .mu-form-label {
+      font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;
+      letter-spacing:.6px; margin-bottom:6px; display:block;
+    }
+    .mu-form-input {
+      width:100%; padding:10px 14px; border-radius:10px; border:1.5px solid #e2e8f0;
+      font-size:13px; font-family:var(--font); color:#1a2540; background:#fff;
+      box-sizing:border-box; transition:border-color .2s;
+    }
+    .mu-form-input:focus { outline:none; border-color:var(--primary); }
+    .mu-form-select {
+      width:100%; padding:10px 14px; border-radius:10px; border:1.5px solid #e2e8f0;
+      font-size:13px; font-family:var(--font); color:#1a2540; background:#fff;
+      box-sizing:border-box; appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center;
+    }
+    .mu-form-select:focus { outline:none; border-color:var(--primary); }
+    .mu-invite-btn {
+      width:100%; padding:12px 0; border-radius:12px; border:none;
+      background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+      color:#fff; font-size:14px; font-weight:700; font-family:var(--font);
+      cursor:pointer; transition:transform .15s; margin-top:6px;
+    }
+    .mu-invite-btn:active { transform:scale(.97); }
+
+    /* ── Section label ── */
+    .mu-section {
+      font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;
+      letter-spacing:.8px; margin:0 0 10px; display:flex; align-items:center; gap:8px;
+    }
+    .mu-section::after {
+      content:''; flex:1; height:1px; background:#e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-title">Adera Sales</div>
+
+<div class="phone-frame">
+
+  <!-- Drawer (auto-injected) -->
+  <div id="drawer" data-inject="manage-users"></div>
+
+  <!-- Scrollable Screen -->
+  <div class="screen-scroll">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1" opacity=".4"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M20 11h2v2h-2z"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor" opacity=".8"/></svg>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="icon-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-title">Manage Users</div>
+      <button class="icon-btn" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" style="padding-top:14px;">
+
+      <!-- Stats Row -->
+      <div class="mu-stats">
+        <div class="mu-stat">
+          <div class="mu-stat-val" id="statTotal">15</div>
+          <div class="mu-stat-label">Total</div>
+        </div>
+        <div class="mu-stat">
+          <div class="mu-stat-val green" id="statActive">12</div>
+          <div class="mu-stat-label">Active</div>
+        </div>
+        <div class="mu-stat">
+          <div class="mu-stat-val amber" id="statInactive">3</div>
+          <div class="mu-stat-label">Inactive</div>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="mu-search">
+        <svg class="mu-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="muSearchInput" placeholder="Search users..." oninput="searchUsers(this.value)">
+        <button class="mu-clear" id="muClear" onclick="clearSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="mu-tabs">
+        <div class="mu-tab active" onclick="filterUsers('all', this)">All</div>
+        <div class="mu-tab" onclick="filterUsers('active', this)">Active</div>
+        <div class="mu-tab" onclick="filterUsers('inactive', this)">Inactive</div>
+        <div class="mu-tab" onclick="filterUsers('admin', this)">Admins</div>
+        <div class="mu-tab" onclick="filterUsers('sales_rep', this)">Sales Reps</div>
+        <div class="mu-tab" onclick="filterUsers('manager', this)">Managers</div>
+      </div>
+
+      <!-- No Results -->
+      <div class="mu-no-results" id="muNoResults">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <p>No users found</p>
+        <span>Try a different search or filter</span>
+      </div>
+
+      <!-- User Cards (rendered by JS) -->
+      <div class="mu-section">Team Members</div>
+      <div id="userList"></div>
+
+      <div style="height:90px;"></div>
+    </div><!-- /content -->
+
+    <!-- Bottom Nav (auto-injected) -->
+    <div class="bottom-nav" data-inject="manage-users"></div>
+
+  </div><!-- /screen-scroll -->
+
+  <!-- FAB: Add User -->
+  <button class="mu-fab" onclick="openInviteSheet()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- ═══ User Detail Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="bsOverlay" onclick="closeDetail()"></div>
+  <div class="bs-sheet" id="bsSheet">
+    <div class="bs-header">
+      <div class="bs-handle"></div>
+      <button class="bs-close" onclick="closeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="bs-title" id="bsTitle">User Details</div>
+      <div class="bs-subtitle" id="bsSubtitle">View and manage</div>
+    </div>
+    <div class="bs-body" id="bsBody"></div>
+  </div>
+
+  <!-- ═══ Invite User Bottom Sheet ═══ -->
+  <div class="bs-overlay" id="invOverlay" onclick="closeInvite()" style="z-index:420;"></div>
+  <div class="bs-sheet" id="invSheet" style="z-index:430;">
+    <div class="bs-header">
+      <div class="bs-handle"></div>
+      <button class="bs-close" onclick="closeInvite()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="bs-title">Invite New User</div>
+      <div class="bs-subtitle">Add a team member</div>
+    </div>
+    <div class="bs-body" style="padding:16px 20px 24px;">
+      <div class="mu-form-group">
+        <label class="mu-form-label">Full Name</label>
+        <input type="text" class="mu-form-input" id="invName" placeholder="e.g. Rajesh Kumar">
+      </div>
+      <div class="mu-form-group">
+        <label class="mu-form-label">Phone Number</label>
+        <input type="tel" class="mu-form-input" id="invPhone" placeholder="e.g. 9841234567">
+      </div>
+      <div class="mu-form-group">
+        <label class="mu-form-label">Email (Optional)</label>
+        <input type="email" class="mu-form-input" id="invEmail" placeholder="e.g. user@company.com">
+      </div>
+      <div class="mu-form-group">
+        <label class="mu-form-label">Role</label>
+        <select class="mu-form-select" id="invRole">
+          <option value="sales_rep">Sales Rep</option>
+          <option value="area_manager">Area Manager</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="mu-form-group">
+        <label class="mu-form-label">Territory</label>
+        <select class="mu-form-select" id="invTerritory">
+          <option value="kathmandu">Kathmandu Valley</option>
+          <option value="pokhara">Pokhara</option>
+          <option value="biratnagar">Biratnagar</option>
+          <option value="chitwan">Chitwan</option>
+          <option value="butwal">Butwal-Bhairahawa</option>
+        </select>
+      </div>
+      <button class="mu-invite-btn" onclick="sendInvite()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Invite
+      </button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script src="../js/app.js"></script>
+<script>
+  // ── User Data ──
+  var users = [
+    { id:1, name:'Elon Musk', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841001001', email:'elon@company.com', territory:'Kathmandu Valley', status:'active', lastLogin:'Mar 9, 2026', joined:'Jan 15, 2025', orders:342, collections:'Rs 4.2L', color:'#3066BE' },
+    { id:2, name:'Rajesh Kumar', role:'area_manager', roleLabel:'Area Manager', phone:'9841002002', email:'rajesh@company.com', territory:'Kathmandu Valley', status:'active', lastLogin:'Mar 9, 2026', joined:'Feb 20, 2025', orders:0, collections:'—', color:'#7c3aed' },
+    { id:3, name:'Priya Sharma', role:'admin', roleLabel:'Admin', phone:'9841003003', email:'priya@company.com', territory:'All Territories', status:'active', lastLogin:'Mar 8, 2026', joined:'Jan 10, 2025', orders:0, collections:'—', color:'#dc2626' },
+    { id:4, name:'Amit Patel', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841004004', email:'amit@company.com', territory:'Pokhara', status:'active', lastLogin:'Mar 8, 2026', joined:'Mar 1, 2025', orders:287, collections:'Rs 3.5L', color:'#0891b2' },
+    { id:5, name:'Suman Thapa', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841005005', email:'suman@company.com', territory:'Biratnagar', status:'inactive', lastLogin:'Feb 15, 2026', joined:'Apr 5, 2025', orders:156, collections:'Rs 1.8L', color:'#d97706' },
+    { id:6, name:'Anita Rai', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841006006', email:'anita@company.com', territory:'Chitwan', status:'active', lastLogin:'Mar 9, 2026', joined:'May 12, 2025', orders:298, collections:'Rs 3.1L', color:'#059669' },
+    { id:7, name:'Bikram Shah', role:'area_manager', roleLabel:'Area Manager', phone:'9841007007', email:'bikram@company.com', territory:'Pokhara', status:'active', lastLogin:'Mar 7, 2026', joined:'Feb 1, 2025', orders:0, collections:'—', color:'#6366f1' },
+    { id:8, name:'Deepak Adhikari', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841008008', email:'deepak@company.com', territory:'Butwal-Bhairahawa', status:'active', lastLogin:'Mar 6, 2026', joined:'Jun 20, 2025', orders:201, collections:'Rs 2.4L', color:'#be185d' },
+    { id:9, name:'Kopila Gurung', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841009009', email:'kopila@company.com', territory:'Kathmandu Valley', status:'active', lastLogin:'Mar 9, 2026', joined:'Jul 1, 2025', orders:178, collections:'Rs 2.0L', color:'#16a34a' },
+    { id:10, name:'Manoj Shrestha', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841010010', email:'manoj@company.com', territory:'Chitwan', status:'inactive', lastLogin:'Jan 28, 2026', joined:'Aug 15, 2025', orders:89, collections:'Rs 0.9L', color:'#9333ea' },
+    { id:11, name:'Nisha Tamang', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841011011', email:'nisha@company.com', territory:'Biratnagar', status:'active', lastLogin:'Mar 8, 2026', joined:'Sep 1, 2025', orders:134, collections:'Rs 1.5L', color:'#e11d48' },
+    { id:12, name:'Prakash Bhatta', role:'admin', roleLabel:'Admin', phone:'9841012012', email:'prakash@company.com', territory:'All Territories', status:'active', lastLogin:'Mar 9, 2026', joined:'Jan 10, 2025', orders:0, collections:'—', color:'#0d9488' },
+    { id:13, name:'Raju Karki', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841013013', email:'raju@company.com', territory:'Pokhara', status:'active', lastLogin:'Mar 5, 2026', joined:'Oct 20, 2025', orders:67, collections:'Rs 0.7L', color:'#ca8a04' },
+    { id:14, name:'Sabina Limbu', role:'sales_rep', roleLabel:'Sales Rep', phone:'9841014014', email:'sabina@company.com', territory:'Kathmandu Valley', status:'inactive', lastLogin:'Dec 10, 2025', joined:'Nov 5, 2025', orders:23, collections:'Rs 0.2L', color:'#7c3aed' },
+    { id:15, name:'Tika Bahadur KC', role:'area_manager', roleLabel:'Area Manager', phone:'9841015015', email:'tika@company.com', territory:'Biratnagar', status:'active', lastLogin:'Mar 9, 2026', joined:'Mar 15, 2025', orders:0, collections:'—', color:'#2563eb' }
+  ];
+
+  var currentFilter = 'all';
+  var currentSearch = '';
+
+  // ── Init ──
+  function init() {
+    renderUsers();
+    updateStats();
+  }
+
+  // ── Stats ──
+  function updateStats() {
+    var total = users.length;
+    var active = users.filter(function(u) { return u.status === 'active'; }).length;
+    var inactive = total - active;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statInactive').textContent = inactive;
+  }
+
+  // ── Render User List ──
+  function renderUsers() {
+    var list = document.getElementById('userList');
+    var filtered = getFilteredUsers();
+    var noResults = document.getElementById('muNoResults');
+
+    var sectionLabel = document.querySelector('.mu-section');
+    if (filtered.length === 0) {
+      list.innerHTML = '';
+      noResults.style.display = 'block';
+      if (sectionLabel) sectionLabel.style.display = 'none';
+      return;
+    }
+    noResults.style.display = 'none';
+    if (sectionLabel) sectionLabel.style.display = '';
+
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) {
+      var u = filtered[i];
+      var initials = u.name.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2);
+      html += '<div class="mu-card" onclick="openUserDetail(' + u.id + ')">' +
+        '<div class="mu-avatar" style="background:' + u.color + '">' + initials + '</div>' +
+        '<div class="mu-card-body">' +
+          '<div class="mu-card-name">' + u.name + '</div>' +
+          '<div class="mu-card-role">' + u.roleLabel + ' &middot; ' + u.territory + '</div>' +
+          '<div class="mu-card-meta">' +
+            '<span class="mu-status ' + u.status + '"><span class="mu-status-dot"></span>' + capitalize(u.status) + '</span>' +
+            '<span>Last: ' + u.lastLogin + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<svg class="mu-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>';
+    }
+    list.innerHTML = html;
+  }
+
+  function getFilteredUsers() {
+    return users.filter(function(u) {
+      // Tab filter
+      if (currentFilter === 'active' && u.status !== 'active') return false;
+      if (currentFilter === 'inactive' && u.status !== 'inactive') return false;
+      if (currentFilter === 'admin' && u.role !== 'admin') return false;
+      if (currentFilter === 'sales_rep' && u.role !== 'sales_rep') return false;
+      if (currentFilter === 'manager' && u.role !== 'area_manager') return false;
+
+      // Search filter
+      if (currentSearch) {
+        var q = currentSearch.toLowerCase();
+        var haystack = (u.name + ' ' + u.roleLabel + ' ' + u.territory + ' ' + u.phone + ' ' + u.email).toLowerCase();
+        if (haystack.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  // ── Search ──
+  function searchUsers(val) {
+    currentSearch = val.trim();
+    document.getElementById('muClear').classList.toggle('show', val.length > 0);
+    renderUsers();
+  }
+
+  function clearSearch() {
+    var input = document.getElementById('muSearchInput');
+    input.value = '';
+    currentSearch = '';
+    document.getElementById('muClear').classList.remove('show');
+    renderUsers();
+    input.focus();
+  }
+
+  // ── Filter Tabs ──
+  function filterUsers(filter, tabEl) {
+    currentFilter = filter;
+    var tabs = document.querySelectorAll('.mu-tab');
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+    tabEl.classList.add('active');
+    renderUsers();
+  }
+
+  // ── User Detail ──
+  function openUserDetail(id) {
+    var u = users.find(function(x) { return x.id === id; });
+    if (!u) return;
+
+    document.getElementById('bsTitle').textContent = 'User Details';
+    document.getElementById('bsSubtitle').textContent = u.roleLabel;
+
+    var initials = u.name.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2);
+    var html = '';
+
+    // Header
+    html += '<div class="mu-detail-header">' +
+      '<div class="mu-detail-avatar" style="background:' + u.color + '">' + initials + '</div>' +
+      '<div>' +
+        '<div class="mu-detail-name">' + u.name + '</div>' +
+        '<div class="mu-detail-role">' + u.roleLabel + '</div>' +
+        '<span class="mu-status ' + u.status + '" style="margin-top:6px;display:inline-flex;"><span class="mu-status-dot"></span>' + capitalize(u.status) + '</span>' +
+      '</div>' +
+    '</div>';
+
+    // Info rows
+    var rows = [
+      { label: 'Phone', value: u.phone },
+      { label: 'Email', value: u.email },
+      { label: 'Territory', value: u.territory },
+      { label: 'Joined', value: u.joined },
+      { label: 'Last Login', value: u.lastLogin }
+    ];
+    if (u.role === 'sales_rep') {
+      rows.push({ label: 'Orders Taken', value: u.orders });
+      rows.push({ label: 'Collections', value: u.collections });
+    }
+
+    for (var i = 0; i < rows.length; i++) {
+      html += '<div class="mu-detail-row">' +
+        '<span class="mu-detail-label">' + rows[i].label + '</span>' +
+        '<span class="mu-detail-value">' + rows[i].value + '</span>' +
+      '</div>';
+    }
+
+    // Actions
+    html += '<div class="mu-action-row">';
+    if (u.status === 'active') {
+      html += '<button class="mu-action-btn danger" onclick="toggleUserStatus(' + u.id + ', \'inactive\')">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>' +
+        'Deactivate</button>';
+    } else {
+      html += '<button class="mu-action-btn primary" onclick="toggleUserStatus(' + u.id + ', \'active\')">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>' +
+        'Activate</button>';
+    }
+    html += '<button class="mu-action-btn outline" onclick="resetPassword(' + u.id + ')">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>' +
+      'Reset Pwd</button>';
+    html += '</div>';
+
+    // Edit role button
+    html += '<div class="mu-action-row" style="margin-top:8px;">';
+    html += '<button class="mu-action-btn outline" onclick="changeRole(' + u.id + ')" style="flex:1;">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>' +
+      'Change Role</button>';
+    html += '<button class="mu-action-btn outline" onclick="closeDetail()" style="flex:1;">Close</button>';
+    html += '</div>';
+
+    document.getElementById('bsBody').innerHTML = html;
+
+    document.getElementById('bsOverlay').classList.add('open');
+    document.getElementById('bsSheet').classList.add('open');
+    document.querySelector('.mu-fab').style.display = 'none';
+  }
+
+  function closeDetail() {
+    document.getElementById('bsSheet').classList.remove('open');
+    document.getElementById('bsOverlay').classList.remove('open');
+    document.querySelector('.mu-fab').style.display = '';
+  }
+
+  // ── Toggle Status ──
+  function toggleUserStatus(id, newStatus) {
+    var u = users.find(function(x) { return x.id === id; });
+    if (!u) return;
+    u.status = newStatus;
+    closeDetail();
+    renderUsers();
+    updateStats();
+    showToast(u.name + ' ' + (newStatus === 'active' ? 'activated' : 'deactivated'), newStatus === 'active' ? 'success' : 'warning');
+  }
+
+  // ── Reset Password ──
+  function resetPassword(id) {
+    var u = users.find(function(x) { return x.id === id; });
+    if (!u) return;
+    closeDetail();
+    showToast('Password reset link sent to ' + u.phone, 'success');
+  }
+
+  // ── Change Role ──
+  function changeRole(id) {
+    var u = users.find(function(x) { return x.id === id; });
+    if (!u) return;
+    // Cycle through roles
+    var roles = ['sales_rep', 'area_manager', 'admin'];
+    var labels = ['Sales Rep', 'Area Manager', 'Admin'];
+    var idx = roles.indexOf(u.role);
+    var nextIdx = (idx + 1) % roles.length;
+    u.role = roles[nextIdx];
+    u.roleLabel = labels[nextIdx];
+    closeDetail();
+    renderUsers();
+    showToast(u.name + ' role changed to ' + u.roleLabel, 'info');
+  }
+
+  // ── Invite Sheet ──
+  function openInviteSheet() {
+    closeDetail();
+    document.getElementById('invOverlay').classList.add('open');
+    document.getElementById('invSheet').classList.add('open');
+    document.querySelector('.mu-fab').style.display = 'none';
+  }
+
+  function closeInvite() {
+    document.getElementById('invSheet').classList.remove('open');
+    document.getElementById('invOverlay').classList.remove('open');
+    document.querySelector('.mu-fab').style.display = '';
+  }
+
+  function sendInvite() {
+    var name = document.getElementById('invName').value.trim();
+    var phone = document.getElementById('invPhone').value.trim();
+    var email = document.getElementById('invEmail').value.trim();
+    var role = document.getElementById('invRole').value;
+    var territory = document.getElementById('invTerritory');
+    var territoryLabel = territory.options[territory.selectedIndex].text;
+
+    if (!name) { showToast('Please enter a name', 'error'); return; }
+    if (!phone || phone.length < 10) { showToast('Please enter a valid phone number', 'error'); return; }
+
+    var roleLabels = { sales_rep: 'Sales Rep', area_manager: 'Area Manager', admin: 'Admin' };
+    var colors = ['#3066BE','#7c3aed','#dc2626','#0891b2','#059669','#6366f1','#be185d','#16a34a','#9333ea','#e11d48','#0d9488','#ca8a04','#2563eb'];
+
+    var newUser = {
+      id: users.length + 1,
+      name: name,
+      role: role,
+      roleLabel: roleLabels[role],
+      phone: phone,
+      email: email || '—',
+      territory: territoryLabel,
+      status: 'active',
+      lastLogin: '—',
+      joined: 'Mar 9, 2026',
+      orders: 0,
+      collections: '—',
+      color: colors[Math.floor(Math.random() * colors.length)]
+    };
+
+    users.push(newUser);
+
+    // Clear form
+    document.getElementById('invName').value = '';
+    document.getElementById('invPhone').value = '';
+    document.getElementById('invEmail').value = '';
+
+    closeInvite();
+    renderUsers();
+    updateStats();
+    showToast('Invite sent to ' + name, 'success');
+  }
+
+  // ── Boot ──
+  init();
+</script>
+</body>
+</html>
